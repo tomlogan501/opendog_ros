@@ -1,0 +1,49 @@
+controller_manager:
+  update_rate: 1000 # Hz
+    
+  openDog_controller:     
+    type: joint_trajectory_controller/JointTrajectoryController
+    #Add namespace for parameters    
+    ros__parameters:
+      #Define command and state interfaces
+      command_interfaces:
+        - position
+      state_interfaces:
+        - position
+        - velocity
+      #specify joint names
+      joints:
+        - ur_shoulder_to_base_link
+        - ul_shoulder_to_base_link
+        - lr_hip_to_base_link
+        - ll_hip_to_base_link
+        - ur_upperleg_to_shoulder
+        - ul_upperleg_to_shoulder
+        - lr_upperleg_to_hip
+        - ll_upperleg_to_hip
+        - ur_lowerleg_to_upperleg
+        - ul_lowerleg_to_upperleg
+        - lr_lowerleg_to_upperleg
+        - ll_lowerleg_to_upperleg
+      
+# Add Hardware Interface section
+hardware_interface:
+  #Use simulated or real joint state interface
+  joint_state_controller:
+    type: joint_state_controller/JointStateController
+    joints:
+      - ur_shoulder_to_base_link
+        - ul_shoulder_to_base_link
+        - lr_hip_to_base_link
+        - ll_hip_to_base_link
+        - ur_upperleg_to_shoulder
+        - ul_upperleg_to_shoulder
+        - lr_upperleg_to_hip
+        - ll_upperleg_to_hip
+        - ur_lowerleg_to_upperleg
+        - ul_lowerleg_to_upperleg
+        - lr_lowerleg_to_upperleg
+        - ll_lowerleg_to_upperleg
+# Add joint_state_broadcaster controller definition
+joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster

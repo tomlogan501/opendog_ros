@@ -1,0 +1,517 @@
+<?xml version="1.0" ?>
+<robot name="openDog" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<xacro:include filename="$(find opendog_description)/urdf/materials.xacro" />
+<xacro:include filename="$(find opendog_description)/urdf/openDog.trans" />
+<xacro:include filename="$(find opendog_description)/urdf/openDog.gazebo" />
+<link name="base_link">
+  <inertial>
+    <origin xyz="0.3194712790581162 -0.023516951059611445 0.1729175750884552" rpy="0 0 0"/>
+    <mass value="23.046853181922565"/>
+    <inertia ixx="0.401144" iyy="2.392202" izz="2.130586" ixy="-0.008067" iyz="0.000125" ixz="0.002541"/>
+  </inertial>
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="ur_shoulder_1">
+  <inertial>
+    <origin xyz="-0.09785765826585664 0.022239607007564693 0.00016235765360228527" rpy="0 0 0"/>
+    <mass value="8.21838423136781"/>
+    <inertia ixx="0.012708" iyy="0.027002" izz="0.026258" ixy="-0.000651" iyz="4.8e-05" ixz="1.1e-05"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.143593 -0.036765 -0.494002" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/ur_shoulder_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.143593 -0.036765 -0.494002" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/ur_shoulder_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="ul_shoulder_1">
+  <inertial>
+    <origin xyz="-0.09797091464074217 -0.02210795616223253 0.0001630332644029231" rpy="0 0 0"/>
+    <mass value="8.250541403982718"/>
+    <inertia ixx="0.012737" iyy="0.027034" izz="0.026319" ixy="0.000689" iyz="-4.7e-05" ixz="1.2e-05"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.143593 0.081516 -0.494002" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/ul_shoulder_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.143593 0.081516 -0.494002" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/ul_shoulder_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="ll_hip_1">
+  <inertial>
+    <origin xyz="0.09785624001903998 -0.022143421455443804 0.0001584194396728189" rpy="0 0 0"/>
+    <mass value="8.221636898406961"/>
+    <inertia ixx="0.012784" iyy="0.027006" izz="0.026333" ixy="-0.000657" iyz="-4.9e-05" ixz="-1.1e-05"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.491593 0.081516 -0.494002" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/ll_hip_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.491593 0.081516 -0.494002" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/ll_hip_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="ll_upperleg_1">
+  <inertial>
+    <origin xyz="-0.026551756533651938 -0.054730598047902146 -0.026879168536757814" rpy="0 0 0"/>
+    <mass value="14.227687254589894"/>
+    <inertia ixx="0.061226" iyy="0.085803" izz="0.061502" ixy="0.005391" iyz="0.005035" ixz="-0.027705"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.591233 0.147875 -0.494002" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/ll_upperleg_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.591233 0.147875 -0.494002" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/ll_upperleg_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="lr_hip_1">
+  <inertial>
+    <origin xyz="0.09785805368218153 0.022239612225013083 0.0001623504903233708" rpy="0 0 0"/>
+    <mass value="8.218386359006598"/>
+    <inertia ixx="0.012708" iyy="0.027002" izz="0.026258" ixy="0.000651" iyz="4.8e-05" ixz="-1.1e-05"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.491593 -0.036765 -0.494002" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/lr_hip_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.491593 -0.036765 -0.494002" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/lr_hip_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="ll_lowerleg_1">
+  <inertial>
+    <origin xyz="0.06224359105714905 0.04017233634291517 -0.03594042363802802" rpy="0 0 0"/>
+    <mass value="4.074949631235474"/>
+    <inertia ixx="0.006615" iyy="0.021256" izz="0.016145" ixy="-0.000143" iyz="8.3e-05" ixz="0.008252"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.450265 0.229875 -0.353033" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/ll_lowerleg_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.450265 0.229875 -0.353033" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/ll_lowerleg_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="bodyframe_1">
+  <inertial>
+    <origin xyz="-0.3378222283834267 -0.05042890388348582 0.1152175731884364" rpy="0 0 0"/>
+    <mass value="70.88293840121786"/>
+    <inertia ixx="0.761631" iyy="4.077449" izz="3.905689" ixy="-0.001055" iyz="-0.000345" ixz="0.05479"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.655873 -0.028052 -0.379835" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/bodyframe_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.655873 -0.028052 -0.379835" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/bodyframe_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="lr_upperleg_1">
+  <inertial>
+    <origin xyz="-0.026551693091754203 0.05472957600140793 -0.02687910250035369" rpy="0 0 0"/>
+    <mass value="14.227714185907855"/>
+    <inertia ixx="0.061227" iyy="0.085803" izz="0.061502" ixy="-0.005391" iyz="-0.005035" ixz="-0.027705"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.591233 -0.103125 -0.494002" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/lr_upperleg_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.591233 -0.103125 -0.494002" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/lr_upperleg_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="ur_upperleg_1">
+  <inertial>
+    <origin xyz="0.026552156550589533 0.05472959827956031 -0.026879168536760756" rpy="0 0 0"/>
+    <mass value="14.227687254589894"/>
+    <inertia ixx="0.061226" iyy="0.085803" izz="0.061502" ixy="0.005391" iyz="-0.005035" ixz="0.027705"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.043953 -0.103125 -0.494002" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/ur_upperleg_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.043953 -0.103125 -0.494002" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/ur_upperleg_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="ul_upperleg_1">
+  <inertial>
+    <origin xyz="0.026552093108691367 -0.05473057576974949 -0.026879102500355967" rpy="0 0 0"/>
+    <mass value="14.227714185907855"/>
+    <inertia ixx="0.061227" iyy="0.085803" izz="0.061502" ixy="-0.005391" iyz="0.005035" ixz="0.027705"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.043953 0.147875 -0.494002" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/ul_upperleg_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.043953 0.147875 -0.494002" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/ul_upperleg_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="lr_lowerleg_1">
+  <inertial>
+    <origin xyz="0.062243591034195744 -0.04017333611100363 -0.035940423622014495" rpy="0 0 0"/>
+    <mass value="4.07494962987908"/>
+    <inertia ixx="0.006615" iyy="0.021256" izz="0.016145" ixy="0.000143" iyz="-8.3e-05" ixz="0.008252"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.450265 -0.185125 -0.353033" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/lr_lowerleg_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.450265 -0.185125 -0.353033" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/lr_lowerleg_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="ul_lowerleg_1">
+  <inertial>
+    <origin xyz="-0.062244191040209895 -0.04017333611125662 -0.03594042363803118" rpy="0 0 0"/>
+    <mass value="4.074949631235474"/>
+    <inertia ixx="0.006615" iyy="0.021256" izz="0.016145" ixy="-0.000143" iyz="-8.3e-05" ixz="-0.008252"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.184922 -0.185125 -0.353033" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/ul_lowerleg_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.184922 -0.185125 -0.353033" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/ul_lowerleg_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="ur_lowerleg_1">
+  <inertial>
+    <origin xyz="-0.062244191017257255 0.04017233634266193 -0.03594042362201627" rpy="0 0 0"/>
+    <mass value="4.07494962987908"/>
+    <inertia ixx="0.006615" iyy="0.021256" izz="0.016145" ixy="0.000143" iyz="8.3e-05" ixz="-0.008252"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.184922 0.229875 -0.353033" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/ur_lowerleg_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.184922 0.229875 -0.353033" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find opendog_description)/meshes/ur_lowerleg_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<joint name="ur_shoulder_to_base_link" type="revolute">
+  <origin xyz="-0.51228 0.008713 0.114167" rpy="0 0 0"/>
+  <parent link="bodyframe_1"/>
+  <child link="ur_shoulder_1"/>
+  <axis xyz="1.0 -0.0 0.0"/>
+  <limit upper="0.349066" lower="-0.436332" effort="100" velocity="100"/>
+</joint>
+
+<joint name="ul_shoulder_to_base_link" type="revolute">
+  <origin xyz="-0.51228 -0.109568 0.114167" rpy="0 0 0"/>
+  <parent link="bodyframe_1"/>
+  <child link="ul_shoulder_1"/>
+  <axis xyz="-1.0 0.0 -0.0"/>
+  <limit upper="0.349066" lower="-0.436332" effort="100" velocity="100"/>
+</joint>
+
+<joint name="ll_hip_to_base_link" type="revolute">
+  <origin xyz="-0.16428 -0.109568 0.114167" rpy="0 0 0"/>
+  <parent link="bodyframe_1"/>
+  <child link="ll_hip_1"/>
+  <axis xyz="-1.0 0.0 0.0"/>
+  <limit upper="0.349066" lower="-0.436332" effort="100" velocity="100"/>
+</joint>
+
+<joint name="ll_upperleg_to_hip" type="revolute">
+  <origin xyz="0.09964 -0.066359 0.0" rpy="0 0 0"/>
+  <parent link="ll_hip_1"/>
+  <child link="ll_upperleg_1"/>
+  <axis xyz="0.0 1.0 -0.0"/>
+  <limit upper="0.785398" lower="-2.356194" effort="100" velocity="100"/>
+</joint>
+
+<joint name="lr_hip_to_base_link" type="revolute">
+  <origin xyz="-0.16428 0.008713 0.114167" rpy="0 0 0"/>
+  <parent link="bodyframe_1"/>
+  <child link="lr_hip_1"/>
+  <axis xyz="1.0 -0.0 -0.0"/>
+  <limit upper="0.349066" lower="-0.436332" effort="100" velocity="100"/>
+</joint>
+
+<joint name="ll_lowerleg_to_upperleg" type="revolute">
+  <origin xyz="-0.140968 -0.082 -0.140969" rpy="0 0 0"/>
+  <parent link="ll_upperleg_1"/>
+  <child link="ll_lowerleg_1"/>
+  <axis xyz="0.0 1.0 -0.0"/>
+  <limit upper="1.832596" lower="-0.436332" effort="100" velocity="100"/>
+</joint>
+
+<joint name="dog_to_stand" type="fixed">
+  <origin xyz="0.655873 0.028052 0.379835" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="bodyframe_1"/>
+</joint>
+
+<joint name="lr_upperleg_to_hip" type="revolute">
+  <origin xyz="0.09964 0.06636 0.0" rpy="0 0 0"/>
+  <parent link="lr_hip_1"/>
+  <child link="lr_upperleg_1"/>
+  <axis xyz="-0.0 1.0 0.0"/>
+  <limit upper="0.785398" lower="-2.356194" effort="100" velocity="100"/>
+</joint>
+
+<joint name="ur_upperleg_to_shoulder" type="revolute">
+  <origin xyz="-0.09964 0.06636 0.0" rpy="0 0 0"/>
+  <parent link="ur_shoulder_1"/>
+  <child link="ur_upperleg_1"/>
+  <axis xyz="-0.0 -1.0 -0.0"/>
+  <limit upper="0.785398" lower="-2.181662" effort="100" velocity="100"/>
+</joint>
+
+<joint name="ul_upperleg_to_shoulder" type="revolute">
+  <origin xyz="-0.09964 -0.066359 0.0" rpy="0 0 0"/>
+  <parent link="ul_shoulder_1"/>
+  <child link="ul_upperleg_1"/>
+  <axis xyz="-0.0 -1.0 0.0"/>
+  <limit upper="0.785398" lower="-2.181662" effort="100" velocity="100"/>
+</joint>
+
+<joint name="lr_lowerleg_to_upperleg" type="revolute">
+  <origin xyz="-0.140968 0.082 -0.140969" rpy="0 0 0"/>
+  <parent link="lr_upperleg_1"/>
+  <child link="lr_lowerleg_1"/>
+  <axis xyz="-0.0 1.0 0.0"/>
+  <limit upper="1.832596" lower="-0.436332" effort="100" velocity="100"/>
+</joint>
+
+<joint name="ur_lowerleg_to_upperleg" type="revolute">
+  <origin xyz="0.140969 0.082 -0.140969" rpy="0 0 0"/>
+  <parent link="ur_upperleg_1"/>
+  <child link="ul_lowerleg_1"/>
+  <axis xyz="-0.0 -1.0 -0.0"/>
+  <limit upper="1.832596" lower="-0.436332" effort="100" velocity="100"/>
+</joint>
+
+<joint name="ul_lowerleg_to_upperleg" type="revolute">
+  <origin xyz="0.140969 -0.082 -0.140969" rpy="0 0 0"/>
+  <parent link="ul_upperleg_1"/>
+  <child link="ur_lowerleg_1"/>
+  <axis xyz="0.0 -1.0 0.0"/>
+  <limit upper="1.832596" lower="-0.436332" effort="100" velocity="100"/>
+</joint>
+
+<!--                             ROS 2 Control                                 -->
+<ros2_control name="GazeboSimSystem" type="system">
+  <hardware>
+    <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+  </hardware>
+  <!-- Shoulders and Hips -->
+
+  <joint name="ur_shoulder_to_base_link">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+  
+  <joint name="ul_shoulder_to_base_link">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+  
+  <joint name="lr_hip_to_base_link">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+  
+  <joint name="ll_hip_to_base_link">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+  
+  <!-- Upper Legs -->
+  
+  <joint name="ur_upperleg_to_shoulder">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+  
+  <joint name="ul_upperleg_to_shoulder">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+  
+  <joint name="lr_upperleg_to_hip">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+  
+  <joint name="ll_upperleg_to_hip">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+  
+  <!-- Lower Legs -->
+  
+  <joint name="ur_lowerleg_to_upperleg">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+  
+  <joint name="ul_lowerleg_to_upperleg">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+  
+  <joint name="lr_lowerleg_to_upperleg">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+  
+  <joint name="ll_lowerleg_to_upperleg">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+   
+</ros2_control>
+<!--                           End ROS 2 Control                        -->
+<gazebo>
+  <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
+    <parameters>$(find opendog_description)/config/opendog_controllers.yaml</parameters>
+  </plugin>
+</gazebo>
+</robot>
