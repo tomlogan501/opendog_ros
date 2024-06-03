@@ -1,0 +1,34 @@
+<?xml version="1.0" ?>
+<robot name="openleg" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<!-- Robot Joints -->
+
+<joint name="fixed_to_world_joint" type="fixed">
+  <origin xyz="0 0 0" rpy="0 0 0"/>
+  <parent link="world"/>
+  <child link="base_link"/>
+</joint>
+
+<joint name="ul_upperleg_to_shoulder" type="continuous">
+  <origin xyz="-0.09964 -0.06636 0.0" rpy="0 0 0"/>
+  <parent link="ul_shoulder_1"/>
+  <child link="ul_middleleg_1"/>
+  <axis xyz="-0.0 -1.0 0.0"/>
+</joint>
+
+<joint name="ul_lowerleg_to_upperleg" type="continuous">
+  <origin xyz="0.140968 -0.082 -0.140968" rpy="0 0 0"/>
+  <parent link="ul_middleleg_1"/>
+  <child link="ul_lowerleg_1"/>
+  <axis xyz="-0.0 -1.0 0.0"/>
+</joint>
+
+<joint name="ul_shoulder_to_base_link" type="revolute">
+  <origin xyz="0.21 0.008412 0.475622" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="ul_shoulder_1"/>
+  <axis xyz="-1.0 0.0 0.0"/>
+  <limit upper="0.349066" lower="-0.349066" effort="100" velocity="100"/>
+</joint>
+
+</robot>

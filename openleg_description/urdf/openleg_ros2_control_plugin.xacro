@@ -1,0 +1,46 @@
+<?xml version="1.0" ?>
+<robot name="openleg" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<!--                             ROS 2 Control                                 -->
+<ros2_control name="GazeboSystem" type="system">
+  <hardware>
+    <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+  </hardware>
+  <!-- Shoulder -->
+  
+  <joint name="ul_shoulder_to_base_link">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+  
+  <!-- Upper Leg -->
+  
+  <joint name="ul_upperleg_to_shoulder">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+  
+  <!-- Lower Leg -->
+  
+  <joint name="ul_lowerleg_to_upperleg">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+   
+</ros2_control>
+<!--                           ROS2_Control Gazebo Plugin                        -->
+<gazebo>
+    <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
+      <parameters>$(find openleg_description)/config/openleg_controller.yaml</parameters>
+    </plugin>
+  </gazebo>
+</robot>

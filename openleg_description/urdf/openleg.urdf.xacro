@@ -1,0 +1,21 @@
+<?xml version="1.0" ?>
+<robot name="openleg" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<!-- Configuration of Robot Links-->  
+
+<xacro:include filename="$(find openleg_description)/urdf/openleg_urdf_links.xacro" />
+
+<!-- Configuration of Robot Joints-->  
+
+<xacro:include filename="$(find openleg_description)/urdf/openleg_urdf_joints.xacro" />
+
+<!-- Configuration of Ros2_control-->  
+
+<xacro:include filename="$(find openleg_description)/urdf/openleg_ros2_control_plugin.xacro" />
+
+<!-- Other Configurations-->
+
+<xacro:include filename="$(find openleg_description)/urdf/openleg.trans" />
+<xacro:include filename="$(find openleg_description)/urdf/openleg.gazebo" />
+
+</robot>
