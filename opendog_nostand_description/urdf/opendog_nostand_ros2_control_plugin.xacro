@@ -1,0 +1,121 @@
+<?xml version="1.0" ?>
+<robot name="openleg" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<!--                             ROS 2 Control                                 -->
+<ros2_control name="GazeboSystem" type="system">
+  <hardware>
+    <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+  </hardware>
+
+  <!-- Shoulders and Hips -->
+
+  <joint name="ur_shoulder_to_base_link">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+  
+  <joint name="ul_shoulder_to_base_link">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+  
+  <joint name="lr_hip_to_base_link">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+  
+  <joint name="ll_hip_to_base_link">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+  
+  <!-- Upper Legs -->
+  
+  <joint name="ur_upperleg_to_shoulder">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+  
+  <joint name="ul_upperleg_to_shoulder">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+  
+  <joint name="lr_upperleg_to_hip">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+  
+  <joint name="ll_upperleg_to_hip">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+  
+  <!-- Lower Legs -->
+  
+  <joint name="ur_lowerleg_to_upperleg">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+  
+  <joint name="ul_lowerleg_to_upperleg">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+  
+  <joint name="lr_lowerleg_to_upperleg">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+  
+  <joint name="ll_lowerleg_to_upperleg">
+   <command_interface name="position"/>
+   <state_interface name="position">
+     <param name="initial_value">0.0</param>
+   </state_interface>
+   <state_interface name="velocity"/>
+  </joint>
+   
+</ros2_control>
+<!--                           End ROS 2 Control                        -->
+<!--                           Gazebo plugin                        -->
+<gazebo>
+  <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
+    <parameters>$(find opendog_gazebosim)/config/opendog_controllers.yaml</parameters>
+  </plugin>
+</gazebo>
+<!--                           End Gazebo plugin                        -->
+</robot>
