@@ -1,4 +1,4 @@
-openDog V3 ROS2 Humble:
+**openDog V3 ROS2 Humble:**
 The following project intends to integrate ROS2 into the openDog V3 of James Bruton (XRobots) and provide a simulation environment for testing of new functions.
 
 **Launch Gazebo simulation with stand:**
