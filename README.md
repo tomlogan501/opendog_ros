@@ -7,8 +7,18 @@ ros2 launch opendog_launch opendog_stand_gazebo.launch.py
 Launch Gazebo simulation without stand:
 ros2 launch opendog_launch opendog_nostand_gazebo.launch.py 
 
+Launch Gazebo control simulation:
+ros2 launch opendog_gazebosim opendog_gazebosim.launch.py 
+ros2 launch opendog_launch opendog.launch.py
 
-TODO list:
-Add Inverse kinematics node into a control package
-Add control node into control package
-Add teleop for a logitech gamepad into a teleop package 
+	Gamepad control:
+	Start:	wake up, sleep
+	Y,B	gait type (Y (walk), B(trot)) 
+	Select:	gait Start/Stop
+	
+	Right joystick: increase movement pace, walking direction
+	Left joystick:	Pitch (Y axis) and Roll (X axis)
+	D-pad:		Change height of robot (Y axis)
+	LT, RT:		Yaw Counter Clock Wise, Yaw Clock Wise
+	
+
