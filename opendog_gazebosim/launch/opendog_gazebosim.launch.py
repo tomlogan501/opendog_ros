@@ -47,9 +47,6 @@ gazebo_controller = 'opendog_joint_controller'
  
 def generate_launch_description():
 
-  headless = LaunchConfiguration('headless')
-  use_sim_time = LaunchConfiguration('use_sim_time')
-  use_simulator = LaunchConfiguration('use_simulator')
   world = LaunchConfiguration('world')
  
   declare_simulator_cmd = DeclareLaunchArgument(
@@ -59,13 +56,8 @@ def generate_launch_description():
      
   declare_use_sim_time_cmd = DeclareLaunchArgument(
     name='use_sim_time',
-    default_value='true',
-    description='Use simulation (Gazebo) clock if true')
- 
-  declare_use_simulator_cmd = DeclareLaunchArgument(
-    name='use_simulator',
     default_value='True',
-    description='Whether to start the simulator')
+    description='Use simulation (Gazebo) clock if true')
  
   declare_world_cmd = DeclareLaunchArgument(
     name='world',
@@ -107,18 +99,18 @@ def generate_launch_description():
   # Start Gazebo server
   start_gazebo_server_cmd = IncludeLaunchDescription(
     PythonLaunchDescriptionSource(os.path.join(pkg_gazebo_ros, 'launch', 'gzserver.launch.py')),
-    condition=IfCondition(use_simulator),
     launch_arguments={'world': world}.items())
  
   # Start Gazebo client    
   start_gazebo_client_cmd = IncludeLaunchDescription(
-    PythonLaunchDescriptionSource(os.path.join(pkg_gazebo_ros, 'launch', 'gzclient.launch.py')),
-    condition=IfCondition(PythonExpression([use_simulator, ' and not ', headless])))
+    PythonLaunchDescriptionSource(os.path.join(pkg_gazebo_ros, 'launch', 'gzclient.launch.py')))
  
 
   # Create the launch description and populate
-  return  LaunchDescription([    
-
+  return  LaunchDescription([  
+    declare_world_cmd,  
+    start_gazebo_server_cmd,
+    start_gazebo_client_cmd,
     RegisterEventHandler(
       event_handler=OnProcessExit(
         target_action=spawn_entity,
@@ -131,14 +123,8 @@ def generate_launch_description():
         on_exit=[laod_forward_command_controller],
       )
     ),
-    declare_simulator_cmd,
-    declare_use_sim_time_cmd,
-    declare_use_simulator_cmd,
-    declare_world_cmd,
-
-    start_gazebo_server_cmd,
-    start_gazebo_client_cmd,
-
+    # declare_simulator_cmd,
+    # declare_use_sim_time_cmd,
     spawn_entity,
     declare_robot_state_publisher,
     # load_joint_state_controller,
