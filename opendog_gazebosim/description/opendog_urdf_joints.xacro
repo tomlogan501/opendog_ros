@@ -1,0 +1,163 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:include filename="consts.xacro" /> 
+
+    <!-- Limits -->
+    <xacro:macro name="hip_limits">
+        <limit lower="${hip_low_limit}" upper="${hip_up_limit}" velocity="${velocity}" effort="${effort}"/> <!-- effort = 7 -->
+    </xacro:macro>
+    <xacro:macro name="uleg_limits">
+        <limit lower="${uleg_low_limit}" upper="${uleg_up_limit}" velocity="${velocity}" effort="${effort}"/>
+    </xacro:macro>
+    <xacro:macro name="lleg_limits">
+        <limit lower="${lleg_low_limit}" upper="${lleg_up_limit}" velocity="${velocity}" effort="${effort}"/>
+    </xacro:macro>
+
+
+    <!-- ******** world to base joint ********** -->
+    <joint name="world_to_base" type="fixed">
+        <parent link="base_link"/>
+        <child link="world"/>
+    </joint>
+
+    <!-- *********  FR_hip joint ********* -->
+    <joint name="FR_hip_joint" type="revolute">
+        <axis xyz="1.0 -0.0 0.0"/>
+        <origin xyz="0.120789 -0.018307 0.263166" rpy="0 0 0"/>
+        <parent link="base_link"/>
+        <child link="FR_hip_link"/>
+        <limit upper="0.349066" lower="-0.349066" effort="100" velocity="100"/>
+        <xacro:if value="${use_dynamics}">
+            <xacro:hip_joint_dynamics></xacro:hip_joint_dynamics>
+        </xacro:if>
+    </joint>
+    <!-- *********  FL_hip  ********* -->
+    <joint name="FL_hip_joint" type="revolute">
+        <axis xyz="-1.0 0.0 -0.0"/>
+        <origin xyz="0.120789 -0.136588 0.263166" rpy="0 0 0"/>
+        <parent link="base_link"/>
+        <child link="FL_hip_link"/>
+        <limit upper="0.349066" lower="-0.785398" effort="100" velocity="100"/>
+        <xacro:if value="${use_dynamics}">
+            <xacro:hip_joint_dynamics></xacro:hip_joint_dynamics>
+        </xacro:if>
+    </joint>
+    <!-- *********  BR_hip  ********* -->
+    <joint name="BR_hip_joint" type="revolute">
+        <axis xyz="1.0 -0.0 -0.0"/>
+        <origin xyz="0.468789 -0.018307 0.263166" rpy="0 0 0"/>
+        <parent link="base_link"/>
+        <child link="BR_hip_link"/>
+        <limit upper="0.349066" lower="-0.785398" effort="100" velocity="100"/>
+        <xacro:if value="${use_dynamics}">
+            <xacro:hip_joint_dynamics></xacro:hip_joint_dynamics>
+        </xacro:if>
+    </joint>
+    <!-- *********  BL_hip  ********* -->
+    <joint name="BL_hip_joint" type="revolute">
+        <axis xyz="-1.0 0.0 0.0"/>
+        <origin xyz="0.468789 -0.136588 0.263166" rpy="0 0 0"/>
+        <parent link="base_link"/>
+        <child link="BL_hip_link"/>
+        <limit upper="0.436332" lower="-0.785398" effort="100" velocity="100"/>
+        <xacro:if value="${use_dynamics}">
+            <xacro:hip_joint_dynamics></xacro:hip_joint_dynamics>
+        </xacro:if>
+    </joint>
+    
+
+
+
+    <!-- *********  FR_uleg joint ********* -->
+    <joint name="FR_uleg_joint" type="revolute">
+        <axis xyz="-0.0 -0.999043 -0.043739"/>
+        <origin xyz="-0.09964 0.066296 0.002902" rpy="0 0 0"/>
+        <parent link="FR_hip_link"/>
+        <child link="FR_uleg_link"/>
+        <xacro:uleg_limits></xacro:uleg_limits>
+        <xacro:if value="${use_dynamics}">
+            <xacro:uleg_joint_dynamics></xacro:uleg_joint_dynamics>
+        </xacro:if>
+    </joint>
+    <!-- *********  FL_uleg  ********* -->
+    <joint name="FL_uleg_joint" type="revolute">
+        <axis xyz="-0.0 -1.0 0.000428"/>
+        <origin xyz="-0.09964 -0.06636 2.8e-05" rpy="0 0 0"/>
+        <parent link="FL_hip_link"/>
+        <child link="FL_uleg_link"/>
+        <xacro:uleg_limits></xacro:uleg_limits>
+        <xacro:if value="${use_dynamics}">
+            <xacro:uleg_joint_dynamics></xacro:uleg_joint_dynamics>
+        </xacro:if>
+    </joint>
+    <!-- *********  BR_uleg  ********* -->
+    <joint name="BR_uleg_joint" type="revolute">
+        <axis xyz="0.0 0.999996 0.002806"/>
+        <origin xyz="0.09964 0.066359 0.000186" rpy="0 0 0"/>
+        <parent link="BR_hip_link"/>
+        <child link="BR_uleg_link"/>
+        <xacro:uleg_limits></xacro:uleg_limits>
+        <xacro:if value="${use_dynamics}">
+            <xacro:uleg_joint_dynamics></xacro:uleg_joint_dynamics>
+        </xacro:if>
+    </joint>
+    <!-- *********  BL_uleg  ********* -->
+    <joint name="BL_uleg_joint" type="revolute">
+        <axis xyz="0.0 1.0 -0.0"/>
+        <origin xyz="0.09964 -0.06636 0.0" rpy="0 0 0"/>
+        <parent link="BL_hip_link"/>
+        <child link="BL_uleg_link"/>
+        <xacro:uleg_limits></xacro:uleg_limits>
+        <xacro:if value="${use_dynamics}">
+            <xacro:uleg_joint_dynamics></xacro:uleg_joint_dynamics>
+        </xacro:if>
+    </joint>
+
+
+
+    <!-- *********  FR_lleg  ********* -->
+    <joint name="FR_lleg_joint" type="revolute">
+        <axis xyz="-0.0 -0.999043 -0.043739"/>
+        <origin xyz="0.143094 0.087993 -0.135091" rpy="0 0 0"/>
+        <parent link="FR_uleg_link"/>
+        <child link="FR_lleg_link"/>
+        <xacro:lleg_limits></xacro:lleg_limits>
+        <xacro:if value="${use_dynamics}">
+            <xacro:lleg_joint_dynamics></xacro:lleg_joint_dynamics>
+        </xacro:if>
+    </joint>
+    <!-- *********  FL_lleg  ********* -->
+    <joint name="FL_lleg_joint" type="revolute">
+        <axis xyz="-0.0 -1.0 0.000428"/>
+        <origin xyz="0.164113 -0.082048 -0.113151" rpy="0 0 0"/>
+        <parent link="FL_uleg_link"/>
+        <child link="FL_lleg_link"/>
+        <xacro:lleg_limits></xacro:lleg_limits>
+        <xacro:if value="${use_dynamics}">
+            <xacro:lleg_joint_dynamics></xacro:lleg_joint_dynamics>
+        </xacro:if>
+    </joint>
+    <!-- *********  BR_lleg  ********* -->
+    <joint name="BR_lleg_joint" type="revolute">
+        <origin xyz="-0.139215 0.0824 -0.14247" rpy="0 0 0"/>
+        <parent link="BR_uleg_link"/>
+        <child link="BR_lleg_link"/>
+        <axis xyz="0.0 0.999996 0.002806"/>
+        <xacro:lleg_limits></xacro:lleg_limits>
+        <xacro:if value="${use_dynamics}">
+            <xacro:lleg_joint_dynamics></xacro:lleg_joint_dynamics>
+        </xacro:if>
+    </joint>
+    <!-- *********  BL_lleg  ********* -->
+    <joint name="BL_lleg_joint" type="revolute">
+        <axis xyz="0.0 1.0 -0.0"/>
+        <origin xyz="-0.140969 -0.082 -0.140969" rpy="0 0 0"/>
+        <parent link="BL_uleg_link"/>
+        <child link="BL_lleg_link"/>
+        <xacro:lleg_limits></xacro:lleg_limits>
+        <xacro:if value="${use_dynamics}">
+            <xacro:lleg_joint_dynamics></xacro:lleg_joint_dynamics>
+        </xacro:if>
+    </joint>
+</robot>

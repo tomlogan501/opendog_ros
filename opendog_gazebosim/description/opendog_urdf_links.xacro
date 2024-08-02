@@ -1,0 +1,330 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+    <xacro:include filename="consts.xacro" /> 
+    <xacro:include filename="physics.xacro" /> 
+
+
+    <!-- load meshes -->
+    <xacro:macro name="body_mesh">
+        <mesh filename="file://$(find opendog_gazebosim)/meshes/body.stl" scale="0.001 0.001 0.001"/>
+    </xacro:macro>
+    <xacro:macro name="rightHip_mesh">
+        <mesh filename="file://$(find opendog_gazebosim)/meshes/RIGHT_HIP.stl" scale="0.001 0.001 0.001"/>
+    </xacro:macro>
+    <xacro:macro name="leftHip_mesh">
+        <mesh filename="file://$(find opendog_gazebosim)/meshes/LEFT_HIP.stl" scale="0.001 0.001 0.001"/>
+    </xacro:macro>
+    <xacro:macro name="rightUleg_mesh">
+        <mesh filename="file://$(find opendog_gazebosim)/meshes/RIGHT_ULEG.stl" scale="0.001 0.001 0.001"/>
+    </xacro:macro>
+    <xacro:macro name="leftUleg_mesh">
+        <mesh filename="file://$(find opendog_gazebosim)/meshes/LEFT_ULEG.stl" scale="0.001 0.001 0.001"/>
+    </xacro:macro>
+    <xacro:macro name="lleg_mesh">
+        <mesh filename="file://$(find opendog_gazebosim)/meshes/LLEG.stl" scale="0.001 0.001 0.001"/>
+    </xacro:macro>
+   
+
+
+    <!-- *********** Inertial link *********** -->
+    <link name="world">
+    </link>
+
+
+    <!-- *********** base link *********** -->
+    <link name="base_link">
+        <inertial>
+          <origin xyz="0.2952464243198414 -0.07744895683312651 0.2642167275872589" rpy="0 0 0"/>
+          <mass value="5"/>
+          <inertia ixx="0.761631" iyy="4.077449" izz="3.905689" ixy="-0.001055" iyz="-0.000345" ixz="0.05479"/>
+        </inertial>
+        <visual>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <geometry>
+            <mesh filename="file://$(find opendog_gazebosim)/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+          </geometry>
+          
+        </visual>
+        <collision>
+          <origin xyz="0 0 0" rpy="0 0 0"/>
+          <geometry>
+            <mesh filename="file://$(find opendog_gazebosim)/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+          </geometry>
+        </collision>
+    </link>
+
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!! HIPS !!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+    <!-- *********** FR_hip *********** -->
+    <link name="FR_hip_link">
+        <inertial>
+            <origin xyz="-0.0978580055625883 0.022211154148892714 0.0011350968600437605" rpy="0 0 0"/>
+            <mass value="2"/>
+            <inertia ixx="0.012708" iyy="0.026996" izz="0.026264" ixy="-0.000651" iyz="8.1e-05" ixz="-1.7e-05"/>
+        </inertial>
+        <visual>
+            <origin xyz="-0.120789 0.018307 -0.263166" rpy="0 0 0"/>
+            <geometry>
+              <mesh filename="file://$(find opendog_gazebosim)/meshes/ur_shoulder_1.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+            
+        </visual>
+        <collision>
+            <origin xyz="-0.120789 0.018307 -0.263166" rpy="0 0 0"/>
+            <geometry>
+              <mesh filename="file://$(find opendog_gazebosim)/meshes/ur_shoulder_1.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+        </collision>
+    </link>
+    <!-- *********** FL_hip ********** -->
+    <link name="FL_hip_link">
+        <inertial>
+            <origin xyz="-0.09797126193747194 -0.02210793721336457 0.00017264300535746457" rpy="0 0 0"/>
+            <mass value="2"/>
+            <inertia ixx="0.012737" iyy="0.027034" izz="0.026319" ixy="0.000689" iyz="-4.8e-05" ixz="1.1e-05"/>
+        </inertial>
+        <visual>
+            <origin xyz="-0.120789 0.136588 -0.263166" rpy="0 0 0"/>
+            <geometry>
+              <mesh filename="file://$(find opendog_gazebosim)/meshes/ul_shoulder_1.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+            
+        </visual>
+        <collision>
+            <origin xyz="-0.120789 0.136588 -0.263166" rpy="0 0 0"/>
+            <geometry>
+              <mesh filename="file://$(find opendog_gazebosim)/meshes/ul_shoulder_1.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+        </collision>
+    </link>
+    <!-- *********** BR_hip ********** -->
+    <link name="BR_hip_link">
+        <inertial>
+            <origin xyz="0.09785770638545477 0.022239015222669276 0.0002249055293677138" rpy="0 0 0"/>
+            <mass value="2"/>
+            <inertia ixx="0.012708" iyy="0.027002" izz="0.026258" ixy="0.000651" iyz="5e-05" ixz="-1e-05"/>
+        </inertial>
+        <visual>
+            <origin xyz="-0.468789 0.018307 -0.263166" rpy="0 0 0"/>
+            <geometry>
+              <mesh filename="file://$(find opendog_gazebosim)/meshes/lr_hip_1.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+            
+        </visual>
+        <collision>
+            <origin xyz="-0.468789 0.018307 -0.263166" rpy="0 0 0"/>
+            <geometry>
+              <mesh filename="file://$(find opendog_gazebosim)/meshes/lr_hip_1.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+        </collision>
+    </link>
+    <!-- *********** BL_hip ********** -->
+    <link name="BL_hip_link">
+        <inertial>
+            <origin xyz="0.09785589272231132 -0.02214347440508449 0.00015857382629103078" rpy="0 0 0"/>
+            <mass value="2"/>
+            <inertia ixx="0.012784" iyy="0.027006" izz="0.026333" ixy="-0.000657" iyz="-4.9e-05" ixz="-1.1e-05"/>
+        </inertial>
+        <visual>
+            <origin xyz="-0.468789 0.136588 -0.263166" rpy="0 0 0"/>
+            <geometry>
+              <mesh filename="file://$(find opendog_gazebosim)/meshes/ll_hip_1.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+            
+        </visual>
+        <collision>
+            <origin xyz="-0.468789 0.136588 -0.263166" rpy="0 0 0"/>
+            <geometry>
+              <mesh filename="file://$(find opendog_gazebosim)/meshes/ll_hip_1.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+        </collision>
+    </link>
+
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!! ULEGs !!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+    <!-- *********** FR_uleg ********** -->
+    <link name="FR_uleg_link">
+        <inertial>
+            <origin xyz="0.02695714675071178 0.0558355231259501 -0.02405284229057822" rpy="0 0 0"/>
+            <mass value="2.7"/>
+            <inertia ixx="0.060385" iyy="0.086191" izz="0.061956" ixy="0.004251" iyz="-0.003909" ixz="0.027901"/>
+        </inertial>
+        <visual>
+            <origin xyz="-0.021149 -0.047989 -0.266068" rpy="0 0 0"/>
+            <geometry>
+              <mesh filename="file://$(find opendog_gazebosim)/meshes/ur_middleleg_1.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+            
+        </visual>
+        <collision>
+            <origin xyz="-0.021149 -0.047989 -0.266068" rpy="0 0 0"/>
+            <geometry>
+              <mesh filename="file://$(find opendog_gazebosim)/meshes/ur_middleleg_1.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+        </collision>
+    </link>
+    <!-- *********** FL_uleg ********** -->
+    <link name="FL_uleg_link">
+        <inertial>
+            <origin xyz="0.03096990835496126 -0.05473890368922821 -0.021616826562582653" rpy="0 0 0"/>
+            <mass value="2.7"/>
+            <inertia ixx="0.051391" iyy="0.085806" izz="0.071334" ixy="-0.006201" iyz="0.003973" ixz="0.025851"/>
+        </inertial>
+        <visual>
+            <origin xyz="-0.021149 0.202948 -0.263194" rpy="0 0 0"/>
+            <geometry>
+              <mesh filename="file://$(find opendog_gazebosim)/meshes/ul_middleleg_1.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+            
+        </visual>
+        <collision>
+            <origin xyz="-0.021149 0.202948 -0.263194" rpy="0 0 0"/>
+            <geometry>
+              <mesh filename="file://$(find opendog_gazebosim)/meshes/ul_middleleg_1.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+        </collision>
+    </link>
+    <!-- *********** BR_uleg ********** -->
+    <link name="BR_uleg_link">
+        <inertial>
+            <origin xyz="-0.0262175718604698 0.05480638461580738 -0.027051181506407118" rpy="0 0 0"/>
+            <mass value="2.7"/>
+            <inertia ixx="0.061911" iyy="0.085831" izz="0.060788" ixy="-0.005251" iyz="-0.005031" ixz="-0.027715"/>
+        </inertial>
+        <visual>
+            <origin xyz="-0.568429 -0.048052 -0.263352" rpy="0 0 0"/>
+            <geometry>
+              <mesh filename="file://$(find opendog_gazebosim)/meshes/lr_middleleg_1.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+            
+        </visual>
+        <collision>
+            <origin xyz="-0.568429 -0.048052 -0.263352" rpy="0 0 0"/>
+            <geometry>
+              <mesh filename="file://$(find opendog_gazebosim)/meshes/lr_middleleg_1.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+        </collision>
+    </link>
+    <!-- *********** BL_uleg ********** -->
+    <link name="BL_uleg_link">
+        <inertial>
+            <origin xyz="-0.026552103840778662 -0.054729650997543317 -0.026879014160538728" rpy="0 0 0"/>
+            <mass value="2.7"/>
+            <inertia ixx="0.061226" iyy="0.085803" izz="0.061502" ixy="0.005391" iyz="0.005035" ixz="-0.027705"/>
+        </inertial>
+        <visual>
+            <origin xyz="-0.568429 0.202948 -0.263166" rpy="0 0 0"/>
+            <geometry>
+              <mesh filename="file://$(find opendog_gazebosim)/meshes/ll_middleleg_1.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+            
+        </visual>
+        <collision>
+            <origin xyz="-0.568429 0.202948 -0.263166" rpy="0 0 0"/>
+            <geometry>
+              <mesh filename="file://$(find opendog_gazebosim)/meshes/ll_middleleg_1.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+        </collision>
+    </link>
+
+
+    <!-- !!!!!!!!!!!!!!!!!!!!!!! LLEGs !!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
+
+    <!-- *********** FR_lleg ********** -->
+    <link name="FR_lleg_link">
+        <inertial>
+            <origin xyz="-0.05977620454383023 -0.03838893551235807 -0.041628896795266934" rpy="0 0 0"/>
+            <mass value="0.3"/>
+            <inertia ixx="0.007726" iyy="0.021253" izz="0.015039" ixy="0.000248" iyz="0.00018" ixz="-0.008798"/>
+        </inertial>
+        <visual>
+            <origin xyz="-0.164243 -0.135982 -0.130977" rpy="0 0 0"/>
+            <geometry>
+              <mesh filename="file://$(find opendog_gazebosim)/meshes/ur_lowerleg_1.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+            
+        </visual>
+        <collision>
+            <origin xyz="-0.164243 -0.135982 -0.130977" rpy="0 0 0"/>
+            <geometry>
+              <mesh filename="file://$(find opendog_gazebosim)/meshes/ur_lowerleg_1.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+        </collision>
+    </link>
+    <!-- *********** FL_lleg ********** -->
+    <link name="FL_lleg_link">
+        <inertial>
+            <origin xyz="-0.06724699359315146 0.04018076418942282 -0.048053981913996055" rpy="0 0 0"/>
+            <mass value="0.3"/>
+            <inertia ixx="0.010996" iyy="0.029242" izz="0.019764" ixy="0.000158" iyz="0.000113" ixz="-0.012783"/>
+        </inertial>
+        <visual>
+            <origin xyz="-0.185262 0.284996 -0.150043" rpy="0 0 0"/>
+            <geometry>
+              <mesh filename="file://$(find opendog_gazebosim)/meshes/ul_lowerleg_1.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+            
+        </visual>
+        <collision>
+            <origin xyz="-0.185262 0.284996 -0.150043" rpy="0 0 0"/>
+            <geometry>
+              <mesh filename="file://$(find opendog_gazebosim)/meshes/ul_lowerleg_1.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+        </collision>
+    </link>
+      <!-- *********** BR_lleg ********** -->
+    <link name="BR_lleg_link">
+        <inertial>
+            <origin xyz="0.062326463733643256 -0.04007198062978043 -0.03590980750154857" rpy="0 0 0"/>
+            <mass value="0.3"/>
+            <inertia ixx="0.006577" iyy="0.021257" izz="0.016183" ixy="0.00012" iyz="-6.8e-05" ixz="0.00823"/>
+        </inertial>
+        <visual>
+            <origin xyz="-0.429214 -0.130452 -0.120882" rpy="0 0 0"/>
+            <geometry>
+              <mesh filename="file://$(find opendog_gazebosim)/meshes/lr_lowerleg_2.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+            
+        </visual>
+        <collision>
+            <origin xyz="-0.429214 -0.130452 -0.120882" rpy="0 0 0"/>
+            <geometry>
+              <mesh filename="file://$(find opendog_gazebosim)/meshes/lr_lowerleg_2.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+        </collision>
+    </link>
+    <!-- *********** BL_lleg ********** -->
+    <link name="BL_lleg_link">
+        <inertial>
+            <origin xyz="0.06224424376041954 0.04017328339327439 -0.03594025105485621" rpy="0 0 0"/>
+            <mass value="0.3"/>
+            <inertia ixx="0.006615" iyy="0.021256" izz="0.016145" ixy="-0.000143" iyz="8.3e-05" ixz="0.008252"/>
+        </inertial>
+        <visual>
+            <origin xyz="-0.42746 0.284948 -0.122197" rpy="0 0 0"/>
+            <geometry>
+              <mesh filename="file://$(find opendog_gazebosim)/meshes/ll_lowerLeg_1.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+            
+        </visual>
+        <collision>
+            <origin xyz="-0.42746 0.284948 -0.122197" rpy="0 0 0"/>
+            <geometry>
+              <mesh filename="file://$(find opendog_gazebosim)/meshes/ll_lowerLeg_1.stl" scale="0.001 0.001 0.001"/>
+            </geometry>
+            <surface>
+                <friction>
+                    <ode>
+                        <mu>1</mu>
+                        <mu2>1</mu2>
+                        <fdir1>1 0 0</fdir1>
+                    </ode>
+                </friction>
+            </surface>
+        </collision>
+    </link>
+
+</robot>

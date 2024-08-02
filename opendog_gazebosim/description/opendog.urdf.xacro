@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="opendog">
+
+
+    <!-- ***************  CONFIGURE ROBOT"S LINKS  *******************-->
+   
+    <xacro:include filename="opendog_urdf_links.xacro" /> 
+
+    <!-- ***************  CONFIGURE ROBOT"S JOINTS  *******************-->
+    <xacro:include filename="opendog_urdf_joints.xacro" /> 
+
+
+    <!-- ****************   INCLUDES OTHER FILES  ******************* -->
+    <xacro:include filename="gazebo_ros2_control_plugin.xacro" /> 
+    <xacro:include filename="opendog_gazebo.xacro" />
+
+
+
+</robot>
