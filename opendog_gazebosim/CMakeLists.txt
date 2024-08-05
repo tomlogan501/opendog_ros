@@ -47,7 +47,6 @@ fake_odom
 ) 
 
 install(DIRECTORY
-  config
   description
   launch
   meshes

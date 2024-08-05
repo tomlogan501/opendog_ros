@@ -1,0 +1,136 @@
+<?xml version="1.0" ?>
+<robot name="opendog_nostand" xmlns:xacro="http://www.ros.org/wiki/xacro" >
+
+<transmission name="FR_hip_joint_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="FR_hip_joint">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="FR_hip_joint_actr">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+<transmission name="FR_uleg_joint_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="FR_uleg_joint">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="FR_uleg_joint_actr">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+<transmission name="FL_hip_joint_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="FL_hip_joint">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="FL_hip_joint_actr">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+<transmission name="FL_uleg_joint_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="FL_uleg_joint">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="FL_uleg_joint_actr">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+<transmission name="BL_hip_joint_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="BL_hip_joint">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="BL_hip_joint_actr">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+<transmission name="ll_upperleg_to_hip_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="ll_upperleg_to_hip">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="ll_upperleg_to_hip_actr">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+<transmission name="lr_hip_to_base_link_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="lr_hip_to_base_link">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="lr_hip_to_base_link_actr">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+<transmission name="lr_upperleg_to_hip_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="lr_upperleg_to_hip">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="lr_upperleg_to_hip_actr">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+<transmission name="lr_lowerleg_to_upperleg_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="lr_lowerleg_to_upperleg">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="lr_lowerleg_to_upperleg_actr">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+<transmission name="ll_lowerleg_to_upperleg_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="ll_lowerleg_to_upperleg">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="ll_lowerleg_to_upperleg_actr">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+<transmission name="ul_lowerleg_to_upperleg_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="ul_lowerleg_to_upperleg">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="ul_lowerleg_to_upperleg_actr">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+<transmission name="ur_lowerleg_to_upperleg_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="ur_lowerleg_to_upperleg">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="ur_lowerleg_to_upperleg_actr">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+</robot>
