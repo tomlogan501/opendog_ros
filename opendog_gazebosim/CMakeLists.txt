@@ -49,7 +49,6 @@ fake_odom
 install(DIRECTORY
   description
   launch
-  meshes
   worlds
   src
   DESTINATION share/${PROJECT_NAME}
