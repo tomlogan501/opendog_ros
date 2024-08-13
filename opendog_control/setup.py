@@ -5,7 +5,7 @@ package_name = 'opendog_control'
 setup(
     name=package_name,
     version='0.0.0',
-    packages=['IK', 'cmd_manager', 'body_motion_planner', 'gait_generator'],
+    packages=['IK', 'cmd_manager', 'body_motion_planner', 'gait_generator', 'config'],
     data_files=[
         ('share/ament_index/resource_index/packages',
             ['resource/' + package_name]),
