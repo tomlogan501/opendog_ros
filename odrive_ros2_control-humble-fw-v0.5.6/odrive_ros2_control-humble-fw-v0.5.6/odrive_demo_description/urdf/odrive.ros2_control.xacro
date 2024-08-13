@@ -35,3 +35,13 @@
   </xacro:macro>
 
 </robot>
+
+<!--
+Odrive Serial Numbers:
+Odrive 0: 335836543539
+Odrive 1: 3359366C3539
+Odrive 2: 3359366F3539
+Odrive 3: 335436563539
+Odrive 4: 3673385F3030
+Odrive 5: 335536633539
+-->
