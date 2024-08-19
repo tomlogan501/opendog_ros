@@ -49,6 +49,18 @@ def generate_launch_description():
 
   world = LaunchConfiguration('world')
  
+ # Set the path to this package.
+  pkg_share = FindPackageShare(package='opendog_gazebosim').find('opendog_gazebosim')
+ 
+  # Set the path to the world file
+  world_file_name = 'contact.world'
+  world_path = os.path.join(pkg_share, 'worlds', world_file_name)
+   
+  # Set the path to the SDF model files.
+  # gazebo_models_path = os.path.join(pkg_share, 'models')
+  # os.environ["GAZEBO_MODEL_PATH"] = gazebo_models_path
+
+
   declare_simulator_cmd = DeclareLaunchArgument(
     name='headless',
     default_value='False',
@@ -61,7 +73,7 @@ def generate_launch_description():
  
   declare_world_cmd = DeclareLaunchArgument(
     name='world',
-    default_value='empty.world',#world_path,
+    default_value=world_path,
     description='Full path to the world model file to load')
 
   declare_robot_state_publisher = Node(
@@ -79,7 +91,8 @@ def generate_launch_description():
     
   spawn_entity = Node(package='gazebo_ros', executable='spawn_entity.py', 
                     arguments=['-topic', 'robot_description',
-                               '-entity', 'openDog_V3'],
+                               '-entity', 'openDog_V3',
+                               '-z', '0.02'],
                     output='screen')
 
   load_joint_state_controller = ExecuteProcess(
