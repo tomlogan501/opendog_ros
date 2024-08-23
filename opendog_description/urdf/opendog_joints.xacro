@@ -11,7 +11,7 @@
 
     <!-- *********  FR_hip joint ********* -->
     <joint name="FR_hip_joint" type="revolute">
-        <origin xyz="0.005372 -0.029025 0.34267" rpy="0 0 0"/>
+        <origin xyz="${base_link_depth/2} ${base_link_width/2} ${base_link_height/2}" rpy="0 0 0"/>
         <parent link="base_link"/>
         <child link="FR_hip_link"/>
         <axis xyz="1.0 -0.0 0.0"/>
@@ -19,7 +19,7 @@
     </joint>
     <!-- *********  FL_hip  ********* -->
     <joint name="FL_hip_joint" type="revolute">
-        <origin xyz="0.005091 -0.147198 0.340765" rpy="0 0 0"/>
+        <origin xyz="${base_link_depth/2} -${base_link_width/2} ${base_link_height/2}" rpy="0 0 0"/>
         <parent link="base_link"/>
         <child link="FL_hip_link"/>
         <axis xyz="-1.0 0.0 -0.0"/>
@@ -27,7 +27,7 @@
     </joint>
     <!-- *********  BR_hip  ********* -->
     <joint name="BR_hip_joint" type="revolute">
-        <origin xyz="0.471531 -0.028918 0.340765" rpy="0 0 0"/>
+        <origin xyz="-${base_link_depth/2} ${base_link_width/2} ${base_link_height/2}" rpy="0 0 0"/>
         <parent link="base_link"/>
         <child link="BR_hip_link"/>
         <axis xyz="1.0 -0.0 -0.0"/>
@@ -35,7 +35,7 @@
     </joint>
     <!-- *********  BL_hip  ********* -->
     <joint name="BL_hip_joint" type="revolute">
-        <origin xyz="0.471531 -0.147198 0.340765" rpy="0 0 0"/>
+        <origin xyz="-${base_link_depth/2} -${base_link_width/2} ${base_link_height/2}" rpy="0 0 0"/>
         <parent link="base_link"/>
         <child link="BL_hip_link"/>
         <axis xyz="-1.0 0.0 0.0"/>

@@ -2,6 +2,8 @@
 
 <robot name="consts" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
+    <xacro:property name="M_PI"  value="3.14159"/>
+
     <!-- joint limits -->
     <xacro:property name="hip_low_limit"  value="-1.57"/>
     <xacro:property name="hip_up_limit"   value="1.57"/>
@@ -24,8 +26,21 @@
         <dynamics damping="0.01" friction="10000"/>
     </xacro:macro>
 
+    <xacro:property name="base_link_width" value="0.25"/>
+    <xacro:property name="base_link_height" value="0.28"/>
+    <xacro:property name="base_link_depth" value="0.875"/>
+
+    <xacro:property name="hip_link_length" value="0.20"/>
+    <xacro:property name="hip_link_radius" value="0.05"/>
+
+    <xacro:property name="uleg_link_radius" value="0.025"/>
+    <xacro:property name="lleg_link_radius" value="0.025"/>
+
+    <xacro:property name="uleg_link_length" value="0.20"/>
+    <xacro:property name="lleg_link_length" value="0.22"/>
+
     <!-- configure inertia -->
-    <xacro:property name="body_mass" value="3"/>
+    <xacro:property name="body_mass" value="50"/>
     <xacro:property name="body_inertia_x_len" value="0.28"/>
     <xacro:property name="body_inertia_y_len" value="0.172"/>
     <xacro:property name="body_inertia_z_len" value="0.04"/>
