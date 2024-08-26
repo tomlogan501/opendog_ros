@@ -40,8 +40,8 @@ class LegWalkingController(Node):
         point.time_from_start.nanosec = int(0.15 * 1e9)  # 0.05 seconds execution time (matching timer period)
 
         # Optional: Add velocity and acceleration to smooth out transitions
-        point.velocities = [0.7, 0.7, 0.7, 0.7]  # Adjust as necessary
-        point.accelerations = [0.2, 0.2, 0.2, 0.2]  # Adjust as necessary
+        #point.velocities = [0.7, 0.7, 0.7, 0.7]  # Adjust as necessary
+        #point.accelerations = [0.2, 0.2, 0.2, 0.2]  # Adjust as necessary
 
         msg.points.append(point)
 
