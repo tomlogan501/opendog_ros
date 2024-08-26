@@ -1,0 +1,83 @@
+<?xml version="1.0" ?>
+<robot name="TestBench" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<xacro:include filename="$(find TestBench_description)/urdf/materials.xacro" />
+<xacro:include filename="$(find TestBench_description)/urdf/TestBench.trans" />
+<xacro:include filename="$(find TestBench_description)/urdf/TestBench.gazebo" />
+<link name="base_link">
+  <inertial>
+    <origin xyz="0.025000000000000407 0.00940744810008609 0.2260239908580434" rpy="0 0 0"/>
+    <mass value="9.047969930257539"/>
+    <inertia ixx="0.147715" iyy="0.148792" izz="0.005766" ixy="0.0" iyz="0.003846" ixz="-0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find TestBench_description)/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find TestBench_description)/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="drive_1">
+  <inertial>
+    <origin xyz="-1.825550659889999e-05 -0.03798953196655614 0.0001061912256529185" rpy="0 0 0"/>
+    <mass value="0.9118420794553316"/>
+    <inertia ixx="0.000573" iyy="0.000716" izz="0.000573" ixy="-0.0" iyz="1e-06" ixz="0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.025 0.008 -0.39" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find TestBench_description)/meshes/drive_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.025 0.008 -0.39" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find TestBench_description)/meshes/drive_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="stick_1">
+  <inertial>
+    <origin xyz="0.11696268033906883 -0.00500003450010815 -3.359650847523099e-07" rpy="0 0 0"/>
+    <mass value="0.8352549817917543"/>
+    <inertia ixx="0.000117" iyy="0.005043" izz="0.00494" ixy="-0.0" iyz="0.0" ixz="0.0"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.02494 0.07217 -0.390214" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find TestBench_description)/meshes/stick_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="silver"/>
+  </visual>
+  <collision>
+    <origin xyz="-0.02494 0.07217 -0.390214" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find TestBench_description)/meshes/stick_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<joint name="drive_to_base_link" type="fixed">
+  <origin xyz="0.025 -0.008 0.39" rpy="0 0 0"/>
+  <parent link="base_link"/>
+  <child link="drive_1"/>
+</joint>
+
+<joint name="driver_joint" type="continuous">
+  <origin xyz="-6e-05 -0.06417 0.000214" rpy="0 0 0"/>
+  <parent link="drive_1"/>
+  <child link="stick_1"/>
+  <axis xyz="0.0 -1.0 0.0"/>
+</joint>
+
+</robot>

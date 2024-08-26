@@ -1,0 +1,37 @@
+<?xml version="1.0" ?>
+<robot name="openleg" xmlns:xacro="http://www.ros.org/wiki/xacro" >
+
+<transmission name="ul_middleleg_to_shoulder_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="ul_middleleg_to_shoulder">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="ul_middleleg_to_shoulder_actr">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+<transmission name="ul_lower_leg_to_middleleg_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="ul_lower_leg_to_middleleg">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="ul_lower_leg_to_middleleg_actr">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+<transmission name="ul_shoulder_to_base_tran">
+  <type>transmission_interface/SimpleTransmission</type>
+  <joint name="ul_shoulder_to_base">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+  </joint>
+  <actuator name="ul_shoulder_to_base_actr">
+    <hardwareInterface>hardware_interface/EffortJointInterface</hardwareInterface>
+    <mechanicalReduction>1</mechanicalReduction>
+  </actuator>
+</transmission>
+
+</robot>

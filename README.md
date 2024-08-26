@@ -1,26 +1,7 @@
-**openDog V3 ROS2 Humble:**
-The following project intends to integrate ROS2 into the openDog V3 of James Bruton (XRobots) and provide a simulation environment for testing of new functions.
+The following packages were used for testing purposes of a single leg of the quadruped robot openDog V3 in ROS 2 Humble.
 
-**Launch Gazebo simulation with stand:**
-ros2 launch opendog_launch opendog_stand_gazebo.launch.py 
+Launch Gazebo simulation:
+ros2 launch openleg_description gazebo.launch.py
 
-**Launch Gazebo simulation without stand:**
-ros2 launch opendog_launch opendog_nostand_gazebo.launch.py 
-
-**Launch Gazebo control simulation:**
-ros2 launch opendog_gazebosim opendog_gazebosim.launch.py 
-ros2 launch opendog_launch opendog.launch.py
-
-	Gamepad control:
-	Start:	wake up, sleep
-	Y,B	gait type (Y (walk), B(trot)) 
-	Select:	gait Start/Stop
-	
-	Right joystick: increase movement pace, walking direction
-	Left joystick:	Pitch (Y axis) and Roll (X axis)
-	D-pad:		Change height of robot (Y axis)
-	LT, RT:		Yaw Counter Clock Wise, Yaw Clock Wise
-	
-**openDog Gazebo Joint Description:** 
-![image](https://github.com/user-attachments/assets/2409e027-cc88-40f4-a32e-5609ceb9876c)
-![image](https://github.com/user-attachments/assets/07b3bac3-a7cb-406e-9f13-927aad491ba8)
+Run testing movement node:
+ros2 run openleg_description leg_vertical_circle

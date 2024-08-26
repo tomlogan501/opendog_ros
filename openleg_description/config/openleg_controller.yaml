@@ -1,0 +1,33 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 1000 # Hz
+
+    joint_trajectory_controller:     
+      type: joint_trajectory_controller/JointTrajectoryController
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+joint_trajectory_controller:  
+  ros__parameters:
+    joints:
+      - ul_shoulder_to_base_link
+      - ul_upperleg_to_shoulder
+      - ul_lowerleg_to_upperleg
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity
+      
+   
+# Add Hardware Interface section
+hardware_interface:
+  ros__parameters:
+  #Use simulated or real joint state interface
+    joint_state_controller:
+      type: joint_state_controller/JointStateController
+      joints:
+        - ul_shoulder_to_base_link
+        - ul_upperleg_to_shoulder
+        - ul_lowerleg_to_upperleg

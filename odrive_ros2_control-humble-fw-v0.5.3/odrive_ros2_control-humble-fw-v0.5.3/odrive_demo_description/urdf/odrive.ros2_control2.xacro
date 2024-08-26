@@ -1,0 +1,90 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="odrive_ros2_control" 
+  	params="name 
+  		enable_joint6:=^|true enable_joint7:=^|true
+  		enable_joint10:=^|true enable_joint11:=^|true 
+  		joint6_name:=^|joint6 joint7_name:=^|joint7
+  		joint10_name:=^|joint10 joint11_name:=^|joint11">
+
+
+    <ros2_control name="${name}" type="system">
+      <hardware>
+        <plugin>odrive_hardware_interface/ODriveHardwareInterface</plugin>
+      </hardware>
+<!--                           Odrive0                                 -->
+<!--                           Odrive1                                 -->
+<!--                           Odrive2                                 -->
+<!--                           Odrive3=335436563539                    -->
+      <sensor name="odrv3">
+        <param name="serial_number">335436563539</param>
+      </sensor>
+
+      <xacro:if value="${enable_joint6}">
+        <joint name="${joint6_name}">
+          <param name="serial_number">335436563539</param>
+          <param name="axis">0</param>
+          <param name="enable_watchdog">0</param>
+          <param name="watchdog_timeout">0.1</param>
+        </joint>
+      </xacro:if>
+
+      <xacro:if value="${enable_joint7}">
+        <joint name="${joint7_name}">
+          <param name="serial_number">335436563539</param>
+          <param name="axis">1</param>
+          <param name="enable_watchdog">0</param>
+          <param name="watchdog_timeout">0.1</param>
+        </joint>
+      </xacro:if>
+<!--                           Odrive4                                 -->
+<!--                           Odrive5=335536633539                    -->
+
+      <sensor name="odrv5">
+        <param name="serial_number">335536633539</param>
+      </sensor>
+
+      <xacro:if value="${enable_joint10}">
+        <joint name="${joint10_name}">
+          <param name="serial_number">335536633539</param>
+          <param name="axis">0</param>
+          <param name="enable_watchdog">0</param>
+          <param name="watchdog_timeout">0.1</param>
+        </joint>
+      </xacro:if>
+
+      <xacro:if value="${enable_joint11}">
+        <joint name="${joint11_name}">
+          <param name="serial_number">335536633539</param>
+          <param name="axis">1</param>
+          <param name="enable_watchdog">0</param>
+          <param name="watchdog_timeout">0.1</param>
+        </joint>
+      </xacro:if>
+      
+    </ros2_control>
+
+  </xacro:macro>
+
+</robot>
+
+<!-- 
+  <xacro:macro name="odrive_ros2_control" 
+  	params="name 
+  		enable_joint0:=^|true enable_joint1:=^|true
+  		enable_joint2:=^|true enable_joint3:=^|true
+  		enable_joint4:=^|true enable_joint5:=^|true
+  		enable_joint6:=^|true enable_joint7:=^|true
+  		enable_joint8:=^|true enable_joint9:=^|true
+  		enable_joint10:=^|true enable_joint11:=^|true 
+  		joint0_name:=^|joint0 joint1_name:=^|joint1
+  		joint2_name:=^|joint2 joint3_name:=^|joint3
+  		joint4_name:=^|joint4 joint5_name:=^|joint5
+  		joint6_name:=^|joint6 joint7_name:=^|joint7
+  		joint8_name:=^|joint8 joint9_name:=^|joint9
+  		joint10_name:=^|joint10 joint11_name:=^|joint11">
+
+
+
+-->

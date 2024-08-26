@@ -1,9 +1,0 @@
-<?xml version="1.0"?>
-<robot xmlns:xacro="http://www.ros.org/wiki/xacro"  name="opendog">
-
-    <xacro:include filename="$(find opendog_description)/urdf/opendog.urdf.xacro" /> 
-
-    <!-- ****************   INCLUDES OTHER FILES  ******************* -->
-    <xacro:include filename="gazebo_ros2_control_plugin.xacro" />
-    <xacro:include filename="opendog.gazebo" />
-</robot>

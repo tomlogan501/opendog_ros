@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="2dof_robot">
+
+  <xacro:arg name="prefix" default="" />
+
+  <xacro:include filename="$(find ros2_control_demo_description)/rrbot/urdf/rrbot_description.urdf.xacro" />
+
+  <xacro:include filename="$(find ros2_control_demo_description)/rrbot/urdf/rrbot.materials.xacro" />
+
+  <xacro:include filename="$(find odrive_demo_description)/urdf/odrive.ros2_control4.xacro" />
+  <!--xacro:include filename="$(find ros2_control_demo_example_1)/ros2_control/rrbot.ros2_control.xacro" /-->
+  <!--xacro:include filename="$(find odrive_demo_description)/urdf/odrive.urdf.xacro" /-->
+  
+  <link name="world"/>
+
+  <xacro:rrbot parent="world" prefix="$(arg prefix)">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </xacro:rrbot>
+
+  <xacro:odrive_ros2_control
+    name="ODriveRRBot"
+    joint0_name="$(arg prefix)joint1"
+    joint1_name="$(arg prefix)joint2"
+    joint4_name="$(arg prefix)joint5"
+    joint5_name="$(arg prefix)joint6"
+    joint6_name="$(arg prefix)joint7"
+    joint7_name="$(arg prefix)joint8"
+    joint10_name="$(arg prefix)joint11"
+    joint11_name="$(arg prefix)joint12" />
+</robot>

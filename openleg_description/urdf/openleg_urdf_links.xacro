@@ -1,0 +1,101 @@
+<?xml version="1.0" ?>
+<robot name="openleg" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+<xacro:include filename="$(find openleg_description)/urdf/materials.xacro" />
+
+<!-- Robot Links -->
+
+<link name="world"/>
+<link name="base_link">
+  <inertial>
+    <origin xyz="0.23006009905931069 0.002523516468143942 0.2743774253947221" rpy="0 0 0"/>
+    <mass value="16.35574457196339"/>
+    <inertia ixx="0.423815" iyy="0.413679" izz="0.014473" ixy="7e-06" iyz="-7.7e-05" ixz="-0.000198"/>
+  </inertial>
+  <visual>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find openleg_description)/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="black">
+    	<color rgba="0.0 0.0 0.0 1.0"/>
+    </material>
+  </visual>
+  <collision>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find openleg_description)/meshes/base_link.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="ul_middleleg_1">
+  <inertial>
+    <origin xyz="0.026551698428160478 -0.05472961115381941 -0.026878333417300282" rpy="0 0 0"/>
+    <mass value="2.7"/>
+    <inertia ixx="0.061226" iyy="0.085803" izz="0.061502" ixy="-0.005391" iyz="0.005035" ixz="0.027705"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.11036 0.057948 -0.475622" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find openleg_description)/meshes/ul_middleleg_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="white">
+    	<color rgba="1.0 1.0 1.0 1.0"/>
+    </material>
+  </visual>
+  <collision>
+    <origin xyz="-0.11036 0.057948 -0.475622" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find openleg_description)/meshes/ul_middleleg_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="ul_lowerleg_1">
+  <inertial>
+    <origin xyz="-0.071567637225424 0.0402017553765599 -0.041323984480638565" rpy="0 0 0"/>
+    <mass value="0.3"/>
+    <inertia ixx="0.008622" iyy="0.029242" izz="0.022138" ixy="0.000174" iyz="0.000101" ixz="-0.011703"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.251328 0.139948 -0.334654" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find openleg_description)/meshes/ul_lowerleg_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="blue">
+    	<color rgba="0.0 0.0 0.8 1.0"/>
+    </material>
+  </visual>
+  <collision>
+    <origin xyz="-0.251328 0.139948 -0.334654" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find openleg_description)/meshes/ul_lowerleg_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+<link name="ul_shoulder_1">
+  <inertial>
+    <origin xyz="-0.09797111464921032 -0.02210796079506646 0.00016369310134400905" rpy="0 0 0"/>
+    <mass value="2.0"/>
+    <inertia ixx="0.012737" iyy="0.027034" izz="0.026319" ixy="0.000689" iyz="-4.7e-05" ixz="1.2e-05"/>
+  </inertial>
+  <visual>
+    <origin xyz="-0.21 -0.008412 -0.475622" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find openleg_description)/meshes/ul_shoulder_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+    <material name="blue">
+    	<color rgba="0.0 0.0 0.8 1.0"/>
+    </material>
+  </visual>
+  <collision>
+    <origin xyz="-0.21 -0.008412 -0.475622" rpy="0 0 0"/>
+    <geometry>
+      <mesh filename="file://$(find openleg_description)/meshes/ul_shoulder_1.stl" scale="0.001 0.001 0.001"/>
+    </geometry>
+  </collision>
+</link>
+
+</robot>
