@@ -6,6 +6,7 @@ ros2 launch openleg_description gazebo.launch.py
 ros2 run openleg_description leg_vertical_circle
 
 To run on hardware:
+
 1 leg ) ros2 launch odrive_demo_bringup odrive_rrbot.launch.py
         ros2 run openleg_description leg_vertical_circle
 
