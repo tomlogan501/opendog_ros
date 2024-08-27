@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://ros.org/wiki/xacro" name="opendog_nostand">
+
+  <xacro:arg name="prefix" default="" />
+
+  <xacro:include filename="$(find opendog_description)/urdf/opendog.urdf.xacro" /> 
+
+  <xacro:include filename="$(find odrive_demo_description)/urdf/odrive_opendog.ros2_control.xacro" />
+  
+  <!--link name="world"/-->
+
+  <!--xacro:rrbot parent="world" prefix="$(arg prefix)">
+    <origin xyz="0 0 0" rpy="0 0 0" />
+  </xacro:rrbot-->
+
+  <xacro:odrive_ros2_control
+    name="ODriveOpenDog"
+    joint0_name="$(arg prefix)FL_uleg_joint"
+    joint1_name="$(arg prefix)FL_lleg_joint"
+    joint2_name="$(arg prefix)FL_hip_joint"
+    joint3_name="$(arg prefix)FR_hip_joint"
+    joint4_name="$(arg prefix)BL_uleg_joint"
+    joint5_name="$(arg prefix)BL_lleg_joint"
+    joint6_name="$(arg prefix)FR_uleg_joint"
+    joint7_name="$(arg prefix)FR_lleg_joint"
+    joint8_name="$(arg prefix)BR_hip_joint"
+    joint9_name="$(arg prefix)BL_hip_joint"
+    joint10_name="$(arg prefix)BR_uleg_joint"
+    joint11_name="$(arg prefix)BR_lleg_joint" />
+</robot>

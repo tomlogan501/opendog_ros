@@ -5,18 +5,27 @@ controller_manager:
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
-    joint_trajectory_controller:
+    openDog_controller:
       type: joint_trajectory_controller/JointTrajectoryController
 
-joint_trajectory_controller:
+openDog_controller:
   ros__parameters:
     joints:
-      - joint1
-      - joint2
-
+      - FL_uleg_joint	# Odrive0 Axis 0
+      - FL_lleg_joint	# Odrive0 Axis 1
+      - FL_hip_joint	# ODrive1 Axis 0
+      - FR_hip_joint	# Odrive1 Axis 1
+      - BL_uleg_joint	# Odrive2 Axis 0
+      - BL_lleg_joint	# Odrive2 Axis 1
+      - FR_uleg_joint	# Odrive3 Axis 0
+      - FR_lleg_joint	# Odrive3 Axis 1
+      - BR_hip_joint	# Odrive4 Axis 0
+      - BL_hip_joint	# ODrive4 Axis 1
+      - BR_uleg_joint	# Odrive5 Axis 0
+      - BR_lleg_joint	# Odrive5 Axis 1
+      
     command_interfaces:
       - position
-      - velocity
 
     state_interfaces:
       - position
