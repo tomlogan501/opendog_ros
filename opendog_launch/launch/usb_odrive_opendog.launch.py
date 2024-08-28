@@ -18,18 +18,6 @@ from launch.conditions import IfCondition
 
 
 def generate_launch_description():
-    # Declare arguments
-    #declared_arguments = []
-    #declared_arguments.append(
-    #    DeclareLaunchArgument(
-    #        "gui",
-    #        default_value="true",
-    #        description="Start RViz2 automatically with this launch file.",
-    #    )
-    #)
-
-    # Initialize Arguments
-    #gui = LaunchConfiguration("gui")
 
     # Get URDF via xacro
     robot_description_content = Command(
@@ -56,10 +44,6 @@ def generate_launch_description():
     )
     print(robot_controllers)
 
-    #rviz_config_file = PathJoinSubstitution(
-    #    [FindPackageShare("ros2_control_demo_description"), "rrbot/rviz", "rrbot.rviz"]
-    #)
-
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
@@ -78,17 +62,6 @@ def generate_launch_description():
         parameters=[robot_description],
     )
     print(robot_state_pub_node)
-
-    #rviz_node = Node(
-    #    package="rviz2",
-    #    executable="rviz2",
-    #    name="rviz2",
-    #    output="log",
-    #    arguments=["-d", rviz_config_file],   
-    #    condition=IfCondition(gui),
-    #)
-
-    #print(rviz_node)
 
     joint_state_broadcaster_spawner = Node(
         package="controller_manager",
@@ -111,14 +84,6 @@ def generate_launch_description():
             on_exit=[joint_state_broadcaster_spawner],
         )
     )
-    
-    # Delay rviz start after `joint_state_broadcaster`
-    #delay_rviz_after_joint_state_broadcaster_spawner = RegisterEventHandler(
-    #    event_handler=OnProcessExit(
-    #        target_action=joint_state_broadcaster_spawner,
-    #        on_exit=[rviz_node],
-    #    )
-    #)
 
     # Delay start of robot_controller after `joint_state_broadcaster`
     delay_robot_controller_spawner_after_joint_state_broadcaster_spawner = RegisterEventHandler(
@@ -147,25 +112,26 @@ def generate_launch_description():
         cmd=['ros2', 'run', 'opendog_control', 'IK_node'],
         output='screen'
     )
-
-    node_uros_agent = ExecuteProcess(
-        cmd=['ros2', 'run', 'micro_ros_agent', 'micro_ros_agent', 'serial', '-b', '115200', '--dev', '/dev/ttyUSB0'],
-        output='screen'
-    )
-
     opendog_gazebo_joint_cmd = ExecuteProcess(
-        cmd=['ros2', 'run', 'opendog_gazebo_joint_cmd', 'opendog_gazebo_joint_controller'],
+        cmd=['ros2', 'run', 'opendog_gazebosim', 'opendog_joint_ctrl_node'],
         output='screen'
     )
 
+    laod_forward_command_controller = ExecuteProcess(
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 
+            'openDog_controller'],
+        output='screen'
+    )
 
     return LaunchDescription([
     	control_node,
         robot_state_pub_node,
-        delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,
+        #delay_robot_controller_spawner_after_joint_state_broadcaster_spawner,
         joint_state_broadcaster_spawner,
         node_joy,
         node_opendog_teleop_joy,
+        delay_broadcaster_after_control_node,
+        opendog_gazebo_joint_cmd,
 
         RegisterEventHandler(
             OnProcessStart(
@@ -183,6 +149,12 @@ def generate_launch_description():
                     LogInfo(msg='opendog_control started, starting IK_node'),
                     node_IK_node
                 ]
+            )
+        ),
+        RegisterEventHandler(
+            event_handler=OnProcessExit(
+                target_action=joint_state_broadcaster_spawner,
+                on_exit=[laod_forward_command_controller],
             )
         ),
     ])

@@ -352,6 +352,8 @@ return_type ODriveHardwareInterface::write(const rclcpp::Time &, const rclcpp::D
         CHECK_RW(odrive->write(
           serial_numbers_[1][i], AXIS__CONTROLLER__INPUT_POS + per_axis_offset * axes_[i],
           input_pos));
+
+       if (i==1) RCLCPP_INFO(rclcpp::get_logger("Test logger"),"Position1 :%f",input_pos);
         /*TEST POSITION*/
         /*CHECK_RW(odrive->write(
           serial_numbers_[1][i], AXIS__CONTROLLER__INPUT_POS + per_axis_offset * axes_[i],

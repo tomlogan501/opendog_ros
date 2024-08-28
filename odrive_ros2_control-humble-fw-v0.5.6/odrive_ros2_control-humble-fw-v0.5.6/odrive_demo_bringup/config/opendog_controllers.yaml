@@ -6,10 +6,11 @@ controller_manager:
       type: joint_state_broadcaster/JointStateBroadcaster
 
     openDog_controller:
-      type: joint_trajectory_controller/JointTrajectoryController
+      type: forward_command_controller/ForwardCommandController
 
 openDog_controller:
   ros__parameters:
+    #joint_trajectory: "/dasdasdasdasdasdopenDog_controller/commands"
     joints:
       - FL_uleg_joint	# Odrive0 Axis 0
       - FL_lleg_joint	# Odrive0 Axis 1
@@ -23,20 +24,26 @@ openDog_controller:
       - BL_hip_joint	# ODrive4 Axis 1
       - BR_uleg_joint	# Odrive5 Axis 0
       - BR_lleg_joint	# Odrive5 Axis 1
-      
+    interface_name: position
     command_interfaces:
-      - position
-
+      - position 
     state_interfaces:
       - position
       - velocity
+      - effort
+    # command_interfaces:
+    #   - position
 
-    state_publish_rate: 100.0 # Defaults to 50
-    action_monitor_rate: 20.0 # Defaults to 20
+    # state_interfaces:
+    #   - position
+    #   - velocity
 
-    allow_partial_joints_goal: false # Defaults to false
-    open_loop_control: false
-    allow_integration_in_goal_trajectories: true
-    constraints:
-      stopped_velocity_tolerance: 0.01 # Defaults to 0.01
-      goal_time: 0.0 # Defaults to 0.0 (start immediately)
+    # state_publish_rate: 100.0 # Defaults to 50
+    # action_monitor_rate: 20.0 # Defaults to 20
+
+    # allow_partial_joints_goal: false # Defaults to false
+    # open_loop_control: false
+    # allow_integration_in_goal_trajectories: true
+    # constraints:
+    #   stopped_velocity_tolerance: 0.01 # Defaults to 0.01
+    #   goal_time: 0.0 # Defaults to 0.0 (start immediately)

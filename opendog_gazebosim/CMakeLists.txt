@@ -28,6 +28,12 @@ ament_target_dependencies(opendog_gazebo_joint_ctrl_node
   std_msgs 
 )
 
+add_executable(opendog_joint_ctrl_node src/opendog_joint_controller.cpp)
+ament_target_dependencies(opendog_joint_ctrl_node
+  rclcpp  
+  std_msgs 
+)
+
 add_executable(fake_odom src/fake_odom.cpp)
 ament_target_dependencies(fake_odom
   rclcpp  
@@ -38,6 +44,11 @@ ament_target_dependencies(fake_odom
 
 install(TARGETS
 opendog_gazebo_joint_ctrl_node  
+  DESTINATION lib/${PROJECT_NAME}
+) 
+
+install(TARGETS
+opendog_joint_ctrl_node  
   DESTINATION lib/${PROJECT_NAME}
 ) 
 
