@@ -6,11 +6,11 @@ import numpy as np
 
 
 
-MIN_LEG_HEIGHT = 80
-MAX_LEG_HEIGHT = 240
-MAX_ROLL       = 45
-MAX_PITCH      = 45
-MAX_YAW        = 50 
+MIN_LEG_HEIGHT = 80    #80
+MAX_LEG_HEIGHT = 600   #240 400
+MAX_ROLL       = 75  #45
+MAX_PITCH      = 45  #45
+MAX_YAW        = 50  #50
 
 
 

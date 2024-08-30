@@ -37,7 +37,7 @@ class opendogJointCtrl : public rclcpp::Node
             auto joint_angles = std_msgs::msg::Float64MultiArray();
             std::vector<double> angles[12];
             for(float ang : msg_rx->data){
-                joint_angles.data.push_back(double(ang*1/360)); // Change  to revolutions
+                joint_angles.data.push_back(double(ang*3*M_PI/180)); // Hardware interface already converts radians to revolutions
             }
             publisher_->publish(joint_angles);
         } 

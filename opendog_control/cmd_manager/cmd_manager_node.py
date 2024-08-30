@@ -13,6 +13,7 @@ import threading
 from threading import Thread
 import logging
 import time
+import os
 
 
 class CmdManager_ROS():
@@ -142,19 +143,36 @@ class CmdManager_ROS():
         self.create_sub1()
         self.create_sub2()
         self.create_pub()
-        rclpy.spin(self.node)
-        self.node.destroy_node()
-        rclpy.shutdown()
-        self.stop = False
-        
+        #Original 
+        #rclpy.spin(self.node)
+        #self.node.destroy_node()
+        #rclpy.shutdown()
+        #self.stop = False
+
+        #Fix for node staying on background
+        try:
+            rclpy.spin(self.node)
+        except KeyboardInterrupt:
+            pass
+        finally:
+            self.node.destroy_node()
+            rclpy.shutdown()
+            self.stop_event.set()
+            os._exit(0)
         
 
-    def stop(self):
-        self.stop = True
+    #Original
+    #def stop(self):
+    #    self.stop = True
 
+    #def run(self):
+    #    pass
+
+    #   Fix for node staying on background
     def run(self):
-        pass
-        
+        thread = thread(target=self.start)
+        thread.start()
+        thread.join()
 
 
 

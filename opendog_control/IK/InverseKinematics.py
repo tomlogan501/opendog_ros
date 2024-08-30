@@ -18,20 +18,20 @@ class Legs():
 
 class InverseKinematics():
     def __init__(self):
-        self.L1 = 104
-        self.L2 = 150
-        self.L3 = 150
-        self.BODY_LENGTH = 300
-        self.BODY_WIDTH  = 172
-        self.MIN_ANG_L2L3 = 30
-        self.MAX_ANG_L2L3 = 170
+        self.L1 = 104    #104  58
+        self.L2 = 100    #150  100
+        self.L3 = 150    #150  230
+        self.BODY_LENGTH = 650  #300  650
+        self.BODY_WIDTH  = 172  #172  110 100
+        self.MIN_ANG_L2L3 = 30  #30
+        self.MAX_ANG_L2L3 = 170 #170
         self.MIN_LEG_R   = np.sqrt(self.L1**2 + (self.L2**2 + self.L3**2 - 2*self.L2*self.L3*np.cos(np.deg2rad(self.MIN_ANG_L2L3))))
         self.MAX_LEG_R   = np.sqrt(self.L1**2 + (self.L2**2 + self.L3**2 - 2*self.L2*self.L3*np.cos(np.deg2rad(self.MAX_ANG_L2L3))))
 
-        self.M_R = np.array([1, 1, 1])
-        self.M_L = np.array([1, -1, 1])
-        self.M_F = np.array([1, 1, 1])
-        self.M_B = np.array([-1, 1, 1])
+        self.M_R = np.array([1, 1, 1])   # 1 1 1
+        self.M_L = np.array([1, -1, 1])  # 1-1 1
+        self.M_F = np.array([1, 1, 1])   # 1 1 1
+        self.M_B = np.array([-1, 1, 1])  #-1 1 1
         self.BODY_SCALE = np.array([self.BODY_LENGTH/2, self.BODY_WIDTH/2, 0])
 
         self.legState = Legs()

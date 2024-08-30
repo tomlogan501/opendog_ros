@@ -10,20 +10,20 @@ controller_manager:
 
 openDog_controller:
   ros__parameters:
-    #joint_trajectory: "/dasdasdasdasdasdopenDog_controller/commands"
     joints:
-      - FL_uleg_joint	# Odrive0 Axis 0
-      - FL_lleg_joint	# Odrive0 Axis 1
-      - FL_hip_joint	# ODrive1 Axis 0
-      - FR_hip_joint	# Odrive1 Axis 1
-      - BL_uleg_joint	# Odrive2 Axis 0
-      - BL_lleg_joint	# Odrive2 Axis 1
-      - FR_uleg_joint	# Odrive3 Axis 0
-      - FR_lleg_joint	# Odrive3 Axis 1
-      - BR_hip_joint	# Odrive4 Axis 0
-      - BL_hip_joint	# ODrive4 Axis 1
-      - BR_uleg_joint	# Odrive5 Axis 0
-      - BR_lleg_joint	# Odrive5 Axis 1
+      - FR_hip_joint
+      - FR_uleg_joint
+      - FR_lleg_joint
+      - FL_hip_joint
+      - FL_uleg_joint
+      - FL_lleg_joint
+      - BR_hip_joint
+      - BR_uleg_joint
+      - BR_lleg_joint
+      - BL_hip_joint
+      - BL_uleg_joint
+      - BL_lleg_joint
+      
     interface_name: position
     command_interfaces:
       - position 
@@ -45,5 +45,6 @@ openDog_controller:
     # open_loop_control: false
     # allow_integration_in_goal_trajectories: true
     # constraints:
-    #   stopped_velocity_tolerance: 0.01 # Defaults to 0.01
-    #   goal_time: 0.0 # Defaults to 0.0 (start immediately)
+    # stopped_velocity_tolerance: 0.01 # Defaults to 0.01
+    # goal_time: 0.0 # Defaults to 0.0 (start immediately)
+    

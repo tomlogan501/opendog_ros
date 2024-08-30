@@ -22,7 +22,7 @@
         <origin xyz="0.005091 -0.147198 0.340765" rpy="0 0 0"/>
         <parent link="base_link"/>
         <child link="FL_hip_link"/>
-        <axis xyz="-1.0 0.0 -0.0"/>
+        <axis xyz="1.0 0.0 0.0"/>   <!-- -1.0 0.0 -0.0 -->
         <limit upper="0.174533" lower="-0.174533" effort="100" velocity="100"/>
     </joint>
     <!-- *********  BR_hip  ********* -->
@@ -30,7 +30,7 @@
         <origin xyz="0.471531 -0.028918 0.340765" rpy="0 0 0"/>
         <parent link="base_link"/>
         <child link="BR_hip_link"/>
-        <axis xyz="1.0 -0.0 -0.0"/>
+        <axis xyz="1.0 0.0 0.0"/>
         <limit upper="0.174533" lower="-0.174533" effort="100" velocity="100"/>
     </joint>
     <!-- *********  BL_hip  ********* -->
@@ -104,7 +104,7 @@
         <origin xyz="-0.140969 -0.082 -0.140968" rpy="0 0 0"/>
         <parent link="BL_uleg_link"/>
         <child link="BL_lleg_link"/>
-        <axis xyz="0.0 1.0 0.0"/>
+        <axis xyz="0.0 -1.0 0.0"/>
         <limit upper="3.839724" lower="-0.698132" effort="100" velocity="100"/>
     </joint>
 </robot>

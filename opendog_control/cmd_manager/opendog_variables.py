@@ -49,10 +49,10 @@ class Body():
         self.yaw = 0
         self.ZMP_handler = np.zeros([4,3])
     class _physiacal_params():
-        _length = 300
-        _width = 172
-        _min_height = 80
-        _max_height = 240
+        _length = 650     #300 650
+        _width = 172     #172 100
+        _min_height = 80  #80
+        _max_height = 600 #240 400
      
 
 
@@ -92,9 +92,9 @@ class Leg:
         self.BL = _LegParams()
         self.physical = self._physical_params()
     class _physical_params():
-        _L1 = 104 # mm
-        _L2 = 150 # mm
-        _L3 = 150 # mm
+        _L1 = 104 # 104 58
+        _L2 = 100 # 150 100
+        _L3 = 150 # 150 230
 
 
 
