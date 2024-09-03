@@ -12,6 +12,7 @@ class GaitPlanner():
         self.cmd = cmd
         self.leg = leg
         self.body = body
+        self.running = True
 
         self.gnd_touched = np.ones([4]) #fr,fl,br,bl
         self.sample_time = 0.001
@@ -354,7 +355,7 @@ class GaitPlanner():
         t = time.time()
         dt = time.time() - t
         i = 0
-        while self.cmd.mode.walk:
+        while self.cmd.mode.walk and self.running:
             if dt <= self.cmd.gait.cycle_time:
                 if dt >= self.sample_time*i:
                     i += 1
@@ -389,7 +390,7 @@ class GaitPlanner():
         t = time.time()
         dt = time.time() - t
         i = 0
-        while self.cmd.mode.walk:
+        while self.cmd.mode.walk and self.running:
             if dt <= self.cmd.gait.cycle_time:
                 if dt >= self.sample_time*i:
                     i += 1
@@ -429,7 +430,7 @@ class GaitPlanner():
         i = 0
         self.body.ZMP_handler[:,:] = 0
 
-        while self.cmd.mode.walk:
+        while self.cmd.mode.walk and self.running:
             zone_time = self.cmd.gait.cycle_time/4
             if dt <= self.cmd.gait.cycle_time + 2*t_zmp:
                 if dt >= self.sample_time*i:
@@ -502,7 +503,7 @@ class GaitPlanner():
         self.body.ZMP_handler[::2,1] = self.len_zmp_wavegait 
         self.body.ZMP_handler[1::2,1] = -self.len_zmp_wavegait 
            
-        while self.cmd.mode.gait_type == 0:
+        while self.cmd.mode.gait_type == 0 and self.running:
             self.FR_traj[0] = self.cmd.gait.step_len[0]
             self.FR_traj[2] = self.cmd.gait.step_len[1]
            
@@ -510,7 +511,7 @@ class GaitPlanner():
 
 
     def run(self):
-        while True:
+        while self.running:
             if self.cmd.mode.walk:
                 if self.cmd.mode.gait_type == 1:
                     self.cmd.gait.cycle_time = 0.8

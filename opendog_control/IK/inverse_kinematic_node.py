@@ -70,7 +70,6 @@ def main(args=None):
     inv_kin = InvKin_Node()
     rclpy.spin(inv_kin)
     inv_kin.destroy_node()
-    rclpy.shutdown()
 
 if __name__ == '__main__':
     main()
