@@ -81,4 +81,7 @@ packages are :
 	Left joystick:	Pitch (Y axis) and Roll (X axis)
 	D-pad:		Change height of robot (Y axis)
 	LT, RT:		Yaw Counter Clock Wise, Yaw Clock Wise
+
+ ![image](https://github.com/user-attachments/assets/5d14f580-36b9-421a-a2bb-c1c6768295e5)
+
 	
