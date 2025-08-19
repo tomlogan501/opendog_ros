@@ -2,12 +2,7 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
     <xacro:include filename="consts.xacro" /> 
-
-    <!-- ******** world to base joint ********** -->
-    <joint name="world_to_base" type="fixed">
-        <parent link="base_link"/>
-        <child link="world"/>
-    </joint>
+    
 
     <!-- *********  FR_hip joint ********* -->
     <joint name="FR_hip_joint" type="revolute">
@@ -107,4 +102,7 @@
         <axis xyz="0.0 1.0 0.0"/>
         <limit upper="3.839724" lower="-0.698132" effort="100" velocity="100"/>
     </joint>
+    
+   
+
 </robot>

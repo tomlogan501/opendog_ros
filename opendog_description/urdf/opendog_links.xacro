@@ -3,8 +3,7 @@
 
     <xacro:include filename="consts.xacro" /> 
     <xacro:include filename="physics.xacro" /> 
-
-
+    
     <!-- load meshes -->
     <xacro:macro name="body_mesh">
         <mesh filename="file://$(find opendog_description)/meshes/body.stl" scale="0.001 0.001 0.001"/>
@@ -27,15 +26,11 @@
    
 
 
-    <!-- *********** Inertial link *********** -->
-    <link name="world">
-    </link>
-
-
     <!-- *********** base link *********** -->
+     
     <link name="base_link">
         <inertial>
-          <origin xyz="0.2749797958231685 -0.08799492490648385 0.36444405374780864" rpy="0 0 0"/>
+          <origin xyz="0 0.0 0" rpy="0 0 0"/>
           <mass value="5"/>
           <inertia ixx="0.761631" iyy="4.077449" izz="3.905689" ixy="-0.001055" iyz="-0.000345" ixz="0.05479"/>
         </inertial>
@@ -53,8 +48,7 @@
           </geometry>
         </collision>
     </link>
-
-
+  
     <!-- !!!!!!!!!!!!!!!!!!!!!!! HIPS !!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
 
     <!-- *********** FR_hip *********** -->
@@ -326,5 +320,5 @@
             </surface>
         </collision>
     </link>
-
+    
 </robot>

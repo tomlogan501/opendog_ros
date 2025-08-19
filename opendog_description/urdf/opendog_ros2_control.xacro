@@ -1,0 +1,128 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- Macro ros2_control pour OpenDog -->
+  <xacro:macro name="opendog_ros2_control" params="name">
+
+    <ros2_control name="${name}" type="system">
+      <hardware>
+        <plugin>gazebo_ros2_control/DefaultRobotHWSim</plugin>
+      </hardware>
+        
+
+      <!-- Joints -->
+      <joint name="FR_hip_joint">
+        <command_interface name="position">
+          <param name="min">-1.0</param>
+          <param name="max">1.0</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <joint name="FL_hip_joint">
+        <command_interface name="position">
+          <param name="min">-1.0</param>
+          <param name="max">1.0</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <joint name="BR_hip_joint">
+        <command_interface name="position">
+          <param name="min">-1.0</param>
+          <param name="max">1.0</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <joint name="BL_hip_joint">
+        <command_interface name="position">
+          <param name="min">-1.0</param>
+          <param name="max">1.0</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <joint name="FR_uleg_joint">
+        <command_interface name="position">
+          <param name="min">-1.0</param>
+          <param name="max">1.0</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <joint name="FL_uleg_joint">
+        <command_interface name="position">
+          <param name="min">-1.0</param>
+          <param name="max">1.0</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <joint name="BR_uleg_joint">
+        <command_interface name="position">
+          <param name="min">-1.0</param>
+          <param name="max">1.0</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <joint name="BL_uleg_joint">
+        <command_interface name="position">
+          <param name="min">-1.0</param>
+          <param name="max">1.0</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <joint name="FR_lleg_joint">
+        <command_interface name="position">
+          <param name="min">-1.0</param>
+          <param name="max">1.0</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <joint name="FL_lleg_joint">
+        <command_interface name="position">
+          <param name="min">-1.0</param>
+          <param name="max">1.0</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <joint name="BR_lleg_joint">
+        <command_interface name="position">
+          <param name="min">-1.0</param>
+          <param name="max">1.0</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <joint name="BL_lleg_joint">
+        <command_interface name="position">
+          <param name="min">-1.0</param>
+          <param name="max">1.0</param>
+        </command_interface>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+    </ros2_control>
+
+    
+
+  </xacro:macro>
+
+</robot>

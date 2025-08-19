@@ -1,0 +1,31 @@
+<?xml version="1.0" ?>
+<robot name="opendog_nostand" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  
+
+  
+  <!-- Configuration of Robot Links-->  
+  
+  
+  <xacro:include filename="/home/divin/opendog_ws/src/opendog_ros/opendog_description/urdf/../urdf/opendog_stand_links.xacro"/> 
+  <xacro:include filename="/home/divin/opendog_ws/src/opendog_ros/opendog_description/urdf/../urdf/opendog_stand_joints.xacro"/>
+
+
+  <!-- Configuration of Robot Joints  -->
+  <xacro:include filename="/home/divin/opendog_ws/src/opendog_ros/opendog_description/urdf/../urdf/opendog_links.xacro" />
+  <xacro:include filename="/home/divin/opendog_ws/src/opendog_ros/opendog_description/urdf/../urdf/opendog_joints.xacro" />
+  
+  <!-- Other Configurations-->
+  <xacro:include filename="/home/divin/opendog_ws/src/opendog_ros/opendog_description/urdf/../urdf/materials.xacro" />
+  <xacro:include filename="/home/divin/opendog_ws/src/opendog_ros/opendog_description/urdf/../urdf/opendog.trans" />
+
+
+
+  <!-- Plugin Gazebo pour contrôle ROS 2 -->
+  <gazebo>
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/opendog</robotNamespace>
+    </plugin>
+  </gazebo>
+
+</robot>
+

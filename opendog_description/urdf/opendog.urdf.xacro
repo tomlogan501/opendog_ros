@@ -1,18 +1,29 @@
 <?xml version="1.0" ?>
 <robot name="opendog_nostand" xmlns:xacro="http://www.ros.org/wiki/xacro">
+  
+  <!-- Argument optionnel pour activer l'injection des plugins Gazebo -->
+  <xacro:arg name="use_gazebo" default="false"/>
 
-<!-- Configuration of Robot Links-->  
+  <!-- Configuration of Robot Links-->  
+  <xacro:include filename="$(find opendog_description)/urdf/opendog_stand_links.xacro"/> 
+  <xacro:include filename="$(find opendog_description)/urdf/opendog_stand_joints.xacro"/>
 
-<xacro:include filename="$(find opendog_description)/urdf/opendog_links.xacro" />
+  <!-- Configuration of Robot Joints -->
+  <xacro:include filename="$(find opendog_description)/urdf/opendog_links.xacro"/>
+  <xacro:include filename="$(find opendog_description)/urdf/opendog_joints.xacro"/>
 
-<!-- Configuration of Robot Joints-->  
+  <!-- Other Configurations -->
+  <xacro:include filename="$(find opendog_description)/urdf/materials.xacro"/>
+  <xacro:include filename="$(find opendog_description)/urdf/opendog.trans"/>
 
-<xacro:include filename="$(find opendog_description)/urdf/opendog_joints.xacro" />
+  <!-- ros2_control configuration -->
+  <xacro:include filename="$(find opendog_description)/urdf/opendog_ros2_control.xacro"/>
+  <xacro:opendog_ros2_control name="opendog_hw"/>
 
-
-<!-- Other Configurations-->
-
-<xacro:include filename="$(find opendog_description)/urdf/materials.xacro" />
-<xacro:include filename="$(find opendog_description)/urdf/opendog.trans" />
+  <!-- Inclusion et appel conditionnels du plugin Gazebo -->
+  <xacro:if value="$(arg use_gazebo)">
+    <xacro:include filename="$(find opendog_description)/urdf/opendog_gazebo_control.xacro"/>
+    <xacro:opendog_gazebo_control name="opendog_hw_gazebo"/>
+  </xacro:if>
 
 </robot>

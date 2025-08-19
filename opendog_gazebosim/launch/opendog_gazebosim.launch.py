@@ -102,7 +102,7 @@ def generate_launch_description():
   
   laod_forward_command_controller = ExecuteProcess(
         cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 
-            'gazebo_joint_controller'],
+            'joint_group_position_controller'],
         output='screen'
     )
 
