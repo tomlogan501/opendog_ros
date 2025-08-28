@@ -1,0 +1,6 @@
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1209", ATTRS{idProduct}=="0d32", ATTRS{serial}=="335536633539", SYMLINK+="input/odrive0"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1209", ATTRS{idProduct}=="0d32", ATTRS{serial}=="335836543539", SYMLINK+="input/odrive1"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1209", ATTRS{idProduct}=="0d32", ATTRS{serial}=="3359366C3539", SYMLINK+="input/odrive2"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1209", ATTRS{idProduct}=="0d32", ATTRS{serial}=="3359366F3539", SYMLINK+="input/odrive3"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1209", ATTRS{idProduct}=="0d32", ATTRS{serial}=="335436563539", SYMLINK+="input/odrive4"
+SUBSYSTEM=="tty", ATTRS{idVendor}=="1209", ATTRS{idProduct}=="0d32", ATTRS{serial}=="3673385F3030", SYMLINK+="input/odrive5"
