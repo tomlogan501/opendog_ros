@@ -1,0 +1,144 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- ODrive 0 -->
+  <ros2_control name="odrive_0" type="system">
+    <hardware>
+      <plugin>odrive_hardware_interface/ODriveHardwareInterface</plugin>
+      <param name="odrives">
+        <odrive serial_number="335536633539">
+          <axis index="0" joint="BR_uleg_joint"/>
+          <axis index="1" joint="BR_lleg_joint"/>
+        </odrive>
+      </param>
+    </hardware>
+  </ros2_control>
+
+  <!-- ODrive 1 -->
+  <ros2_control name="odrive_1" type="system">
+    <hardware>
+      <plugin>odrive_hardware_interface/ODriveHardwareInterface</plugin>
+      <param name="odrives">
+        <odrive serial_number="335836543539">
+          <axis index="0" joint="FL_uleg_joint"/>
+          <axis index="1" joint="FL_lleg_joint"/>
+        </odrive>
+      </param>
+    </hardware>
+  </ros2_control>
+
+  <!-- ODrive 2 -->
+  <ros2_control name="odrive_2" type="system">
+    <hardware>
+      <plugin>odrive_hardware_interface/ODriveHardwareInterface</plugin>
+      <param name="odrives">
+        <odrive serial_number="3359366C3539">
+          <axis index="0" joint="FL_hip_joint"/>
+          <axis index="1" joint="FR_hip_joint"/>
+        </odrive>
+      </param>
+    </hardware>
+  </ros2_control>
+
+  <!-- ODrive 3 -->
+  <ros2_control name="odrive_3" type="system">
+    <hardware>
+      <plugin>odrive_hardware_interface/ODriveHardwareInterface</plugin>
+      <param name="odrives">
+        <odrive serial_number="3359366F3539">
+          <axis index="0" joint="BL_uleg_joint"/>
+          <axis index="1" joint="BL_lleg_joint"/>
+        </odrive>
+      </param>
+    </hardware>
+  </ros2_control>
+
+  <!-- ODrive 4 -->
+  <ros2_control name="odrive_4" type="system">
+    <hardware>
+      <plugin>odrive_hardware_interface/ODriveHardwareInterface</plugin>
+      <param name="odrives">
+        <odrive serial_number="335436563539">
+          <axis index="0" joint="FR_uleg_joint"/>
+          <axis index="1" joint="FR_lleg_joint"/>
+        </odrive>
+      </param>
+    </hardware>
+  </ros2_control>
+
+  <!-- ODrive 5 -->
+  <ros2_control name="odrive_5" type="system">
+    <hardware>
+      <plugin>odrive_hardware_interface/ODriveHardwareInterface</plugin>
+      <param name="odrives">
+        <odrive serial_number="3673385F3030">
+          <axis index="0" joint="BR_hip_joint"/>
+          <axis index="1" joint="BL_hip_joint"/>
+        </odrive>
+      </param>
+    </hardware>
+  </ros2_control>
+
+  <!-- Définition des joints (inchangée) -->
+  <joint name="FR_hip_joint">
+    <command_interface name="position"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+  <joint name="FL_hip_joint">
+    <command_interface name="position"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+  <joint name="BR_hip_joint">
+    <command_interface name="position"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+  <joint name="BL_hip_joint">
+    <command_interface name="position"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+  <joint name="FR_uleg_joint">
+    <command_interface name="position"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+  <joint name="FL_uleg_joint">
+    <command_interface name="position"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+  <joint name="BR_uleg_joint">
+    <command_interface name="position"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+  <joint name="BL_uleg_joint">
+    <command_interface name="position"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+  <joint name="FR_lleg_joint">
+    <command_interface name="position"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+  <joint name="FL_lleg_joint">
+    <command_interface name="position"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+  <joint name="BR_lleg_joint">
+    <command_interface name="position"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+  <joint name="BL_lleg_joint">
+    <command_interface name="position"/>
+    <state_interface name="position"/>
+    <state_interface name="velocity"/>
+  </joint>
+
+</robot>
