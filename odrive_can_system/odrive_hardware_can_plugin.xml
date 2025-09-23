@@ -1,0 +1,7 @@
+<library path="lib/libodrive_can_system">
+  <class name="odrive_ros2_control::ODriveHardwareInterfaceCAN"
+         type="odrive_ros2_control::ODriveHardwareInterfaceCAN"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>ODrive CAN hardware interface for ros2_control</description>
+  </class>
+</library>

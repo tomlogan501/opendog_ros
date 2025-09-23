@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>opendog_hardware_layer_can</name>
+  <version>0.0.1</version>
+  <description>Configuration, launch et URDF pour la couche hardware CAN d'OpenDog</description>
+  <maintainer email="you@example.com">You</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>controller_manager</depend>
+  <depend>ros2_control</depend>
+
+  <export>
+    <!-- Pas de plugin C++ dans ce package, c'est géré par odrive_can_system -->
+  </export>
+</package>

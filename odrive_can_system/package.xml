@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>odrive_can_system</name>
+  <version>0.0.1</version>
+  <description>ODrive CAN hardware interface system (ros2_control plugin)</description>
+  <maintainer email="you@example.com">You</maintainer>
+  <license>Apache-2.0</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>hardware_interface</depend>
+  <depend>pluginlib</depend>
+  <depend>controller_interface</depend>
+  <depend>rclcpp_lifecycle</depend>
+
+  <export>
+    <pluginlib plugin="${prefix}/odrive_hardware_can_plugin.xml"/>
+  </export>
+</package>

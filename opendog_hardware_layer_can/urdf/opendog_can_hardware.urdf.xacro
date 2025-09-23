@@ -1,0 +1,48 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="opendog_ros2_control_can" params="name">
+
+    <ros2_control name="${name}" type="system">
+      <hardware>
+        <!-- 🔥 NOM DISTINCT pour le plugin CAN -->
+        <plugin>odrive_hardware_interface/ODriveHardwareInterfaceCAN</plugin>
+        <param name="can_interface">can0</param>
+      </hardware>
+
+      <!-- Sensor VBUS -->
+      <sensor name="vbus_sensor">
+        <param name="node_id">0</param>
+      </sensor>
+
+      <!-- Joints CAN (seulement 2 pour test) -->
+      <joint name="FR_hip_joint">
+        <command_interface name="position"/>
+        <command_interface name="velocity"/>
+        <command_interface name="effort"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+        <param name="node_id">1</param>
+        <param name="axis">0</param>
+        <param name="enable_watchdog">true</param>
+        <param name="watchdog_timeout">0.1</param>
+      </joint>
+
+      <joint name="FR_uleg_joint">
+        <command_interface name="position"/>
+        <command_interface name="velocity"/>
+        <command_interface name="effort"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+        <param name="node_id">1</param>
+        <param name="axis">1</param>
+        <param name="enable_watchdog">true</param>
+        <param name="watchdog_timeout">0.1</param>
+      </joint>
+
+    </ros2_control>
+  </xacro:macro>
+
+</robot>
