@@ -1,144 +1,267 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-  <!-- ODrive 0 -->
-  <ros2_control name="odrive_0" type="system">
-    <hardware>
-      <plugin>odrive_hardware_interface/ODriveHardwareInterface</plugin>
-      <param name="odrives">
-        <odrive serial_number="335536633539">
-          <axis index="0" joint="BR_uleg_joint"/>
-          <axis index="1" joint="BR_lleg_joint"/>
-        </odrive>
-      </param>
-    </hardware>
-  </ros2_control>
+  <xacro:macro name="opendog_ros2_control" params="name">
 
-  <!-- ODrive 1 -->
-  <ros2_control name="odrive_1" type="system">
-    <hardware>
-      <plugin>odrive_hardware_interface/ODriveHardwareInterface</plugin>
-      <param name="odrives">
-        <odrive serial_number="335836543539">
-          <axis index="0" joint="FL_uleg_joint"/>
-          <axis index="1" joint="FL_lleg_joint"/>
-        </odrive>
-      </param>
-    </hardware>
-  </ros2_control>
+    <ros2_control name="${name}" type="system">
+      <hardware>
+        <plugin>odrive_hardware_interface/ODriveHardwareInterface</plugin>
+      </hardware>
 
-  <!-- ODrive 2 -->
-  <ros2_control name="odrive_2" type="system">
-    <hardware>
-      <plugin>odrive_hardware_interface/ODriveHardwareInterface</plugin>
-      <param name="odrives">
-        <odrive serial_number="3359366C3539">
-          <axis index="0" joint="FL_hip_joint"/>
-          <axis index="1" joint="FR_hip_joint"/>
-        </odrive>
-      </param>
-    </hardware>
-  </ros2_control>
+      <!-- ODrive 0 -->
+      <sensor name="odrv0">
+        <param name="serial_number">335536633539</param>
+      </sensor>
+      <joint name="BR_uleg_joint">
+        <command_interface name="position"/>
+        <command_interface name="velocity"/>
+        <command_interface name="effort"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+        <param name="serial_number">335536633539</param>
+        <param name="axis">0</param>
+        <param name="enable_watchdog">0</param>
+        <param name="watchdog_timeout">0.1</param>
+      </joint>
+      <joint name="BR_lleg_joint">
+        <command_interface name="position"/>
+        <command_interface name="velocity"/>
+        <command_interface name="effort"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+        <param name="serial_number">335536633539</param>
+        <param name="axis">1</param>
+        <param name="enable_watchdog">0</param>
+        <param name="watchdog_timeout">0.1</param>
+      </joint>
 
-  <!-- ODrive 3 -->
-  <ros2_control name="odrive_3" type="system">
-    <hardware>
-      <plugin>odrive_hardware_interface/ODriveHardwareInterface</plugin>
-      <param name="odrives">
-        <odrive serial_number="3359366F3539">
-          <axis index="0" joint="BL_uleg_joint"/>
-          <axis index="1" joint="BL_lleg_joint"/>
-        </odrive>
-      </param>
-    </hardware>
-  </ros2_control>
+      <!-- ODrive 1 -->
+      <sensor name="odrv1">
+        <param name="serial_number">335836543539</param>
+      </sensor>
+      <joint name="FL_uleg_joint">
+        <command_interface name="position"/>
+        <command_interface name="velocity"/>
+        <command_interface name="effort"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+        <param name="serial_number">335836543539</param>
+        <param name="axis">0</param>
+        <param name="enable_watchdog">0</param>
+        <param name="watchdog_timeout">0.1</param>
+      </joint>
+      <joint name="FL_lleg_joint">
+        <command_interface name="position"/>
+        <command_interface name="velocity"/>
+        <command_interface name="effort"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+        <param name="serial_number">335836543539</param>
+        <param name="axis">1</param>
+        <param name="enable_watchdog">0</param>
+        <param name="watchdog_timeout">0.1</param>
+      </joint>
 
-  <!-- ODrive 4 -->
-  <ros2_control name="odrive_4" type="system">
-    <hardware>
-      <plugin>odrive_hardware_interface/ODriveHardwareInterface</plugin>
-      <param name="odrives">
-        <odrive serial_number="335436563539">
-          <axis index="0" joint="FR_uleg_joint"/>
-          <axis index="1" joint="FR_lleg_joint"/>
-        </odrive>
-      </param>
-    </hardware>
-  </ros2_control>
+      <!-- ODrive 2 -->
+      <sensor name="odrv2">
+        <param name="serial_number">3359366C3539</param>
+      </sensor>
+      <joint name="FL_hip_joint">
+        <command_interface name="position"/>
+        <command_interface name="velocity"/>
+        <command_interface name="effort"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+        <param name="serial_number">3359366C3539</param>
+        <param name="axis">0</param>
+        <param name="enable_watchdog">0</param>
+        <param name="watchdog_timeout">0.1</param>
+      </joint>
+      <joint name="FR_hip_joint">
+        <command_interface name="position"/>
+        <command_interface name="velocity"/>
+        <command_interface name="effort"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+        <param name="serial_number">3359366C3539</param>
+        <param name="axis">1</param>
+        <param name="enable_watchdog">0</param>
+        <param name="watchdog_timeout">0.1</param>
+      </joint>
 
-  <!-- ODrive 5 -->
-  <ros2_control name="odrive_5" type="system">
-    <hardware>
-      <plugin>odrive_hardware_interface/ODriveHardwareInterface</plugin>
-      <param name="odrives">
-        <odrive serial_number="3673385F3030">
-          <axis index="0" joint="BR_hip_joint"/>
-          <axis index="1" joint="BL_hip_joint"/>
-        </odrive>
-      </param>
-    </hardware>
-  </ros2_control>
+      <!-- ODrive 3 -->
+      <sensor name="odrv3">
+        <param name="serial_number">3359366F3539</param>
+      </sensor>
+      <joint name="BL_uleg_joint">
+        <command_interface name="position"/>
+        <command_interface name="velocity"/>
+        <command_interface name="effort"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+        <param name="serial_number">3359366F3539</param>
+        <param name="axis">0</param>
+        <param name="enable_watchdog">0</param>
+        <param name="watchdog_timeout">0.1</param>
+      </joint>
+      <joint name="BL_lleg_joint">
+        <command_interface name="position"/>
+        <command_interface name="velocity"/>
+        <command_interface name="effort"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+        <param name="serial_number">3359366F3539</param>
+        <param name="axis">1</param>
+        <param name="enable_watchdog">0</param>
+        <param name="watchdog_timeout">0.1</param>
+      </joint>
 
-  <!-- Définition des joints (inchangée) -->
-  <joint name="FR_hip_joint">
-    <command_interface name="position"/>
-    <state_interface name="position"/>
-    <state_interface name="velocity"/>
-  </joint>
-  <joint name="FL_hip_joint">
-    <command_interface name="position"/>
-    <state_interface name="position"/>
-    <state_interface name="velocity"/>
-  </joint>
-  <joint name="BR_hip_joint">
-    <command_interface name="position"/>
-    <state_interface name="position"/>
-    <state_interface name="velocity"/>
-  </joint>
-  <joint name="BL_hip_joint">
-    <command_interface name="position"/>
-    <state_interface name="position"/>
-    <state_interface name="velocity"/>
-  </joint>
-  <joint name="FR_uleg_joint">
-    <command_interface name="position"/>
-    <state_interface name="position"/>
-    <state_interface name="velocity"/>
-  </joint>
-  <joint name="FL_uleg_joint">
-    <command_interface name="position"/>
-    <state_interface name="position"/>
-    <state_interface name="velocity"/>
-  </joint>
-  <joint name="BR_uleg_joint">
-    <command_interface name="position"/>
-    <state_interface name="position"/>
-    <state_interface name="velocity"/>
-  </joint>
-  <joint name="BL_uleg_joint">
-    <command_interface name="position"/>
-    <state_interface name="position"/>
-    <state_interface name="velocity"/>
-  </joint>
-  <joint name="FR_lleg_joint">
-    <command_interface name="position"/>
-    <state_interface name="position"/>
-    <state_interface name="velocity"/>
-  </joint>
-  <joint name="FL_lleg_joint">
-    <command_interface name="position"/>
-    <state_interface name="position"/>
-    <state_interface name="velocity"/>
-  </joint>
-  <joint name="BR_lleg_joint">
-    <command_interface name="position"/>
-    <state_interface name="position"/>
-    <state_interface name="velocity"/>
-  </joint>
-  <joint name="BL_lleg_joint">
-    <command_interface name="position"/>
-    <state_interface name="position"/>
-    <state_interface name="velocity"/>
-  </joint>
+      <!-- ODrive 4 -->
+      <sensor name="odrv4">
+        <param name="serial_number">335436563539</param>
+      </sensor>
+      <joint name="FR_uleg_joint">
+        <command_interface name="position"/>
+        <command_interface name="velocity"/>
+        <command_interface name="effort"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+        <param name="serial_number">335436563539</param>
+        <param name="axis">0</param>
+        <param name="enable_watchdog">0</param>
+        <param name="watchdog_timeout">0.1</param>
+      </joint>
+      <joint name="FR_lleg_joint">
+        <command_interface name="position"/>
+        <command_interface name="velocity"/>
+        <command_interface name="effort"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+        <param name="serial_number">335436563539</param>
+        <param name="axis">1</param>
+        <param name="enable_watchdog">0</param>
+        <param name="watchdog_timeout">0.1</param>
+      </joint>
+
+      <!-- ODrive 5 -->
+      <sensor name="odrv5">
+        <param name="serial_number">3673385F3030</param>
+      </sensor>
+      <joint name="BR_hip_joint">
+        <command_interface name="position"/>
+        <command_interface name="velocity"/>
+        <command_interface name="effort"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+        <param name="serial_number">3673385F3030</param>
+        <param name="axis">0</param>
+        <param name="enable_watchdog">0</param>
+        <param name="watchdog_timeout">0.1</param>
+      </joint>
+      <joint name="BL_hip_joint">
+        <command_interface name="position"/>
+        <command_interface name="velocity"/>
+        <command_interface name="effort"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+        <state_interface name="effort"/>
+        <param name="serial_number">3673385F3030</param>
+        <param name="axis">1</param>
+        <param name="enable_watchdog">0</param>
+        <param name="watchdog_timeout">0.1</param>
+      </joint>
+
+    </ros2_control>
+
+    <!-- Définition des joints avec limites sécurisées -->
+    <!--
+    <joint name="FR_hip_joint" type="revolute">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <limit lower="0.515" upper="0.615" effort="100" velocity="100"/>
+    </joint>
+    <joint name="FL_hip_joint" type="revolute">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <limit lower="-0.045" upper="0.055" effort="100" velocity="100"/>
+    </joint>
+    <joint name="BR_hip_joint" type="revolute">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <limit lower="0.323" upper="0.423" effort="100" velocity="100"/>
+    </joint>
+    <joint name="BL_hip_joint" type="revolute">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <limit lower="0.166" upper="0.266" effort="100" velocity="100"/>
+    </joint>
+
+    <joint name="FR_uleg_joint" type="revolute">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <limit lower="-0.770" upper="-0.170" effort="100" velocity="100"/>
+    </joint>
+    <joint name="FL_uleg_joint" type="revolute">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <limit lower="-0.499" upper="0.101" effort="100" velocity="100"/>
+    </joint>
+    <joint name="BR_uleg_joint" type="revolute">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <limit lower="-0.150" upper="0.450" effort="100" velocity="100"/>
+    </joint>
+    <joint name="BL_uleg_joint" type="revolute">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <limit lower="0.166" upper="0.766" effort="100" velocity="100"/>
+    </joint>
+
+    <joint name="FR_lleg_joint" type="revolute">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <limit lower="-0.698" upper="3.839" effort="100" velocity="100"/>
+    </joint>
+    <joint name="FL_lleg_joint" type="revolute">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <limit lower="0.042" upper="0.642" effort="100" velocity="100"/>
+    </joint>
+    <joint name="BR_lleg_joint" type="revolute">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <limit lower="-0.611" upper="-0.011" effort="100" velocity="100"/>
+    </joint>
+    <joint name="BL_lleg_joint" type="revolute">
+      <command_interface name="position"/>
+      <state_interface name="position"/>
+      <state_interface name="velocity"/>
+      <limit lower="-0.538" upper="0.062" effort="100" velocity="100"/>
+    </joint>
+    -->
+
+  </xacro:macro>
 
 </robot>

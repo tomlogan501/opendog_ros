@@ -1,81 +1,108 @@
 controller_manager:
   ros__parameters:
-    update_rate: 100 # Hz
+    update_rate: 100  # Hz
 
+    # Broadcaster d'état des joints
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
 
-    joint0_position_controller:
+    # Contrôleurs individuels (utilisent JointGroupPositionController mais pour 1 joint chacun)
+    FR_hip_joint_controller:
+      type: position_controllers/JointGroupPositionController
+    FL_hip_joint_controller:
+      type: position_controllers/JointGroupPositionController
+    BR_hip_joint_controller:
+      type: position_controllers/JointGroupPositionController
+    BL_hip_joint_controller:
       type: position_controllers/JointGroupPositionController
 
-    joint0_velocity_controller:
-      type: velocity_controllers/JointGroupVelocityController
-
-    joint0_effort_controller:
-      type: effort_controllers/JointGroupEffortController
-    
-    joint1_position_controller:
+    FR_uleg_joint_controller:
+      type: position_controllers/JointGroupPositionController
+    FL_uleg_joint_controller:
+      type: position_controllers/JointGroupPositionController
+    BR_uleg_joint_controller:
+      type: position_controllers/JointGroupPositionController
+    BL_uleg_joint_controller:
       type: position_controllers/JointGroupPositionController
 
-    joint1_velocity_controller:
-      type: velocity_controllers/JointGroupVelocityController
-
-    joint1_effort_controller:
-      type: effort_controllers/JointGroupEffortController
-    
-    group_position_controller:
+    FR_lleg_joint_controller:
+      type: position_controllers/JointGroupPositionController
+    FL_lleg_joint_controller:
+      type: position_controllers/JointGroupPositionController
+    BR_lleg_joint_controller:
+      type: position_controllers/JointGroupPositionController
+    BL_lleg_joint_controller:
       type: position_controllers/JointGroupPositionController
 
-    group_velocity_controller:
-      type: velocity_controllers/JointGroupVelocityController
-
-    group_effort_controller:
-      type: effort_controllers/JointGroupEffortController
-
-joint0_position_controller:
+# Paramètres individuels des contrôleurs
+FR_hip_joint_controller:
   ros__parameters:
     joints:
-      - joint0
+      - "FR_hip_joint"
+    interface_name: "position"
 
-joint0_velocity_controller:
+FL_hip_joint_controller:
   ros__parameters:
     joints:
-      - joint0
+      - "FL_hip_joint"
+    interface_name: "position"
 
-joint0_effort_controller:
+BR_hip_joint_controller:
   ros__parameters:
     joints:
-      - joint0
+      - "BR_hip_joint"
+    interface_name: "position"
 
-joint1_position_controller:
+BL_hip_joint_controller:
   ros__parameters:
     joints:
-      - joint1
+      - "BL_hip_joint"
+    interface_name: "position"
 
-joint1_velocity_controller:
+FR_uleg_joint_controller:
   ros__parameters:
     joints:
-      - joint1
+      - "FR_uleg_joint"
+    interface_name: "position"
 
-joint1_effort_controller:
+FL_uleg_joint_controller:
   ros__parameters:
     joints:
-      - joint1
+      - "FL_uleg_joint"
+    interface_name: "position"
 
-group_position_controller:
+BR_uleg_joint_controller:
   ros__parameters:
     joints:
-      - joint0
-      - joint1
+      - "BR_uleg_joint"
+    interface_name: "position"
 
-group_velocity_controller:
+BL_uleg_joint_controller:
   ros__parameters:
     joints:
-      - joint0
-      - joint1
+      - "BL_uleg_joint"
+    interface_name: "position"
 
-group_effort_controller:
+FR_lleg_joint_controller:
   ros__parameters:
     joints:
-      - joint0
-      - joint1
+      - "FR_lleg_joint"
+    interface_name: "position"
+
+FL_lleg_joint_controller:
+  ros__parameters:
+    joints:
+      - "FL_lleg_joint"
+    interface_name: "position"
+
+BR_lleg_joint_controller:
+  ros__parameters:
+    joints:
+      - "BR_lleg_joint"
+    interface_name: "position"
+
+BL_lleg_joint_controller:
+  ros__parameters:
+    joints:
+      - "BL_lleg_joint"
+    interface_name: "position"
