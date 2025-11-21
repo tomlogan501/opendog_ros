@@ -1,4 +1,5 @@
 <?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
   <name>opendog_hardware_layer_can</name>
   <version>0.0.1</version>
@@ -8,11 +9,27 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
+  <!-- Dépendances ROS2 -->
   <depend>rclcpp</depend>
   <depend>controller_manager</depend>
+  <depend>hardware_interface</depend>
   <depend>ros2_control</depend>
+  <depend>ros2_controllers</depend>
+  
+  <!-- Dépendances pour le lancement -->
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  
+  <!-- Dépendances pour description du robot -->
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>xacro</exec_depend>
+  
+  <!-- Dépendances de vos autres packages -->
+  <exec_depend>opendog_description</exec_depend>
+  <exec_depend>odrive_hardware_interface</exec_depend>
 
+  <!-- Installation des dossiers -->
   <export>
-    <!-- Pas de plugin C++ dans ce package, c'est géré par odrive_can_system -->
+    <build_type>ament_cmake</build_type>
   </export>
 </package>

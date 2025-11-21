@@ -1,15 +1,15 @@
 # Copyright 2021 Factor Robotics
 
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, ExecuteProcess, RegisterEventHandler
+from launch.actions import DeclareLaunchArgument, TimerAction
 from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
-from launch.event_handlers import OnProcessExit
+from launch_ros.parameter_descriptions import ParameterValue
 
 def generate_launch_description():
     declared_arguments = []
-    
+
     # Argument pour l'interface CAN
     declared_arguments.append(
         DeclareLaunchArgument(
@@ -21,31 +21,30 @@ def generate_launch_description():
 
     can_interface = LaunchConfiguration("can_interface")
 
-    # Configuration CAN système
-    can_setup = ExecuteProcess(
-        cmd=['sudo', 'ip', 'link', 'set', can_interface, 'up', 'type', 'can', 'bitrate', '500000'],
-        output='screen'
-    )
-
-    # Description du robot avec URDF CAN
+    # ✅ Description du robot avec URDF CAN (ARGUMENT use_can:=true AJOUTÉ)
     robot_description_content = Command(
         [
-            PathJoinSubstitution([FindExecutable(name="xacro")]),
+            FindExecutable(name="xacro"),
             " ",
             PathJoinSubstitution(
                 [
-                    FindPackageShare("opendog_hardware_layer_can"),
-                    "urdf", 
-                    "opendog_can_hardware.urdf.xacro",
+                    FindPackageShare("opendog_description"),
+                    "urdf",
+                    "opendog.urdf.xacro",
                 ]
             ),
+            " use_can:=true",  # ← ✅ FORCE LE MODE CAN
+            " use_gazebo:=false",
         ]
     )
+
+    # Conversion en ParameterValue
+    robot_description_str = ParameterValue(robot_description_content, value_type=str)
 
     # Fichier de configuration des contrôleurs CAN
     robot_controllers = PathJoinSubstitution(
         [
-            FindPackageShare("odrive_hardware_layer_can"),
+            FindPackageShare("opendog_hardware_layer_can"),
             "config",
             "odrive_can_controllers.yaml",
         ]
@@ -57,7 +56,7 @@ def generate_launch_description():
         executable="ros2_control_node",
         output="both",
         parameters=[
-            {"robot_description": robot_description_content},
+            {"robot_description": robot_description_str},
             robot_controllers,
             {"can_interface": can_interface}
         ],
@@ -68,7 +67,7 @@ def generate_launch_description():
         package="robot_state_publisher",
         executable="robot_state_publisher",
         output="both",
-        parameters=[{"robot_description": robot_description_content}],
+        parameters=[{"robot_description": robot_description_str}],
     )
 
     # Broadcasteur d'état des joints
@@ -78,29 +77,30 @@ def generate_launch_description():
         arguments=["joint_state_broadcaster", "-c", "/controller_manager"],
     )
 
-    # 🔥 UN SEUL contrôleur de groupe
-    all_joints_controller_spawner = Node(
-        package="controller_manager",
-        executable="spawner",
-        arguments=["all_joints_controller", "-c", "/controller_manager"],
-    )
+    # MODE READ ONLY : Ne pas charger le controller de position
+    # all_joints_controller_spawner = Node(
+    #     package="controller_manager",
+    #     executable="spawner",
+    #     arguments=["all_joints_controller", "-c", "/controller_manager"],
+    # )
 
+    # Séquence de démarrage avec délais
     nodes = [
-        # Configuration CAN d'abord
-        can_setup,
-        
-        # Attendre que CAN soit configuré
-        RegisterEventHandler(
-            event_handler=OnProcessExit(
-                target_action=can_setup,
-                on_exit=[
-                    control_node,
-                    robot_state_pub_node,
-                    joint_state_broadcaster_spawner,
-                    all_joints_controller_spawner,
-                ]
-            )
-        )
+        # 1. Démarrer control_node et robot_state_publisher
+        control_node,
+        robot_state_pub_node,
+
+        # 2. Démarrer le broadcaster après que control_node soit prêt
+        TimerAction(
+            period=3.0,
+            actions=[joint_state_broadcaster_spawner]
+        ),
+
+        # 3. MODE READ ONLY : Controller de position désactivé
+        # TimerAction(
+        #     period=5.0,
+        #     actions=[all_joints_controller_spawner]
+        # ),
     ]
 
     return LaunchDescription(declared_arguments + nodes)

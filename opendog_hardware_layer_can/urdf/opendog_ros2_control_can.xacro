@@ -1,0 +1,153 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="opendog_ros2_control_can" params="name">
+    <ros2_control name="${name}" type="system">
+      
+      <hardware>
+        <!--  NOM CORRECT DU PLUGIN -->
+        <plugin>odrive_ros2_control_can/ODriveHardwareInterfaceCAN</plugin>
+        <param name="can_interface">can0</param>
+      </hardware>
+
+      <!-- Front Right Leg -->
+      <joint name="FR_hip_joint">
+        <param name="node_id">0</param>
+        <param name="axis">0</param>
+        <param name="torque_constant">8.27</param>
+        <param name="enable_watchdog">true</param>
+        <param name="watchdog_timeout">0.1</param>
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <joint name="FR_uleg_joint">
+        <param name="node_id">1</param>
+        <param name="axis">0</param>
+        <param name="torque_constant">8.27</param>
+        <param name="enable_watchdog">true</param>
+        <param name="watchdog_timeout">0.1</param>
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <!-- Front Left Leg -->
+      <joint name="FL_hip_joint">
+        <param name="node_id">2</param>
+        <param name="axis">0</param>
+        <param name="torque_constant">8.27</param>
+        <param name="enable_watchdog">true</param>
+        <param name="watchdog_timeout">0.1</param>
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <joint name="FL_uleg_joint">
+        <param name="node_id">3</param>
+        <param name="axis">0</param>
+        <param name="torque_constant">8.27</param>
+        <param name="enable_watchdog">true</param>
+        <param name="watchdog_timeout">0.1</param>
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <!-- Back Right Leg -->
+      <joint name="BR_hip_joint">
+        <param name="node_id">4</param>
+        <param name="axis">0</param>
+        <param name="torque_constant">8.27</param>
+        <param name="enable_watchdog">true</param>
+        <param name="watchdog_timeout">0.1</param>
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <joint name="BR_uleg_joint">
+        <param name="node_id">5</param>
+        <param name="axis">0</param>
+        <param name="torque_constant">8.27</param>
+        <param name="enable_watchdog">true</param>
+        <param name="watchdog_timeout">0.1</param>
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <!-- Back Left Leg -->
+      <joint name="BL_hip_joint">
+        <param name="node_id">6</param>
+        <param name="axis">0</param>
+        <param name="torque_constant">8.27</param>
+        <param name="enable_watchdog">true</param>
+        <param name="watchdog_timeout">0.1</param>
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <joint name="BL_uleg_joint">
+        <param name="node_id">7</param>
+        <param name="axis">0</param>
+        <param name="torque_constant">8.27</param>
+        <param name="enable_watchdog">true</param>
+        <param name="watchdog_timeout">0.1</param>
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <!-- Lower Legs -->
+      <joint name="FR_lleg_joint">
+        <param name="node_id">8</param>
+        <param name="axis">0</param>
+        <param name="torque_constant">8.27</param>
+        <param name="enable_watchdog">true</param>
+        <param name="watchdog_timeout">0.1</param>
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <joint name="FL_lleg_joint">
+        <param name="node_id">9</param>
+        <param name="axis">0</param>
+        <param name="torque_constant">8.27</param>
+        <param name="enable_watchdog">true</param>
+        <param name="watchdog_timeout">0.1</param>
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <joint name="BR_lleg_joint">
+        <param name="node_id">10</param>
+        <param name="axis">0</param>
+        <param name="torque_constant">8.27</param>
+        <param name="enable_watchdog">true</param>
+        <param name="watchdog_timeout">0.1</param>
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <joint name="BL_lleg_joint">
+        <param name="node_id">11</param>
+        <param name="axis">0</param>
+        <param name="torque_constant">8.27</param>
+        <param name="enable_watchdog">true</param>
+        <param name="watchdog_timeout">0.1</param>
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+    </ros2_control>
+  </xacro:macro>
+
+</robot>

@@ -28,6 +28,10 @@
 #include <string>
 #include <mutex>
 #include <unordered_map>
+#include <thread>
+#include <atomic>
+#include "odrive_endpoints.hpp"
+
 
 #include "rclcpp/rclcpp.hpp"
 
@@ -77,6 +81,11 @@ private:
   std::unordered_map<int64_t, float> iq_measured_cache_;
   std::unordered_map<int64_t, float> vbus_voltage_cache_;
   std::mutex cache_mutex_;
+
+  // Thread de réception CAN
+  std::thread receive_thread_;
+  std::atomic<bool> running_;
+  void receive_loop();
 
   int canSend(const struct can_frame& frame);
   int canReceive(struct can_frame& frame, int timeout_ms = 10);

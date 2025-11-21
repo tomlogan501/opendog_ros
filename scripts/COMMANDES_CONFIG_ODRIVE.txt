@@ -1,0 +1,148 @@
+# ========================================
+# COMMANDES DE CONFIGURATION ODRIVE v3.6
+# À exécuter dans odrivetool sur votre PC
+# ========================================
+
+# 1. CONNEXION
+odrivetool
+
+# 2. CONFIGURATION DE BASE
+odrv0.config.enable_brake_resistor = True
+odrv0.config.brake_resistance = 2.0
+odrv0.config.dc_bus_overvoltage_trip_level = 56.0
+odrv0.config.dc_max_positive_current = 20.0
+odrv0.config.dc_max_negative_current = -3.0
+
+# 3. CONFIGURATION MOTEUR AXIS 0
+odrv0.axis0.motor.config.pole_pairs = 20
+odrv0.axis0.motor.config.torque_constant = 8.27 / 100
+odrv0.axis0.motor.config.motor_type = 0
+odrv0.axis0.motor.config.current_lim = 5.0
+odrv0.axis0.motor.config.current_lim_margin = 3.0
+odrv0.axis0.motor.config.calibration_current = 5.0
+odrv0.axis0.motor.config.resistance_calib_max_voltage = 4.0
+odrv0.axis0.motor.config.requested_current_range = 10.0
+
+# 4. CONFIGURATION ENCODEUR SPI AXIS 0
+odrv0.axis0.encoder.config.mode = 257
+odrv0.axis0.encoder.config.cpr = 16384
+odrv0.axis0.encoder.config.abs_spi_cs_gpio_pin = 5
+odrv0.axis0.encoder.config.calib_scan_distance = 150.0
+
+# 5. CONFIGURATION CONTRÔLEUR AXIS 0
+odrv0.axis0.controller.config.control_mode = 3
+odrv0.axis0.controller.config.input_mode = 5
+odrv0.axis0.controller.config.vel_limit = 50.0
+odrv0.axis0.controller.config.pos_gain = 20.0
+odrv0.axis0.controller.config.vel_gain = 0.16
+odrv0.axis0.controller.config.vel_integrator_gain = 0.32
+
+# 6. EFFACER LES ERREURS
+odrv0.clear_errors()
+
+# 7. CALIBRATION MOTEUR AXIS 0 (10-15 secondes)
+odrv0.axis0.requested_state = 4  # AXIS_STATE_MOTOR_CALIBRATION
+# Attendre que l'état revienne à 1 (IDLE)
+
+# 8. VÉRIFIER LES ERREURS
+dump_errors(odrv0)
+
+# 9. MARQUER LE MOTEUR COMME PRÉ-CALIBRÉ
+odrv0.axis0.motor.config.pre_calibrated = True
+
+# 10. CALIBRATION ENCODEUR OFFSET AXIS 0 (10-15 secondes)
+odrv0.axis0.requested_state = 7  # AXIS_STATE_ENCODER_OFFSET_CALIBRATION
+# Attendre que l'état revienne à 1 (IDLE)
+
+# 11. VÉRIFIER LES ERREURS
+dump_errors(odrv0)
+
+# 12. MARQUER L'ENCODEUR COMME PRÉ-CALIBRÉ
+odrv0.axis0.encoder.config.pre_calibrated = True
+
+# 13. ACTIVER LE DÉMARRAGE AUTOMATIQUE EN CLOSED_LOOP
+odrv0.axis0.config.startup_encoder_index_search = False
+odrv0.axis0.config.startup_encoder_offset_calibration = False
+odrv0.axis0.config.startup_motor_calibration = False
+odrv0.axis0.config.startup_closed_loop_control = True
+
+# 14. TEST EN CLOSED_LOOP
+odrv0.axis0.requested_state = 8  # AXIS_STATE_CLOSED_LOOP_CONTROL
+# Vérifier que l'état est bien 8
+
+# 15. RETOUR EN IDLE
+odrv0.axis0.requested_state = 1  # AXIS_STATE_IDLE
+
+# ========================================
+# RÉPÉTER POUR AXIS 1 (si nécessaire)
+# ========================================
+
+# Configuration moteur axis 1
+odrv0.axis1.motor.config.pole_pairs = 20
+odrv0.axis1.motor.config.torque_constant = 8.27 / 100
+odrv0.axis1.motor.config.motor_type = 0
+odrv0.axis1.motor.config.current_lim = 5.0
+odrv0.axis1.motor.config.current_lim_margin = 3.0
+odrv0.axis1.motor.config.calibration_current = 5.0
+odrv0.axis1.motor.config.resistance_calib_max_voltage = 4.0
+odrv0.axis1.motor.config.requested_current_range = 10.0
+
+# Configuration encodeur SPI axis 1
+odrv0.axis1.encoder.config.mode = 257
+odrv0.axis1.encoder.config.cpr = 16384
+odrv0.axis1.encoder.config.abs_spi_cs_gpio_pin = 4  # GPIO 4 pour axis1
+odrv0.axis1.encoder.config.calib_scan_distance = 150.0
+
+# Configuration contrôleur axis 1
+odrv0.axis1.controller.config.control_mode = 3
+odrv0.axis1.controller.config.input_mode = 5
+odrv0.axis1.controller.config.vel_limit = 50.0
+odrv0.axis1.controller.config.pos_gain = 20.0
+odrv0.axis1.controller.config.vel_gain = 0.16
+odrv0.axis1.controller.config.vel_integrator_gain = 0.32
+
+# Calibration moteur axis 1
+odrv0.clear_errors()
+odrv0.axis1.requested_state = 4
+# Attendre...
+odrv0.axis1.motor.config.pre_calibrated = True
+
+# Calibration encodeur axis 1
+odrv0.axis1.requested_state = 7
+# Attendre...
+odrv0.axis1.encoder.config.pre_calibrated = True
+
+# Démarrage automatique axis 1
+odrv0.axis1.config.startup_encoder_index_search = False
+odrv0.axis1.config.startup_encoder_offset_calibration = False
+odrv0.axis1.config.startup_motor_calibration = False
+odrv0.axis1.config.startup_closed_loop_control = True
+
+# Test axis 1
+odrv0.axis1.requested_state = 8
+# Vérifier...
+odrv0.axis1.requested_state = 1
+
+# ========================================
+# SAUVEGARDER LA CONFIGURATION
+# ========================================
+odrv0.save_configuration()
+
+# ========================================
+# REDÉMARRER L'ODRIVE
+# ========================================
+odrv0.reboot()
+
+# ========================================
+# APRÈS REDÉMARRAGE
+# ========================================
+# L'ODrive devrait démarrer automatiquement en CLOSED_LOOP (état 8)
+# Vérifiez avec candump sur la Raspberry Pi :
+# candump can0 | grep "021"
+# Vous devriez voir : can0  021   [8]  08 00 00 00 ...
+#                                  ^^
+#                                  État 8 = CLOSED_LOOP
+
+
+
+

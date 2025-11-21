@@ -1,9 +1,18 @@
 <?xml version="1.0" ?>
 <robot name="opendog_nostand" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <!-- ========================================= -->
+  <!--     ARGUMENTS DE CONFIGURATION           -->
+  <!-- ========================================= -->
   
-  <!-- Argument optionnel pour activer l'injection des plugins Gazebo -->
+  <!-- Choix du type d'interface hardware -->
+  <xacro:arg name="use_can" default="false"/>
   <xacro:arg name="use_gazebo" default="false"/>
 
+  <!-- ========================================= -->
+  <!--     DESCRIPTION MÉCANIQUE (TOUJOURS)     -->
+  <!-- ========================================= -->
+  
   <!-- Configuration of Robot Links-->  
   <xacro:include filename="$(find opendog_description)/urdf/opendog_stand_links.xacro"/> 
   <xacro:include filename="$(find opendog_description)/urdf/opendog_stand_joints.xacro"/>
@@ -16,13 +25,29 @@
   <xacro:include filename="$(find opendog_description)/urdf/materials.xacro"/>
   <xacro:include filename="$(find opendog_description)/urdf/opendog.trans"/>
 
-  <!-- ros2_control configuration -->
-  <xacro:include filename="$(find opendog_description)/urdf/opendog_ros2_control.xacro"/>
-  <xacro:opendog_ros2_control name="opendog_hw"/>
+  <!-- ========================================= -->
+  <!--     HARDWARE INTERFACE (CONDITIONNEL)    -->
+  <!-- ========================================= -->
 
-  <!-- Inclusion et appel conditionnels du plugin Gazebo -->
+  <!-- Choix entre USB et CAN -->
+  <xacro:if value="$(arg use_can)">
+    <!-- MODE CAN -->
+    <xacro:include filename="$(find opendog_hardware_layer_can)/urdf/opendog_ros2_control_can.xacro"/>
+    <xacro:opendog_ros2_control_can name="opendog_hw"/>
+  </xacro:if>
+
+  <xacro:unless value="$(arg use_can)">
+    <!-- MODE USB (par défaut) -->
+    <xacro:include filename="$(find opendog_description)/urdf/opendog_ros2_control.xacro"/>
+    <xacro:opendog_ros2_control name="opendog_hw"/>
+  </xacro:unless>
+
+  <!-- ========================================= -->
+  <!--     SIMULATION GAZEBO (OPTIONNEL)        -->
+  <!-- ========================================= -->
+  
   <xacro:if value="$(arg use_gazebo)">
-    <xacro:include filename="$(find opendog_description)/urdf/opendog_gazebo_control.xacro"/>
+    <xacro:include filename="$(find opendog_description)/urdf/opendog_gazebo.xacro"/>
     <xacro:opendog_gazebo_control name="opendog_hw_gazebo"/>
   </xacro:if>
 

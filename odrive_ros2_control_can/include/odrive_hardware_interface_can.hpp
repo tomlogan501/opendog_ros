@@ -15,10 +15,15 @@
 #pragma once
 
 #include <cmath>
+#include <set>
+#include <vector>
 
 #include "hardware_interface/system_interface.hpp"
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
 #include "rclcpp/rclcpp.hpp"
+#include "odrive_can.hpp"
+#include "odrive_endpoints.hpp"
+#include "visibility_control.hpp"
 
 #define AXIS_STATE_IDLE 1
 #define AXIS_STATE_CLOSED_LOOP_CONTROL 8
@@ -27,7 +32,7 @@
   do {                                                                                     \
     int ret = (status);                                                                    \
     if (ret != 0) {                                                                        \
-      RCLCPP_ERROR(rclcpp::get_logger("ODriveHardwareInterface"), "Error: %d", ret); \
+      RCLCPP_ERROR(rclcpp::get_logger("ODriveHardwareInterfaceCAN"), "Error: %d", ret);   \
       return CallbackReturn::ERROR;                                                        \
     }                                                                                      \
   } while (0)
@@ -36,7 +41,7 @@
   do {                                                                                     \
     int ret = (status);                                                                    \
     if (ret != 0) {                                                                        \
-      RCLCPP_ERROR(rclcpp::get_logger("ODriveHardwareInterface"), "Error: %d", ret); \
+      RCLCPP_ERROR(rclcpp::get_logger("ODriveHardwareInterfaceCAN"), "Error: %d", ret);   \
       return return_type::ERROR;                                                           \
     }                                                                                      \
   } while (0)
@@ -45,12 +50,12 @@ using namespace odrive;
 using hardware_interface::CallbackReturn;
 using hardware_interface::return_type;
 
-namespace odrive_hardware_interface
+namespace odrive_ros2_control
 {
-class ODriveHardwareInterface : public hardware_interface::SystemInterface
+class ODriveHardwareInterfaceCAN : public hardware_interface::SystemInterface
 {
 public:
-  RCLCPP_SHARED_PTR_DEFINITIONS(ODriveHardwareInterface)
+  RCLCPP_SHARED_PTR_DEFINITIONS(ODriveHardwareInterfaceCAN)
 
   HARDWARE_INTERFACE_PUBLIC
   CallbackReturn on_init(const hardware_interface::HardwareInfo & info) override;
@@ -83,22 +88,35 @@ public:
   return_type write(const rclcpp::Time &, const rclcpp::Duration &) override;
 
 private:
+  // Interface ODriveCAN
   ODriveCAN * odrive_can_;
 
-  std::vector<std::vector<int64_t>> node_ids_;
+  // Node IDs uniques (set pour éviter les doublons)
+  std::set<int> unique_node_ids_;
+  
+  // Node IDs par joint/sensor (vecteurs pour accès indexé)
+  std::vector<int> joint_node_ids_;
+  std::vector<int> sensor_node_ids_;
+
+  // Configuration des axes
   std::vector<int> axes_;
   std::vector<float> torque_constants_;
   std::vector<bool> enable_watchdogs_;
 
+  // État des sensors (vbus voltage)
   std::vector<double> hw_vbus_voltages_;
 
+  // Commandes des joints
   std::vector<double> hw_commands_positions_;
   std::vector<double> hw_commands_velocities_;
   std::vector<double> hw_commands_efforts_;
+
+  // États des joints
   std::vector<double> hw_positions_;
   std::vector<double> hw_velocities_;
   std::vector<double> hw_efforts_;
 
+  // Diagnostics des joints
   std::vector<double> hw_axis_errors_;
   std::vector<double> hw_motor_errors_;
   std::vector<double> hw_encoder_errors_;
@@ -106,6 +124,7 @@ private:
   std::vector<double> hw_fet_temperatures_;
   std::vector<double> hw_motor_temperatures_;
 
+  // Niveaux d'intégration (modes de contrôle)
   enum class integration_level_t : int32_t
   {
     UNDEFINED = 0,
@@ -116,4 +135,5 @@ private:
 
   std::vector<integration_level_t> control_level_;
 };
-}  // namespace odrive_hardware_interface
+
+}  // namespace odrive_ros2_control

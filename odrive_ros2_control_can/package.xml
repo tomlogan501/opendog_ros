@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <package format="3">
-  <name>odrive_can_system</name>
+  <name>odrive_ros2_control_can</name>
   <version>0.0.1</version>
   <description>ODrive CAN hardware interface system (ros2_control plugin)</description>
   <maintainer email="you@example.com">You</maintainer>
@@ -15,6 +15,7 @@
   <depend>rclcpp_lifecycle</depend>
 
   <export>
+    <build_type>ament_cmake</build_type>
     <pluginlib plugin="${prefix}/odrive_hardware_can_plugin.xml"/>
   </export>
 </package>
