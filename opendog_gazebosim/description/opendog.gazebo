@@ -6,66 +6,29 @@
 <xacro:include filename="$(find opendog_description)/urdf/physics.xacro" /> 
 
     <xacro:macro name="gz_hip">
-        <mu1>0.2</mu1>
-        <mu2>0.2</mu2>  
-        <kp value="2147483647.0"/>
-        <kd value="1.0"/>
-        <maxVel>0.01</maxVel>
         <self_collide>1</self_collide>
+        <enable_wind>0</enable_wind>
         <material>Gazebo/Blue</material>
     </xacro:macro>
 
     <xacro:macro name="gz_uleg">
-        <mu1>0.2</mu1>
-        <mu2>0.2</mu2> 
-        <kp value="2147483647.0"/>
-        <kd value="1.0"/>
-        <maxVel>0.01</maxVel>
         <self_collide>1</self_collide>
+        <enable_wind>0</enable_wind>
         <material>Gazebo/White</material>
-        <!-- <implicitSpringDamper>1</implicitSpringDamper>
-        <springStiffness>100</springStiffness> -->
     </xacro:macro>
 
     <xacro:macro name="gz_lleg">
-        <mu1>0.2</mu1>
-        <mu2>0.2</mu2>    
-        <fdir1>1 0 0</fdir1>
-        <kp>2147483647.0</kp>
-        <kd>1.0</kd>
-        <maxVel>0.01</maxVel>
+        <mu1>1000.1</mu1>
+        <mu2>0900</mu2>    
+        <fdir1>1 1 0</fdir1>
         <self_collide>1</self_collide> 
         <material>Gazebo/Blue</material>
         <minDepth>0.001</minDepth> 
-        <!-- <implicitSpringDamper>1</implicitSpringDamper>
-        <springStiffness>100</springStiffness> -->
+        <enable_wind>0</enable_wind>
     </xacro:macro>
-
-    <xacro:macro name="gz_foot">
-        <mu1>0.9</mu1>
-        <mu2>0.9</mu2>
-        <fdir1>1 1 0</fdir1>
-        <kp value="2147483647.0" />
-        <kd value="100.0" />
-        <maxVel>0.01</maxVel>
-        <self_collide>1</self_collide>
-        <minDepth>0.001</minDepth> 
-
-        <restitution_coefficient>1</restitution_coefficient>
-        <threshold>0</threshold>
-
-        <!--material>Gazebo/DarkYellow</material-->
-    </xacro:macro>
-
-
 
     <!-- body -->
     <gazebo reference="base_link">
-        <mu1>0.05</mu1>
-        <mu2>0.05</mu2>
-        <!-- <kp>1000000.0</kp>
-        <kd>1.0</kd> -->
-        <maxVel>0.01</maxVel>
         <material>Gazebo/White  </material>
     </gazebo>
 
@@ -113,93 +76,79 @@
 
 <gazebo reference="base_link">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+
   <self_collide>true</self_collide>
   <gravity>true</gravity>
 </gazebo>
 
 <gazebo reference="ur_shoulder_1">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="ur_middleleg_1">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="ul_shoulder_1">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="ul_middleleg_1">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="BL_hip_joint">
-  <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="ll_middleleg_1">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="lr_hip_1">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="lr_middleleg_1">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="lr_lowerleg_2">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="ll_lowerLeg_1">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="ul_lowerleg_1">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+
   <self_collide>true</self_collide>
 </gazebo>
 
 <gazebo reference="ur_lowerleg_1">
   <material>${body_color}</material>
-  <mu1>0.2</mu1>
-  <mu2>0.2</mu2>
+
   <self_collide>true</self_collide>
 </gazebo>
 

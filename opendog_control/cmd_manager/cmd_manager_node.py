@@ -27,20 +27,20 @@ class CmdManager_ROS():
         self.sub1_name = 'opendog_joy_ctrl_cmd' 
         self.sub1_interface = JoyCtrlCmds  #opendog_msgs.msg.CtrlCmd
         self.sub1_callback = self._joy_cmd_callback
-        self.sub1_queueSize = 30
+        self.sub1_queueSize = 1
         # -----   sub2  -----------
         self.sub2 = None
         self.sub2_name = 'vel_cmd'
         self.sub2_interface = Twist     #geometry_msgs.msg.Twist
         self.sub2_callback = self._sub2_callback
-        self.sub2_queueSize = 10
+        self.sub2_queueSize = 1
         # -----   pub  -----------
         self.pub = None
         self.pub_name = 'opendog_geometry'
         self.pub_interface = Geometry   #opendog_msgs.msg.Geometry
-        self.pub_timer_period = 0.001
+        self.pub_timer_period = 0.05
         self.pub_timer = None
-        self.pub_queueSize = 12
+        self.pub_queueSize = 1
         self.pub_callback = self._pub_callback
 
         self.stop = True
@@ -114,12 +114,15 @@ class CmdManager_ROS():
         msg.fr.x= self.pub_msgs[0].FR.pose.cur_coord[0]
         msg.fr.y= self.pub_msgs[0].FR.pose.cur_coord[1]
         msg.fr.z= self.pub_msgs[0].FR.pose.cur_coord[2]
+        
         msg.fl.x= self.pub_msgs[0].FL.pose.cur_coord[0]
         msg.fl.y= self.pub_msgs[0].FL.pose.cur_coord[1]
-        msg.fl.z= self.pub_msgs[0].FL.pose.cur_coord[2]
+        msg.fl.z= self.pub_msgs[0].FL.pose.cur_coord[2]        
+        
         msg.br.x= self.pub_msgs[0].BR.pose.cur_coord[0]
         msg.br.y= self.pub_msgs[0].BR.pose.cur_coord[1]
         msg.br.z= self.pub_msgs[0].BR.pose.cur_coord[2]
+        
         msg.bl.x= self.pub_msgs[0].BL.pose.cur_coord[0]
         msg.bl.y= self.pub_msgs[0].BL.pose.cur_coord[1]
         msg.bl.z= self.pub_msgs[0].BL.pose.cur_coord[2]
@@ -144,7 +147,7 @@ class CmdManager_ROS():
         self.create_pub()
         rclpy.spin(self.node)
         self.node.destroy_node()
-        rclpy.shutdown()
+        #rclpy.shutdown()
         self.stop = False
         
         
@@ -155,21 +158,3 @@ class CmdManager_ROS():
     def run(self):
         pass
         
-
-
-
-# def main(args=None):
-#     print('starting')
-#     cmd_manager = CmdManager_ROS()
-#     thread1 = Thread(target=cmd_manager.start)
-#     thread1.start()
-
-#     while 1:
-#         # print("tnumber of threads in background: {}".format(thread1.get_numOf_threads()))
-#         print("current thread: {}".format(threading.current_thread().name))
-#         time.sleep(0.1)
-#         print(cmd.mode.start)
-
-
-# if __name__ == '__main__':
-#     main()
