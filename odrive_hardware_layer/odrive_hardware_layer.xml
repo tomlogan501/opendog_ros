@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<library path="odrive_hardware_layer">
+  <class
+    name="odrive_hardware_layer/OdriveHardwareLayer"
+    type="odrive_hardware_layer::OdriveHardwareLayer"
+    base_class_type="hardware_interface::SystemInterface">
+    <description>
+      ODrive CAN hardware interface for ros2_control.
+      Controls ODrive motor controllers over SocketCAN (can0).
+      Uses ODrive CANSimple protocol for position, velocity and torque control.
+    </description>
+  </class>
+</library>
