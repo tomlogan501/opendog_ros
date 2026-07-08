@@ -1,0 +1,46 @@
+{
+    "mcpServers": {
+        "ros-mcp-server": {
+            "command": "/bin/bash",
+            "args": [
+                "-c",
+                "source /opt/ros/humble/setup.bash && export ROS_LOG_DIR=/tmp && export ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0} && cd /workspace/.devcontainer/ros-mcp-server && uv run python ros-general.py"
+            ]
+        },
+        "puppeteer": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-puppeteer"
+            ]
+        },
+        "filesystem": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-filesystem",
+                "/workspace/ros_ws",
+                "/workspace/architecture",
+                "/workspace/iotbridge"
+            ]
+        },
+        "sequential-thinking": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-sequential-thinking"
+            ]
+        },
+        "memory": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-memory"
+            ]
+        },
+        "chrome-mcp": {
+            "type": "streamableHttp",
+            "url": "http://127.0.0.1:12306/mcp"
+        }
+    }
+}

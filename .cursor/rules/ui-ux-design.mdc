@@ -1,0 +1,410 @@
+---
+description: Modern UI/UX design standards for professional web interfaces at
+globs: ["**/*.html", "**/*.css", "**/*.js", "**/web/**/*", "**/static/**/*"]
+alwaysApply: true
+---
+
+# UI/UX Design Standards —
+
+## 🎯 Core Principles
+
+### Design Philosophy
+
+- **Professional & Modern**: Clean, minimalist interfaces that prioritize clarity and efficiency
+- **Unified Experience**: Consistent design language across all interfaces (debug, monitoring, dashboards)
+- **User-Centered**: Design decisions based on user needs, not aesthetics alone
+- **Accessibility First**: WCAG 2.1 AA compliance minimum, AAA where possible
+- **Performance**: Fast, responsive interfaces that don't compromise functionality
+
+### Nielsen's 10 Usability Heuristics
+
+1. **Visibility of system status**: Always show what's happening
+2. **Match real world**: Use familiar concepts and language
+3. **User control**: Allow undo/redo, easy navigation
+4. **Consistency**: Same patterns across interfaces
+5. **Error prevention**: Prevent errors before they occur
+6. **Recognition over recall**: Visual cues, not memory
+7. **Flexibility**: Shortcuts for power users
+8. **Aesthetic minimalism**: Remove unnecessary elements
+9. **Error recovery**: Clear, helpful error messages
+10. **Help & documentation**: Easy to find when needed
+
+## 🎨 Design Token System
+
+### MANDATORY: Use Design Tokens, Never Hard-Code Values
+
+All visual design must use CSS custom properties (design tokens) defined in a shared token system.
+
+#### Color Tokens Structure
+
+```css
+:root {
+  /* Brand Colors -  Identity */
+  --color-brand-primary: #0066cc;        /* Primary blue - trust, technology */
+  --color-brand-secondary: #ff6600;      /* Secondary orange - energy, action */
+  --color-brand-accent: #00cc99;         /* Accent teal - innovation */
+
+  /* Semantic Colors - Status & Feedback */
+  --color-success: #22c55e;              /* Green - success, healthy */
+  --color-success-light: #d1fae5;
+  --color-success-dark: #065f46;
+
+  --color-warning: #eab308;              /* Yellow - caution, attention */
+  --color-warning-light: #fef3c7;
+  --color-warning-dark: #92400e;
+
+  --color-error: #ef4444;                 /* Red - error, critical */
+  --color-error-light: #fee2e2;
+  --color-error-dark: #991b1b;
+
+  --color-info: #3b82f6;                  /* Blue - information */
+  --color-info-light: #dbeafe;
+  --color-info-dark: #1e40af;
+
+  /* Neutral Colors - Backgrounds & Text */
+  --color-neutral-50: #f9fafb;
+  --color-neutral-100: #f3f4f6;
+  --color-neutral-200: #e5e7eb;
+  --color-neutral-300: #d1d5db;
+  --color-neutral-400: #9ca3af;
+  --color-neutral-500: #6b7280;
+  --color-neutral-600: #4b5563;
+  --color-neutral-700: #374151;
+  --color-neutral-800: #1f2937;
+  --color-neutral-900: #111827;
+
+  /* Surface Colors */
+  --color-bg-primary: var(--color-neutral-50);
+  --color-bg-secondary: var(--color-neutral-100);
+  --color-surface: #ffffff;
+  --color-surface-elevated: #ffffff;
+
+  /* Text Colors */
+  --color-text-primary: var(--color-neutral-900);
+  --color-text-secondary: var(--color-neutral-600);
+  --color-text-tertiary: var(--color-neutral-400);
+  --color-text-inverse: #ffffff;
+
+  /* Border Colors */
+  --color-border-default: var(--color-neutral-200);
+  --color-border-focus: var(--color-brand-primary);
+  --color-border-error: var(--color-error);
+
+  /* Shadow Tokens */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+
+  /* Spacing Scale (8px base unit) */
+  --space-1: 0.25rem;  /* 4px */
+  --space-2: 0.5rem;   /* 8px */
+  --space-3: 0.75rem;  /* 12px */
+  --space-4: 1rem;     /* 16px */
+  --space-5: 1.25rem;  /* 20px */
+  --space-6: 1.5rem;   /* 24px */
+  --space-8: 2rem;     /* 32px */
+  --space-10: 2.5rem;  /* 40px */
+  --space-12: 3rem;    /* 48px */
+  --space-16: 4rem;    /* 64px */
+  --space-20: 5rem;    /* 80px */
+
+  /* Typography Scale */
+  --font-family-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                      'Helvetica Neue', Arial, sans-serif;
+  --font-family-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Courier New', monospace;
+
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;    /* 14px */
+  --font-size-base: 1rem;     /* 16px */
+  --font-size-lg: 1.125rem;    /* 18px */
+  --font-size-xl: 1.25rem;     /* 20px */
+  --font-size-2xl: 1.5rem;     /* 24px */
+  --font-size-3xl: 2rem;       /* 32px */
+  --font-size-4xl: 2.5rem;     /* 40px */
+
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /* Border Radius */
+  --radius-sm: 0.25rem;   /* 4px */
+  --radius-md: 0.5rem;    /* 8px */
+  --radius-lg: 0.75rem;   /* 12px */
+  --radius-xl: 1rem;      /* 16px */
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 150ms ease-in-out;
+  --transition-base: 200ms ease-in-out;
+  --transition-slow: 300ms ease-in-out;
+
+  /* Z-Index Scale */
+  --z-base: 0;
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+}
+```
+
+## 📐 Layout & Spacing
+
+### Grid System
+
+- Use CSS Grid or Flexbox for layouts
+- Standard container max-width: `1200px` (large screens)
+- Consistent gutters: `var(--space-4)` (16px) minimum
+- Responsive breakpoints:
+  - Mobile: `< 640px`
+  - Tablet: `640px - 1024px`
+  - Desktop: `> 1024px`
+
+### Spacing Principles
+
+- **Consistent Rhythm**: Use spacing scale (8px base unit)
+- **Vertical Spacing**: `var(--space-4)` minimum between sections
+- **Card Padding**: `var(--space-6)` (24px) standard
+- **Component Gap**: `var(--space-3)` to `var(--space-4)` for related elements
+
+## 🎨 Component Patterns
+
+### Cards & Containers
+
+```css
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-base);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.card-header {
+  margin-bottom: var(--space-4);
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--color-border-default);
+}
+```
+
+### Status Indicators
+
+- **OK/Success**: Green (`--color-success`)
+- **Warning**: Yellow (`--color-warning`)
+- **Error/Critical**: Red (`--color-error`)
+- **Info**: Blue (`--color-info`)
+- **Neutral/Unknown**: Gray (`--color-neutral-500`)
+
+Always combine color with:
+- Icon/Symbol (checkmark, warning, error, info)
+- Text label (semantic, not just color)
+- Shape/Background for contrast
+
+### Badges & Tags
+
+```css
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge-success {
+  background: var(--color-success-light);
+  color: var(--color-success-dark);
+}
+
+.badge-warning {
+  background: var(--color-warning-light);
+  color: var(--color-warning-dark);
+}
+
+.badge-error {
+  background: var(--color-error-light);
+  color: var(--color-error-dark);
+}
+```
+
+### Buttons
+
+- Primary: Brand color, high contrast
+- Secondary: Outline style
+- Danger: Error color
+- Disabled: Gray with reduced opacity
+- Minimum touch target: `44px × 44px`
+- Clear hover/focus/active states
+
+### Forms & Inputs
+
+- Clear labels above or beside inputs
+- Error states: Red border + error message
+- Success states: Green border (when applicable)
+- Focus states: Brand color outline
+- Placeholder text: `var(--color-text-tertiary)`
+- Helper text: `var(--font-size-sm)`, `var(--color-text-secondary)`
+
+## 🔄 Interaction States
+
+Every interactive element MUST have:
+
+1. **Default**: Standard appearance
+2. **Hover**: Subtle elevation or color change
+3. **Focus**: Visible outline (keyboard navigation)
+4. **Active**: Pressed/pressed state
+5. **Disabled**: Reduced opacity, no interaction
+
+```css
+.button {
+  transition: all var(--transition-base);
+}
+
+.button:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.button:focus {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.button:active {
+  transform: translateY(0);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+```
+
+## 📱 Responsive Design
+
+### Mobile-First Approach
+
+1. Design for mobile first (`< 640px`)
+2. Enhance for tablet (`640px+`)
+3. Optimize for desktop (`1024px+`)
+
+### Responsive Patterns
+
+- Stack columns on mobile
+- Hide non-essential information
+- Touch-friendly targets (`44px` minimum)
+- Simplified navigation (hamburger menu)
+- Optimized images and assets
+
+## ♿ Accessibility Requirements
+
+### WCAG 2.1 AA Compliance
+
+- **Color Contrast**:
+  - Normal text: 4.5:1 minimum
+  - Large text (18px+): 3:1 minimum
+  - UI components: 3:1 minimum
+- **Keyboard Navigation**: All interactive elements accessible via keyboard
+- **Focus Indicators**: Visible focus states for all focusable elements
+- **Alt Text**: Descriptive alt text for all images
+- **ARIA Labels**: Use ARIA labels when semantic HTML insufficient
+- **Screen Reader Support**: Proper heading hierarchy, landmarks
+
+### Color Accessibility
+
+- **Never rely on color alone**: Combine with icons, shapes, or text
+- **Provide alternatives**: Don't use only red/green (colorblind users)
+- **Test contrast**: Use tools to verify contrast ratios
+
+## 📊 Dashboard Design Patterns
+
+### Layout Strategies
+
+1. **Screenfit**: All content visible without scrolling (ideal for at-a-glance)
+2. **Overflow**: Scrollable content when needed
+3. **Detail-on-Demand**: Show details in tooltips/modals
+4. **Multi-Page**: Distribute content across tabs/pages
+
+### Information Hierarchy
+
+1. **Primary**: Most important metrics (top, larger, bold)
+2. **Secondary**: Supporting information (middle)
+3. **Tertiary**: Details, history (bottom, smaller)
+
+### Visual Representation Patterns
+
+- **Numbers**: Large, prominent for key metrics
+- **Charts**: Use appropriate chart types (line for trends, bar for comparisons)
+- **Sparklines**: Small trend indicators without axes
+- **Icons**: Semantic icons for quick recognition
+- **Tables**: For detailed data comparison
+
+### Card Types (Dashboard)
+
+- **Status Card**: Current state + status indicator
+- **Trend Card**: Current value + trend chart
+- **Utilization Card**: Current value + progress visualization
+- **Details Card**: Attribute-value pairs
+- **Events Card**: List of events/alerts
+
+## 🎯 Design Quality Checklist
+
+### Before Implementation
+
+- [ ] All colors use design tokens (no hard-coded hex values)
+- [ ] Spacing uses spacing scale
+- [ ] Typography uses typography scale
+- [ ] Interactive elements have all states (hover, focus, active, disabled)
+- [ ] Color contrast meets WCAG AA standards
+- [ ] Responsive design tested on mobile/tablet/desktop
+- [ ] Keyboard navigation works for all interactions
+- [ ] Focus indicators visible and clear
+- [ ] Error states have clear messaging
+- [ ] Loading states provide feedback
+
+### Code Quality
+
+- [ ] CSS uses CSS custom properties (tokens)
+- [ ] No inline styles
+- [ ] Consistent naming conventions (BEM or similar)
+- [ ] Semantic HTML structure
+- [ ] ARIA labels where needed
+- [ ] No accessibility violations
+
+## 🚫 Common Anti-Patterns to Avoid
+
+1. **Hard-coded colors**: Always use tokens
+2. **Inconsistent spacing**: Stick to spacing scale
+3. **Missing focus states**: Critical for accessibility
+4. **Color-only indicators**: Add icons/text
+5. **Tiny touch targets**: Minimum 44px
+6. **Poor contrast**: Test all color combinations
+7. **Inconsistent patterns**: Reuse components
+8. **Unclear error messages**: Be specific and helpful
+9. **No loading states**: Always show progress
+10. **Ignoring mobile**: Mobile-first approach
+
+## 📚 Reference Implementation
+
+See `health_web_interface/web/dist/` for example implementation following these standards.
+
+---
+
+_Modern UI/UX standards ensuring professional, accessible, and unified web interfaces at ._
