@@ -88,6 +88,12 @@ public:
   return_type write(const rclcpp::Time &, const rclcpp::Duration &) override;
 
 private:
+  bool idle_and_clear_all_axes();
+  bool is_axis_in_healthy_closed_loop(size_t joint_index);
+  bool is_axis_clean_idle(size_t joint_index);
+  void sync_command_from_encoder(size_t joint_index);
+  bool enter_position_closed_loop(size_t joint_index);
+  bool verify_closed_loop_stable(size_t joint_index, int hold_ms);
   // Interface ODriveCAN
   ODriveCAN * odrive_can_;
 
@@ -101,6 +107,7 @@ private:
   // Configuration des axes
   std::vector<int> axes_;
   std::vector<float> torque_constants_;
+  std::vector<double> gear_ratios_;    
   std::vector<bool> enable_watchdogs_;
 
   // État des sensors (vbus voltage)
@@ -134,6 +141,7 @@ private:
   };
 
   std::vector<integration_level_t> control_level_;
+  std::vector<float> last_sent_position_turns_;
 };
 
 }  // namespace odrive_ros2_control

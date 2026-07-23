@@ -62,12 +62,22 @@ public:
   bool send_set_input_torque(int64_t node_id, float torque);
   bool send_set_controller_mode(int64_t node_id, int32_t control_mode, int32_t input_mode = 0);
   bool send_set_axis_state(int64_t node_id, int32_t requested_state);
+  bool send_clear_errors(int64_t node_id);
   bool send_set_limits(int64_t node_id, float velocity_limit, float current_limit);
 
   // Lecture des données CAN
   bool get_encoder_estimates(int64_t node_id, float& pos_estimate, float& vel_estimate);
   bool get_iq_measured(int64_t node_id, float& iq_measured, float& iq_setpoint);
   bool get_vbus_voltage(int64_t node_id, float& vbus_voltage);
+  bool get_heartbeat(int64_t node_id, uint32_t & axis_error, uint8_t & axis_state);
+
+  // Blocking helpers used during axis activation
+  bool wait_for_encoder_estimate(
+    int64_t node_id, float & pos_estimate, float & vel_estimate, int timeout_ms = 500);
+  bool wait_for_axis_state(
+    int64_t node_id, uint8_t expected_state, uint32_t max_axis_error = 0, int timeout_ms = 500);
+
+  void invalidate_heartbeat(int64_t node_id);
 
 private:
   int can_socket_;
@@ -80,6 +90,9 @@ private:
   std::unordered_map<int64_t, float> encoder_vel_cache_;
   std::unordered_map<int64_t, float> iq_measured_cache_;
   std::unordered_map<int64_t, float> vbus_voltage_cache_;
+  std::unordered_map<int64_t, uint32_t> heartbeat_error_cache_;
+  std::unordered_map<int64_t, uint8_t> heartbeat_state_cache_;
+  std::unordered_map<int64_t, uint64_t> heartbeat_seq_cache_;
   std::mutex cache_mutex_;
 
   // Thread de réception CAN

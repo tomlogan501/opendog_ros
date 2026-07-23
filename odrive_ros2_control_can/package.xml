@@ -13,6 +13,14 @@
   <depend>pluginlib</depend>
   <depend>controller_interface</depend>
   <depend>rclcpp_lifecycle</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+
+  <exec_depend>controller_manager</exec_depend>
+  <exec_depend>forward_command_controller</exec_depend>
+  <exec_depend>joint_state_broadcaster</exec_depend>
+  <exec_depend>robot_state_publisher</exec_depend>
+  <exec_depend>xacro</exec_depend>
 
   <export>
     <build_type>ament_cmake</build_type>

@@ -6,6 +6,8 @@ find_package(rclcpp REQUIRED)
 find_package(hardware_interface REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rclcpp_lifecycle REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 
 include_directories(include)
 
@@ -26,8 +28,15 @@ target_include_directories(odrive_ros2_control_can PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 
+add_executable(signal_test_node src/signal_test_node.cpp)
+ament_target_dependencies(signal_test_node rclcpp std_msgs sensor_msgs)
+
 install(TARGETS odrive_ros2_control_can
   LIBRARY DESTINATION lib
+)
+
+install(TARGETS signal_test_node
+  DESTINATION lib/${PROJECT_NAME}
 )
 
 install(DIRECTORY include/
@@ -38,7 +47,17 @@ install(FILES odrive_hardware_can_plugin.xml
   DESTINATION share/odrive_ros2_control_can
 )
 
-# Export du plugin pour pluginlib
 pluginlib_export_plugin_description_file(hardware_interface odrive_hardware_can_plugin.xml)
 
+install(DIRECTORY test/launch/
+  DESTINATION share/${PROJECT_NAME}/launch
+)
+install(DIRECTORY test/config/
+  DESTINATION share/${PROJECT_NAME}/config
+)
+install(DIRECTORY test/urdf/
+  DESTINATION share/${PROJECT_NAME}/urdf
+)
+
 ament_package()
+

@@ -24,6 +24,9 @@
 #include <linux/can.h>    // struct can_frame
 #include <errno.h>
 #include <cstring>        // std::memcpy, std::strerror, strncpy, memset
+#include <cstdint>        // INT16_MIN, INT16_MAX
+#include <cmath>          // std::lround
+#include <algorithm>      // std::clamp
 #include <rclcpp/rclcpp.hpp>
 #include <mutex>
 
@@ -185,31 +188,47 @@ int ODriveCAN::call(int64_t node_id, short endpoint_id)
 // Implémentation des fonctions CAN spécifiques
 bool ODriveCAN::send_set_axis_state(int64_t node_id, int32_t requested_state)
 {
-  return write<int32_t>(node_id, AXIS__REQUESTED_STATE, requested_state) == 0;
+  invalidate_heartbeat(node_id);
+  uint8_t data[8] = {0};
+  int32_to_bytes(requested_state, data);
+  return send_can_message(node_id, 0x007, data, 8);
+}
+
+bool ODriveCAN::send_clear_errors(int64_t node_id)
+{
+  invalidate_heartbeat(node_id);
+  return send_can_message(node_id, 0x018, nullptr, 0);
 }
 
 bool ODriveCAN::send_set_controller_mode(int64_t node_id, int32_t control_mode, int32_t input_mode)
 {
-  // Pack control_mode et input_mode dans un message (8 bytes max)
   uint8_t data[8];
   int32_to_bytes(control_mode, data);
   int32_to_bytes(input_mode, data + 4);
-  
-  return send_can_message(node_id, 0x001, data, 8);
+
+  return send_can_message(node_id, 0x00B, data, 8);
 }
 
 bool ODriveCAN::send_set_input_pos(int64_t node_id, float position, float velocity_feedforward, float torque_feedforward)
 {
-  // Note: classic CAN frame limited to 8 bytes. We reject >8 bytes to avoid overflow.
+  // Set_Input_Pos wire layout (ODrive CANSimple, matches odrive-cansimple.dbc):
+  //   bytes 0-3: Input_Pos    (float32, turns)
+  //   bytes 4-5: Vel_FF       (int16, scale 0.001 -> turns/s)
+  //   bytes 6-7: Torque_FF    (int16, scale 0.001 -> Nm)
+  // Both feedforward fields fit in the 8-byte classic CAN frame; no data is dropped.
   uint8_t data[8];
-  // We cannot pack 3 floats (12 bytes) into a single classic CAN frame.
-  // As a safe default we pack position (4) + velocity_feedforward (4) and drop torque_feedforward,
-  // or implement segmented transfers / CAN-FD in future.
   float_to_bytes(position, data);
-  float_to_bytes(velocity_feedforward, data + 4);
-  
-  RCLCPP_WARN(rclcpp::get_logger("ODriveCAN"),
-              "send_set_input_pos: packing only position+vel (8 bytes). torque_feedforward ignored.");
+
+  int32_t vel_ff_scaled = static_cast<int32_t>(std::lround(velocity_feedforward / 0.001f));
+  int32_t torque_ff_scaled = static_cast<int32_t>(std::lround(torque_feedforward / 0.001f));
+  vel_ff_scaled = std::clamp(vel_ff_scaled, static_cast<int32_t>(INT16_MIN), static_cast<int32_t>(INT16_MAX));
+  torque_ff_scaled = std::clamp(torque_ff_scaled, static_cast<int32_t>(INT16_MIN), static_cast<int32_t>(INT16_MAX));
+
+  int16_t vel_ff_i16 = static_cast<int16_t>(vel_ff_scaled);
+  int16_t torque_ff_i16 = static_cast<int16_t>(torque_ff_scaled);
+  std::memcpy(data + 4, &vel_ff_i16, sizeof(int16_t));
+  std::memcpy(data + 6, &torque_ff_i16, sizeof(int16_t));
+
   return send_can_message(node_id, 0x00C, data, 8);
 }
 
@@ -232,41 +251,75 @@ bool ODriveCAN::send_set_input_torque(int64_t node_id, float torque)
 
 bool ODriveCAN::get_encoder_estimates(int64_t node_id, float& pos_estimate, float& vel_estimate)
 {
-  // Envoyer une requête à 2 Hz pour éviter la saturation du buffer CAN
-  // 2 Hz de requêtes (100 Hz / 50 = 2 Hz)
-  static std::unordered_map<int64_t, int> request_counter;
-  
-  if (request_counter[node_id]++ % 50 == 0) {
-    // CMD 0x009 = Get_Encoder_Estimates
-    uint32_t can_id = (static_cast<uint32_t>(node_id) << 5) | 0x009;
-    struct can_frame frame;
-    std::memset(&frame, 0, sizeof(frame));
-    frame.can_id = can_id;
-    frame.can_dlc = 0;  // Requête sans données
-    
-    std::lock_guard<std::mutex> lock(can_mutex_);
-    canSend(frame);
+  {
+    std::lock_guard<std::mutex> lock(cache_mutex_);
+    if (encoder_pos_cache_.find(node_id) != encoder_pos_cache_.end() &&
+        encoder_vel_cache_.find(node_id) != encoder_vel_cache_.end())
+    {
+      pos_estimate = encoder_pos_cache_[node_id];
+      vel_estimate = encoder_vel_cache_[node_id];
+      return true;
+    }
   }
-  
-  // Lire depuis le cache (rempli par le thread de réception)
-  std::lock_guard<std::mutex> lock(cache_mutex_);
-  
+
+  // Fallback: one request while waiting for ODrive periodic encoder frames.
+  // FIX: request_counter is mutated (`operator[]`, a write) with zero
+  // synchronization. This function is called both from the main
+  // read()/write() control-loop thread AND from sync_command_from_encoder()
+  // during perform_command_mode_switch() — which controller_manager can
+  // invoke from a DIFFERENT thread (its service-handling thread, when
+  // switch_controller activates a controller). Concurrent unordered_map
+  // mutation from two threads is undefined behavior — a real, genuine
+  // data race that no single-threaded standalone test could ever catch,
+  // and a plausible cause of the delayed segfault seen in dmesg
+  // (concurrent map corruption often surfaces later, in unrelated code,
+  // exactly matching a crash inside libgcc_s.so.1 at shutdown).
+  static std::unordered_map<int64_t, int> request_counter;
+  static std::mutex request_counter_mutex;
+  bool should_request = false;
+  {
+    std::lock_guard<std::mutex> rc_lock(request_counter_mutex);
+    should_request = (request_counter[node_id]++ % 100 == 0);
+  }
+  if (!should_request) {
+    return false;
+  }
+
+  uint32_t can_id = (static_cast<uint32_t>(node_id) << 5) | 0x009;
+  struct can_frame frame;
+  std::memset(&frame, 0, sizeof(frame));
+  frame.can_id = can_id;
+  frame.can_dlc = 0;
+
+  std::lock_guard<std::mutex> lock(can_mutex_);
+  canSend(frame);
+
+  std::lock_guard<std::mutex> cache_lock(cache_mutex_);
   if (encoder_pos_cache_.find(node_id) != encoder_pos_cache_.end() &&
-      encoder_vel_cache_.find(node_id) != encoder_vel_cache_.end()) {
+      encoder_vel_cache_.find(node_id) != encoder_vel_cache_.end())
+  {
     pos_estimate = encoder_pos_cache_[node_id];
     vel_estimate = encoder_vel_cache_[node_id];
     return true;
   }
-  
+
   return false;
 }
 
 bool ODriveCAN::get_iq_measured(int64_t node_id, float& iq_measured, float& iq_setpoint)
 {
   // Envoyer une requête à 2 Hz pour éviter la saturation
+  // FIX: same unsynchronized data race as get_encoder_estimates() — see
+  // the comment there for why this matters.
   static std::unordered_map<int64_t, int> request_counter;
-  
-  if (request_counter[node_id]++ % 50 == 0) {
+  static std::mutex request_counter_mutex;
+  bool should_request = false;
+  {
+    std::lock_guard<std::mutex> rc_lock(request_counter_mutex);
+    should_request = (request_counter[node_id]++ % 50 == 0);
+  }
+
+  if (should_request) {
     // CMD 0x014 = Get_Iq
     uint32_t can_id = (static_cast<uint32_t>(node_id) << 5) | 0x014;
     struct can_frame frame;
@@ -293,9 +346,17 @@ bool ODriveCAN::get_iq_measured(int64_t node_id, float& iq_measured, float& iq_s
 bool ODriveCAN::get_vbus_voltage(int64_t node_id, float& vbus_voltage)
 {
   // Envoyer une requête très rarement (1 Hz au lieu de 100 Hz)
+  // FIX: same unsynchronized data race as get_encoder_estimates() — see
+  // the comment there for why this matters.
   static std::unordered_map<int64_t, int> request_counter;
-  
-  if (request_counter[node_id]++ % 100 == 0) {
+  static std::mutex request_counter_mutex;
+  bool should_request = false;
+  {
+    std::lock_guard<std::mutex> rc_lock(request_counter_mutex);
+    should_request = (request_counter[node_id]++ % 100 == 0);
+  }
+
+  if (should_request) {
     // CMD 0x017 = Get_Vbus_Voltage
     uint32_t can_id = (static_cast<uint32_t>(node_id) << 5) | 0x017;
     struct can_frame frame;
@@ -317,13 +378,110 @@ bool ODriveCAN::get_vbus_voltage(int64_t node_id, float& vbus_voltage)
   return false;
 }
 
+bool ODriveCAN::get_heartbeat(int64_t node_id, uint32_t & axis_error, uint8_t & axis_state)
+{
+  std::lock_guard<std::mutex> lock(cache_mutex_);
+  const auto err_it = heartbeat_error_cache_.find(node_id);
+  const auto state_it = heartbeat_state_cache_.find(node_id);
+  if (err_it == heartbeat_error_cache_.end() || state_it == heartbeat_state_cache_.end()) {
+    return false;
+  }
+  axis_error = err_it->second;
+  axis_state = state_it->second;
+  return true;
+}
+
+void ODriveCAN::invalidate_heartbeat(int64_t node_id)
+{
+  std::lock_guard<std::mutex> lock(cache_mutex_);
+  heartbeat_error_cache_.erase(node_id);
+  heartbeat_state_cache_.erase(node_id);
+}
+
+bool ODriveCAN::wait_for_axis_state(
+  int64_t node_id, uint8_t expected_state, uint32_t max_axis_error, int timeout_ms)
+{
+  uint64_t baseline_seq = 0;
+  {
+    std::lock_guard<std::mutex> lock(cache_mutex_);
+    baseline_seq = heartbeat_seq_cache_[node_id];
+  }
+
+  const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeout_ms);
+  while (std::chrono::steady_clock::now() < deadline) {
+    uint32_t axis_error = 0;
+    uint8_t axis_state = 0;
+    uint64_t seq = 0;
+    {
+      std::lock_guard<std::mutex> lock(cache_mutex_);
+      seq = heartbeat_seq_cache_[node_id];
+      const auto err_it = heartbeat_error_cache_.find(node_id);
+      const auto state_it = heartbeat_state_cache_.find(node_id);
+      if (err_it != heartbeat_error_cache_.end() && state_it != heartbeat_state_cache_.end()) {
+        axis_error = err_it->second;
+        axis_state = state_it->second;
+      } else {
+        axis_error = UINT32_MAX;
+        axis_state = 0;
+      }
+    }
+
+    if (seq > baseline_seq &&
+        axis_state == expected_state &&
+        axis_error <= max_axis_error)
+    {
+      return true;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+  return false;
+}
+
+bool ODriveCAN::wait_for_encoder_estimate(
+  int64_t node_id, float & pos_estimate, float & vel_estimate, int timeout_ms)
+{
+  const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(timeout_ms);
+  while (std::chrono::steady_clock::now() < deadline) {
+    {
+      std::lock_guard<std::mutex> lock(cache_mutex_);
+      if (encoder_pos_cache_.find(node_id) != encoder_pos_cache_.end() &&
+          encoder_vel_cache_.find(node_id) != encoder_vel_cache_.end())
+      {
+        pos_estimate = encoder_pos_cache_[node_id];
+        vel_estimate = encoder_vel_cache_[node_id];
+        return true;
+      }
+    }
+
+    uint32_t can_id = (static_cast<uint32_t>(node_id) << 5) | 0x009;
+    struct can_frame frame;
+    std::memset(&frame, 0, sizeof(frame));
+    frame.can_id = can_id;
+    frame.can_dlc = 0;
+    {
+      std::lock_guard<std::mutex> lock(can_mutex_);
+      canSend(frame);
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+  return false;
+}
+
 // Fonctions privées
 int ODriveCAN::canSend(const struct can_frame& frame)
 {
-  // Use ::write to avoid colliding with the class's template write(...)
   ssize_t ret = ::write(can_socket_, &frame, sizeof(frame));
   if (ret < 0) {
-    RCLCPP_ERROR(rclcpp::get_logger("ODriveCAN"), "Error writing to CAN socket: %s", std::strerror(errno));
+    if (errno == ENOBUFS) {
+      static rclcpp::Clock steady_clock(RCL_STEADY_TIME);
+      RCLCPP_WARN_THROTTLE(
+        rclcpp::get_logger("ODriveCAN"), steady_clock, 2000,
+        "CAN TX queue full (ENOBUFS). Run: sudo ip link set can0 txqueuelen 1000");
+    } else {
+      RCLCPP_ERROR(
+        rclcpp::get_logger("ODriveCAN"), "Error writing to CAN socket: %s",
+        std::strerror(errno));
+    }
     return -1;
   }
   if (static_cast<size_t>(ret) != sizeof(frame)) {
@@ -409,6 +567,14 @@ bool ODriveCAN::process_can_message(const struct can_frame& frame)
   std::lock_guard<std::mutex> lock(cache_mutex_);
   
   switch (command_id) {
+    case 0x001:  // Heartbeat
+      if (frame.can_dlc >= 5) {
+        heartbeat_error_cache_[node_id] = bytes_to_int32(frame.data);
+        heartbeat_state_cache_[node_id] = frame.data[4];
+        heartbeat_seq_cache_[node_id]++;
+      }
+      break;
+
     case 0x009: // Encoder estimates
       if (frame.can_dlc >= 8) {
         encoder_pos_cache_[node_id] = bytes_to_float(frame.data);
