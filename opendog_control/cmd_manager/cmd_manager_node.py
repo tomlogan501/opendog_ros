@@ -42,15 +42,7 @@ class CmdManager_ROS():
         # Robot cmds
         self.cmd = set_msgs
         self.pub_msgs = send_msgs
-
-        # Rest pose (real standing height, used at launch and whenever asleep)
-        self.prev_start = False
-        self.REST_HEIGHT = 90.0
-        self.REST_FOOT_X_FRONT = 40.0
-        self.REST_FOOT_X_BACK = 40.0
-        self.REST_FOOT_Y = -40.0
-        
-        
+      
     def _createNode(self):
         rclpy.init(args=None)
         self.node = rclpy.create_node(self.node_name)
@@ -80,43 +72,10 @@ class CmdManager_ROS():
         self.pub_timer = self.node.create_timer(self.pub_timer_period, self.pub_callback)
         # self.node.get_logger().info('{} subscriber was created!'.format(self.pub_name))
 
-    def _reset_to_rest_pose(self):
-        """Force the robot back to its real standing rest pose (z=90) and
-        publish it once immediately, regardless of the start gate."""
-        self.cmd.body.height = self.REST_HEIGHT
-        self.cmd.body.roll = 0.0
-        self.cmd.body.pitch = 0.0
-        self.cmd.body.yaw = 0.0
-        self.pub_msgs[1].roll = 0.0
-        self.pub_msgs[1].pitch = 0.0
-        self.pub_msgs[1].yaw = 0.0
-        self.pub_msgs[0].FR.pose.cur_coord[:] = [self.REST_FOOT_X_FRONT, self.REST_FOOT_Y, self.REST_HEIGHT]
-        self.pub_msgs[0].FL.pose.cur_coord[:] = [self.REST_FOOT_X_FRONT, self.REST_FOOT_Y, self.REST_HEIGHT]
-        self.pub_msgs[0].BR.pose.cur_coord[:] = [self.REST_FOOT_X_BACK, self.REST_FOOT_Y, self.REST_HEIGHT]
-        self.pub_msgs[0].BL.pose.cur_coord[:] = [self.REST_FOOT_X_BACK, self.REST_FOOT_Y, self.REST_HEIGHT]
-        self._publish_geometry()
-
-    def _set_standing_target(self):
-        """Just set the height/orientation TARGET, do not jump foot
-        coordinates directly. body_motion_planner's ramp is responsible
-        for slewing cur_coord toward this target smoothly, so real
-        hardware doesn't see an instant high-current jump on wake-up."""
-        self.cmd.body.height = self.REST_HEIGHT
-        self.cmd.body.roll = 0.0
-        self.cmd.body.pitch = 0.0
-        self.cmd.body.yaw = 0.0
-
     def _joy_cmd_callback(self, msg):
         # ------------------------------------------
         new_start = msg.states[0]
-        if self.prev_start and not new_start:
-            # Just went to sleep: snap back to rest pose once, then go quiet
-            self._reset_to_rest_pose()
-        if not self.prev_start and new_start:
-            # Just woke up: set standing target, let body_motion_planner ramp to it
-            self._set_standing_target()
         self.cmd.mode.start = new_start
-        self.prev_start = new_start
         if self.cmd.mode.start:
             self.cmd.mode.walk = msg.states[1]
             self.cmd.mode.side_walk_mode = msg.states[2]
@@ -139,8 +98,6 @@ class CmdManager_ROS():
         self.cmd.gait.swing_time = msg.angular.x
     
     def _pub_callback(self):
-        if not self.cmd.mode.start:
-            return
         self._publish_geometry()
 
     def _publish_geometry(self):
@@ -178,7 +135,6 @@ class CmdManager_ROS():
         self.create_sub1()
         self.create_sub2()
         self.create_pub()
-        self._reset_to_rest_pose()  # publish standing pose immediately at launch
         rclpy.spin(self.node)
         self.node.destroy_node()
         #rclpy.shutdown()

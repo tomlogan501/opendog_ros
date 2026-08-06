@@ -49,7 +49,7 @@ class BodyMotionPlanner():
     
     def run(self):
         while self.running:
-            if self.cmd.mode.start:
+            if True:  # HyperDog: no start gate
                 now = time.time()
                 dt = now - self._last_ramp_time
                 self._last_ramp_time = now

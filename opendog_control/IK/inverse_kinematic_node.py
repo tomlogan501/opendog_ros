@@ -7,9 +7,9 @@ from opendog_msgs.msg import Geometry
 from opendog_msgs.msg import JoyCtrlCmds
 from IK.InverseKinematics import InverseKinematics
 
-MIN_HEIGHT = 150.0
+MIN_HEIGHT = 90.0
 MAX_HEIGHT = 250.0
-MAX_ULEG_ANGLE = -90.5
+MAX_ULEG_ANGLE = 90.5
 MAX_LLEG_ANGLE = 90.5
 FIXED_ULEG_ANGLE = 0.0
 
@@ -17,7 +17,6 @@ class InvKin_Node(Node):
     def __init__(self):
         self.IK =  InverseKinematics()
         self.joint_angs = Float32MultiArray()
-        self.joint_angs.data = [0.0, -45.0, 0.0, 0.0, -45.0, 0.0, 0.0, -45.0, 0.0, 0.0, -45.0, 0.0]
         self.prev_joint_angs = None
         self.is_awake = False
         self.is_walking = False
@@ -34,9 +33,6 @@ class InvKin_Node(Node):
         self.is_awake = msg.states[0]
         self.is_walking = msg.states[1]
         self.commanded_height = msg.pose.position.z
-        if not self.is_awake:
-            self.joint_angs.data = [0.0, -45.0, 0.0, 0.0, -45.0, 0.0, 0.0, -45.0, 0.0, 0.0, -45.0, 0.0]
-            self.prev_joint_angs = None
 
     def _height_leg_angles(self):
         """Direct joint-space interpolation for standing height, used only
@@ -49,8 +45,6 @@ class InvKin_Node(Node):
         return uleg, lleg
 
     def sub_callback(self, msg):
-        if not self.is_awake:
-            return
         eulerAng = np.array([msg.euler_ang.x, msg.euler_ang.y, msg.euler_ang.z])
         fr_coord = np.array([msg.fr.x, msg.fr.y, msg.fr.z])
         fl_coord = np.array([msg.fl.x, msg.fl.y, msg.fl.z])
