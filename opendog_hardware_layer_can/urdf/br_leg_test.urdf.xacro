@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<robot name="br_leg_test" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:include filename="$(find opendog_hardware_layer_can)/urdf/br_leg_test_ros2_control.xacro"/>
+
+  <link name="base_link"/>
+  <link name="BR_uleg_link"/>
+  <link name="BR_lleg_link"/>
+
+  <joint name="BR_uleg_joint" type="revolute">
+    <parent link="base_link"/>
+    <child link="BR_uleg_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14" upper="3.14" effort="10" velocity="10"/>
+  </joint>
+
+  <joint name="BR_lleg_joint" type="revolute">
+    <parent link="BR_uleg_link"/>
+    <child link="BR_lleg_link"/>
+    <origin xyz="0 0.1 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14" upper="3.14" effort="10" velocity="10"/>
+  </joint>
+
+  <xacro:br_leg_test_ros2_control name="br_leg_test"/>
+
+</robot>

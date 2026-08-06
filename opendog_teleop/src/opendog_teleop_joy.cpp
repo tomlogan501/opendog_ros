@@ -101,7 +101,7 @@ class PublishingSubscriber : public rclcpp::Node
           cmd.gait_type  = 2;
         }
         if(msg_joy->buttons[3]){
-          cmd.gait_type = 3;
+          cmd.gait_type = 2;
         }
 
         // set robot height

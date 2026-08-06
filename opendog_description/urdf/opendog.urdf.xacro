@@ -14,10 +14,10 @@
   <!-- ========================================= -->
   
   <!-- Configuration of Robot Links-->  
-  <xacro:include filename="$(find opendog_description)/urdf/opendog_stand_links.xacro"/> 
-  <xacro:include filename="$(find opendog_description)/urdf/opendog_stand_joints.xacro"/>
 
   <!-- Configuration of Robot Joints -->
+    <xacro:include filename="$(find opendog_description)/urdf/opendog_stand_links.xacro"/> 
+  <xacro:include filename="$(find opendog_description)/urdf/opendog_stand_joints.xacro"/>
   <xacro:include filename="$(find opendog_description)/urdf/opendog_links.xacro"/>
   <xacro:include filename="$(find opendog_description)/urdf/opendog_joints.xacro"/>
 
@@ -29,6 +29,8 @@
   <!--     HARDWARE INTERFACE (CONDITIONNEL)    -->
   <!-- ========================================= -->
 
+  <!-- En mode gazebo, ne jamais charger l'interface hardware reelle (USB/CAN) -->
+<xacro:unless value="$(arg use_gazebo)">
   <!-- Choix entre USB et CAN -->
   <xacro:if value="$(arg use_can)">
     <!-- MODE CAN -->
@@ -41,14 +43,8 @@
     <xacro:include filename="$(find opendog_description)/urdf/opendog_ros2_control.xacro"/>
     <xacro:opendog_ros2_control name="opendog_hw"/>
   </xacro:unless>
+</xacro:unless>
 
   <!-- ========================================= -->
-  <!--     SIMULATION GAZEBO (OPTIONNEL)        -->
-  <!-- ========================================= -->
-  
-  <xacro:if value="$(arg use_gazebo)">
-    <xacro:include filename="$(find opendog_description)/urdf/opendog_gazebo.xacro"/>
-    <xacro:opendog_gazebo_control name="opendog_hw_gazebo"/>
-  </xacro:if>
 
 </robot>

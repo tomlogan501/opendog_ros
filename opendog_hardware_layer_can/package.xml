@@ -11,6 +11,7 @@
 
   <!-- Dépendances ROS2 -->
   <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
   <depend>controller_manager</depend>
   <depend>hardware_interface</depend>
   <depend>ros2_control</depend>

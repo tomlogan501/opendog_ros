@@ -27,7 +27,7 @@
     <inertia ixx="1" iyy="1" izz="1" ixy="0" ixz="0" iyz="0"/>
   </inertial>
   </link>
-    <!-- Gazebo: rendre le stand statique pour éviter que le robot "tourne" dans la simulation -->
+    <!-- Gazebo - rendre le stand statique pour éviter que le robot "tourne" dans la simulation -->
     <gazebo reference="stand_link">
       <static>true</static>
     </gazebo>

@@ -16,10 +16,10 @@ cmd = Cmds()
 # leg.foot_zero_pnt[:,2] = body.height  = cmd.body.height
 cmd.gait.cycle_time = 0.8
 cmd.gait.swing_time = 0.2
-cmd.leg.foot_zero_pnt[0,0] = -10
-cmd.leg.foot_zero_pnt[1,0] = -10
-cmd.leg.foot_zero_pnt[2,0] = -70
-cmd.leg.foot_zero_pnt[3,0] = -70
+cmd.leg.foot_zero_pnt[0,0] = -40
+cmd.leg.foot_zero_pnt[1,0] = -40
+cmd.leg.foot_zero_pnt[2,0] = -40
+cmd.leg.foot_zero_pnt[3,0] = -40
 cmd.gait.stance_step_h = 0
 
 
@@ -49,10 +49,10 @@ def main(args=None):
             print("Fin boucle principale")
 
     gait_planner.running = False
-    thread_gait_planner.join
+    thread_gait_planner.join()
 
     bmp.running = False
-    thread_bmp.join
+    thread_bmp.join()
 
 if __name__ == '__main__':
     main()

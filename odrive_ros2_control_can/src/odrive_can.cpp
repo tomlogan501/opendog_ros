@@ -120,7 +120,7 @@ int ODriveCAN::read(int64_t node_id, short endpoint_id, T& value)
   uint32_t can_id = endpoint_to_can_id(node_id, endpoint_id, true);
   struct can_frame frame;
   std::memset(&frame, 0, sizeof(frame));
-  frame.can_id = can_id;
+  frame.can_id = can_id | CAN_RTR_FLAG;
   frame.can_dlc = 0; // Lecture sans données
   
   if (canSend(frame) != 0) {
@@ -179,7 +179,7 @@ int ODriveCAN::call(int64_t node_id, short endpoint_id)
   uint32_t can_id = endpoint_to_can_id(node_id, endpoint_id, false);
   struct can_frame frame;
   std::memset(&frame, 0, sizeof(frame));
-  frame.can_id = can_id;
+  frame.can_id = can_id | CAN_RTR_FLAG;
   frame.can_dlc = 0;
   
   return canSend(frame);
@@ -251,48 +251,32 @@ bool ODriveCAN::send_set_input_torque(int64_t node_id, float torque)
 
 bool ODriveCAN::get_encoder_estimates(int64_t node_id, float& pos_estimate, float& vel_estimate)
 {
-  {
-    std::lock_guard<std::mutex> lock(cache_mutex_);
-    if (encoder_pos_cache_.find(node_id) != encoder_pos_cache_.end() &&
-        encoder_vel_cache_.find(node_id) != encoder_vel_cache_.end())
-    {
-      pos_estimate = encoder_pos_cache_[node_id];
-      vel_estimate = encoder_vel_cache_[node_id];
-      return true;
-    }
-  }
-
-  // Fallback: one request while waiting for ODrive periodic encoder frames.
-  // FIX: request_counter is mutated (`operator[]`, a write) with zero
-  // synchronization. This function is called both from the main
-  // read()/write() control-loop thread AND from sync_command_from_encoder()
-  // during perform_command_mode_switch() — which controller_manager can
-  // invoke from a DIFFERENT thread (its service-handling thread, when
-  // switch_controller activates a controller). Concurrent unordered_map
-  // mutation from two threads is undefined behavior — a real, genuine
-  // data race that no single-threaded standalone test could ever catch,
-  // and a plausible cause of the delayed segfault seen in dmesg
-  // (concurrent map corruption often surfaces later, in unrelated code,
-  // exactly matching a crash inside libgcc_s.so.1 at shutdown).
+  // FIX: previously this function returned immediately once the cache had
+  // ANY entry for this node_id, so the RTR-request code below only ever
+  // ran once (right at startup, while the cache was still empty). After
+  // that first reply landed, every subsequent call kept returning that
+  // same frozen value forever — read() never triggered a fresh request
+  // again, even while the motor was actively moving. Fix: always send a
+  // periodic re-request (every 20 calls, ~0.4s at 50Hz), then return
+  // whatever is currently cached (last-known value) without blocking.
   static std::unordered_map<int64_t, int> request_counter;
   static std::mutex request_counter_mutex;
   bool should_request = false;
   {
     std::lock_guard<std::mutex> rc_lock(request_counter_mutex);
-    should_request = (request_counter[node_id]++ % 100 == 0);
-  }
-  if (!should_request) {
-    return false;
+    should_request = (request_counter[node_id]++ % 20 == 0);
   }
 
-  uint32_t can_id = (static_cast<uint32_t>(node_id) << 5) | 0x009;
-  struct can_frame frame;
-  std::memset(&frame, 0, sizeof(frame));
-  frame.can_id = can_id;
-  frame.can_dlc = 0;
+  if (should_request) {
+    uint32_t can_id = (static_cast<uint32_t>(node_id) << 5) | 0x009;
+    struct can_frame frame;
+    std::memset(&frame, 0, sizeof(frame));
+    frame.can_id = can_id | CAN_RTR_FLAG;
+    frame.can_dlc = 0;
 
-  std::lock_guard<std::mutex> lock(can_mutex_);
-  canSend(frame);
+    std::lock_guard<std::mutex> lock(can_mutex_);
+    canSend(frame);
+  }
 
   std::lock_guard<std::mutex> cache_lock(cache_mutex_);
   if (encoder_pos_cache_.find(node_id) != encoder_pos_cache_.end() &&
@@ -324,7 +308,7 @@ bool ODriveCAN::get_iq_measured(int64_t node_id, float& iq_measured, float& iq_s
     uint32_t can_id = (static_cast<uint32_t>(node_id) << 5) | 0x014;
     struct can_frame frame;
     std::memset(&frame, 0, sizeof(frame));
-    frame.can_id = can_id;
+    frame.can_id = can_id | CAN_RTR_FLAG;
     frame.can_dlc = 0;
     
     std::lock_guard<std::mutex> lock(can_mutex_);
@@ -361,7 +345,7 @@ bool ODriveCAN::get_vbus_voltage(int64_t node_id, float& vbus_voltage)
     uint32_t can_id = (static_cast<uint32_t>(node_id) << 5) | 0x017;
     struct can_frame frame;
     std::memset(&frame, 0, sizeof(frame));
-    frame.can_id = can_id;
+    frame.can_id = can_id | CAN_RTR_FLAG;
     frame.can_dlc = 0;
     
     std::lock_guard<std::mutex> lock(can_mutex_);
@@ -456,7 +440,7 @@ bool ODriveCAN::wait_for_encoder_estimate(
     uint32_t can_id = (static_cast<uint32_t>(node_id) << 5) | 0x009;
     struct can_frame frame;
     std::memset(&frame, 0, sizeof(frame));
-    frame.can_id = can_id;
+    frame.can_id = can_id | CAN_RTR_FLAG;
     frame.can_dlc = 0;
     {
       std::lock_guard<std::mutex> lock(can_mutex_);

@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="br_leg_test_ros2_control" params="name">
+    <ros2_control name="${name}" type="system">
+
+      <hardware>
+        <plugin>odrive_ros2_control_can/ODriveHardwareInterfaceCAN</plugin>
+        <param name="can_interface">can0</param>
+      </hardware>
+
+      <joint name="BR_uleg_joint">
+        <param name="node_id">0</param>
+        <param name="axis">0</param>
+        <param name="torque_constant">8.27</param>
+        <param name="gear_ratio">-10.0</param>
+        <param name="enable_watchdog">true</param>
+        <param name="watchdog_timeout">0.1</param>
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <joint name="BR_lleg_joint">
+        <param name="node_id">1</param>
+        <param name="axis">1</param>
+        <param name="torque_constant">8.27</param>
+        <param name="gear_ratio">-10.0</param>
+        <param name="enable_watchdog">true</param>
+        <param name="watchdog_timeout">0.1</param>
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+    </ros2_control>
+  </xacro:macro>
+
+</robot>
