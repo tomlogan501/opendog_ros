@@ -134,6 +134,17 @@ CallbackReturn ODriveHardwareInterfaceCAN::on_init(const hardware_interface::Har
     }
     gear_ratios_.emplace_back(gear_ratio);
 
+    // Per-joint zero offset, in MOTOR TURNS. Shifts the reported/commanded
+    // position so the joint's mechanical reference maps to the angle the
+    // controller expects. Applied on the turns side, before the gear_ratio
+    // conversion, so it is independent of gear_ratio's sign. Defaults to 0.0
+    // for any joint that doesn't declare it.
+    double zero_offset = 0.0;
+    if (info_.joints[i].parameters.count("zero_offset")) {
+      zero_offset = std::stod(info_.joints[i].parameters.at("zero_offset"));
+    }
+    zero_offsets_.emplace_back(zero_offset);
+
     RCLCPP_INFO(
       rclcpp::get_logger("ODriveHardwareInterfaceCAN"),
       "Joint '%s' -> node_id: %d, axis: %d, watchdog: %s",
@@ -221,47 +232,98 @@ CallbackReturn ODriveHardwareInterfaceCAN::on_activate(const rclcpp_lifecycle::S
 
 bool ODriveHardwareInterfaceCAN::idle_and_clear_all_axes()
 {
+  bool already_clean = true;
+  for (size_t i = 0; i < info_.joints.size(); i++) {
+    const int node_id = joint_node_ids_[i];
+    uint32_t axis_error = UINT32_MAX;
+    uint8_t axis_state = 0;
+    if (!odrive_can_->get_heartbeat(node_id, axis_error, axis_state) ||
+        axis_state != AXIS_STATE_IDLE || axis_error != 0)
+    {
+      already_clean = false;
+      break;
+    }
+  }
   constexpr int kMaxRounds = 5;
-
-  for (int round = 0; round < kMaxRounds; ++round) {
+  const int rounds_to_run = already_clean ? 0 : kMaxRounds;
+  for (int round = 0; round < rounds_to_run; ++round) {
     for (size_t i = 0; i < info_.joints.size(); i++) {
       const int node_id = joint_node_ids_[i];
       odrive_can_->send_set_axis_state(node_id, AXIS_STATE_IDLE);
+      std::this_thread::sleep_for(std::chrono::milliseconds(15));
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
     for (size_t i = 0; i < info_.joints.size(); i++) {
       odrive_can_->send_clear_errors(joint_node_ids_[i]);
+      std::this_thread::sleep_for(std::chrono::milliseconds(15));
     }
     std::this_thread::sleep_for(std::chrono::milliseconds(150));
   }
 
+  constexpr int kMaxNodeRetriesAxis0 = 4;
+  constexpr int kMaxNodeRetriesAxis1 = 7;
+  constexpr int kNodeWaitMsAxis0 = 900;
+  constexpr int kNodeWaitMsAxis1 = 1500;
+
+  std::vector<size_t> check_order(info_.joints.size());
+  for (size_t i = 0; i < info_.joints.size(); i++) { check_order[i] = i; }
+  std::sort(check_order.begin(), check_order.end(),
+    [this](size_t a, size_t b) {
+      return joint_node_ids_[a] > joint_node_ids_[b];
+    });
+
   bool all_clean = true;
-  for (size_t i = 0; i < info_.joints.size(); i++) {
+  for (const size_t i : check_order) {
     const int node_id = joint_node_ids_[i];
-    const bool idle_ok = odrive_can_->wait_for_axis_state(node_id, AXIS_STATE_IDLE, 0, 500);
+    // axis1 nodes have consistently needed more time/retries than
+    // axis0 all session (nodes 1, 3, 7, 9, 11 vs 0, 2, 6, 8, 10) --
+    // very likely each board's single CAN controller services axis0
+    // before axis1 internally. Give axis1 more patience rather than
+    // treating both axes identically.
+    const bool is_axis1 = (node_id % 2 == 1);
+    const int kMaxNodeRetries = is_axis1 ? kMaxNodeRetriesAxis1 : kMaxNodeRetriesAxis0;
+    const int kNodeWaitMs = is_axis1 ? kNodeWaitMsAxis1 : kNodeWaitMsAxis0;
+    bool clean = false;
     uint32_t axis_error = 0;
     uint8_t axis_state = 0;
-    if (odrive_can_->get_heartbeat(node_id, axis_error, axis_state)) {
-      const bool clean = idle_ok &&
-        axis_state == AXIS_STATE_IDLE &&
-        axis_error == 0;
-      if (!clean) {
-        all_clean = false;
+    bool has_heartbeat = false;
+    for (int attempt = 0; attempt <= kMaxNodeRetries; ++attempt) {
+      if (attempt > 0) {
+        odrive_can_->send_set_axis_state(node_id, AXIS_STATE_IDLE);
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        odrive_can_->send_clear_errors(node_id);
+        std::this_thread::sleep_for(std::chrono::milliseconds(30));
       }
+      const bool idle_ok = odrive_can_->wait_for_axis_state(
+        node_id, AXIS_STATE_IDLE, 0, kNodeWaitMs);
+      has_heartbeat = odrive_can_->get_heartbeat(node_id, axis_error, axis_state);
+      clean = has_heartbeat && idle_ok &&
+        axis_state == AXIS_STATE_IDLE && axis_error == 0;
+      if (clean) {
+        if (attempt > 0) {
+          RCLCPP_INFO(
+            rclcpp::get_logger("ODriveHardwareInterfaceCAN"),
+            "Node %d: clean on retry attempt %d", node_id, attempt);
+        }
+        break;
+      }
+    }
+    if (!clean) {
+      all_clean = false;
+    }
+    if (has_heartbeat) {
       RCLCPP_INFO(
         rclcpp::get_logger("ODriveHardwareInterfaceCAN"),
         "Node %d: prep state=%u error=0x%X (%s)%s",
         node_id, axis_state, axis_error, format_axis_error(axis_error).c_str(),
         clean ? "" : "  *** NOT CLEAN ***");
     } else {
-      all_clean = false;
       RCLCPP_WARN(
         rclcpp::get_logger("ODriveHardwareInterfaceCAN"),
-        "Node %d: no heartbeat during prep", node_id);
+        "Node %d: no heartbeat during prep (after %d retries)",
+        node_id, kMaxNodeRetries);
     }
   }
-
   if (!all_clean) {
     RCLCPP_ERROR(
       rclcpp::get_logger("ODriveHardwareInterfaceCAN"),
@@ -303,7 +365,7 @@ void ODriveHardwareInterfaceCAN::sync_command_from_encoder(size_t joint_index)
     return;
   }
 
-  hw_positions_[joint_index] = (pos_turns * 2.0 * M_PI) / gear_ratios_[joint_index];
+  hw_positions_[joint_index] = ((pos_turns - zero_offsets_[joint_index]) * 2.0 * M_PI) / gear_ratios_[joint_index];
   hw_velocities_[joint_index] = (vel_turns * 2.0 * M_PI) / gear_ratios_[joint_index];
   hw_commands_positions_[joint_index] = hw_positions_[joint_index];
   hw_commands_velocities_[joint_index] = 0.0;
@@ -591,7 +653,7 @@ return_type ODriveHardwareInterfaceCAN::read(const rclcpp::Time &, const rclcpp:
 
     // Lecture position et vitesse via CAN optimisé (messages heartbeat automatiques)
     if (odrive_can_->get_encoder_estimates(node_id, pos_estimate, vel_estimate)) {
-      hw_positions_[i] = (pos_estimate * 2 * M_PI) / gear_ratios_[i];  // Conversion rev -> rad, gear-corrected
+      hw_positions_[i] = ((pos_estimate - zero_offsets_[i]) * 2 * M_PI) / gear_ratios_[i];  // Conversion rev -> rad, gear- and zero-corrected
       hw_velocities_[i] = (vel_estimate * 2 * M_PI) / gear_ratios_[i]; // Conversion rev/s -> rad/s, gear-corrected
     }
 
@@ -699,12 +761,46 @@ return_type ODriveHardwareInterfaceCAN::write(const rclcpp::Time &, const rclcpp
             steady_clock, 2000,
             "Node %d: skipping position write — not in healthy closed loop",
             node_id);
+
+          // RETRY: enter_position_closed_loop() only ever sends the request
+          // ONCE, at activation. If that frame is dropped or lands while the
+          // axis is still settling, the axis stays in IDLE forever with no
+          // error and nothing ever re-requests it. Re-send here, rate-limited,
+          // but ONLY when the axis is error-free — a real fault must still
+          // stop us rather than being retried over.
+          static std::vector<rclcpp::Time> last_retry(info_.joints.size(),
+                                                      rclcpp::Time(0, 0, RCL_STEADY_TIME));
+          rclcpp::Time now_t = steady_clock.now();
+          if (hw_axis_errors_[i] == 0.0 &&
+              (now_t - last_retry[i]).seconds() > 1.0)
+          {
+            // Round-robin gate: CAN arbitration always favors low node IDs.
+            // Since all joints activate together, their 1-second retry
+            // timers become "overdue" in the same instant every time,
+            // causing all six to fire in one burst -- high-ID nodes then
+            // lose arbitration every single cycle. Only allow ONE joint to
+            // actually send per kSlotWidthSec wall-clock slot, chosen
+            // deterministically by time. Pure arithmetic, no blocking --
+            // safe for the RT loop -- and spreads retries out instead of
+            // bursting them together.
+            constexpr double kSlotWidthSec = 0.05;
+            const size_t num_joints = info_.joints.size();
+            const size_t current_slot =
+              static_cast<size_t>(now_t.seconds() / kSlotWidthSec) % num_joints;
+            if (current_slot == i) {
+              last_retry[i] = now_t;
+              RCLCPP_INFO(
+                rclcpp::get_logger("ODriveHardwareInterfaceCAN"),
+                "Node %d: re-requesting closed loop (was idle, no error)", node_id);
+              odrive_can_->send_set_axis_state(node_id, AXIS_STATE_CLOSED_LOOP_CONTROL);
+            }
+          }
           break;
         }
 
         if (!std::isnan(hw_commands_positions_[i])) {
           const float position_turns = static_cast<float>(
-            (hw_commands_positions_[i] * gear_ratios_[i]) / (2.0 * M_PI));
+            ((hw_commands_positions_[i] * gear_ratios_[i]) / (2.0 * M_PI)) + zero_offsets_[i]);
 
           if (!std::isnan(last_sent_position_turns_[i]) &&
               std::abs(position_turns - last_sent_position_turns_[i]) < kMinTurnDelta)

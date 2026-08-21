@@ -1,0 +1,96 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:macro name="front_test_ros2_control" params="name">
+    <ros2_control name="${name}" type="system">
+
+      <hardware>
+        <plugin>odrive_ros2_control_can/ODriveHardwareInterfaceCAN</plugin>
+        <param name="can_interface">can0</param>
+      </hardware>
+
+      <!-- ODrive 1, axis0 -->
+      <joint name="FL_hip_joint">
+        <param name="node_id">2</param>
+        <param name="axis">0</param>
+        <param name="torque_constant">8.27</param>
+        <param name="gear_ratio">10.0</param>
+        <param name="zero_offset">0.23757</param>
+        <param name="enable_watchdog">false</param>
+        <param name="watchdog_timeout">0.1</param>
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <!-- ODrive 1, axis1 -->
+      <joint name="FR_hip_joint">
+        <param name="node_id">3</param>
+        <param name="axis">1</param>
+        <param name="torque_constant">8.23</param>
+        <param name="gear_ratio">10.0</param>
+        <param name="zero_offset">0.207387</param>
+        <param name="enable_watchdog">false</param>
+        <param name="watchdog_timeout">0.1</param>
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <!-- ODrive 0, axis0 — CONFIRMED direction + offset -->
+      <joint name="FL_uleg_joint">
+        <param name="node_id">0</param>
+        <param name="axis">0</param>
+        <param name="torque_constant">8.27</param>
+        <param name="gear_ratio">-10.0</param>
+        <param name="zero_offset">0.034106</param>
+        <param name="enable_watchdog">false</param>
+        <param name="watchdog_timeout">0.1</param>
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <!-- ODrive 0, axis1 -->
+      <joint name="FL_lleg_joint">
+        <param name="node_id">1</param>
+        <param name="axis">1</param>
+        <param name="torque_constant">8.23</param>
+        <param name="gear_ratio">10.0</param>
+        <param name="enable_watchdog">false</param>
+        <param name="watchdog_timeout">0.1</param>
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <!-- ODrive 3, axis0 -->
+      <joint name="FR_uleg_joint">
+        <param name="node_id">6</param>
+        <param name="axis">0</param>
+        <param name="torque_constant">8.27</param>
+        <param name="gear_ratio">10.0</param>
+        <param name="enable_watchdog">false</param>
+        <param name="watchdog_timeout">0.1</param>
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+      <!-- ODrive 3, axis1 -->
+      <joint name="FR_lleg_joint">
+        <param name="node_id">7</param>
+        <param name="axis">1</param>
+        <param name="torque_constant">8.23</param>
+        <param name="gear_ratio">10.0</param>
+        <param name="enable_watchdog">false</param>
+        <param name="watchdog_timeout">0.1</param>
+        <command_interface name="position"/>
+        <state_interface name="position"/>
+        <state_interface name="velocity"/>
+      </joint>
+
+    </ros2_control>
+  </xacro:macro>
+
+</robot>

@@ -107,7 +107,8 @@ private:
   // Configuration des axes
   std::vector<int> axes_;
   std::vector<float> torque_constants_;
-  std::vector<double> gear_ratios_;    
+  std::vector<double> gear_ratios_;
+  std::vector<double> zero_offsets_;    
   std::vector<bool> enable_watchdogs_;
 
   // État des sensors (vbus voltage)

@@ -23,7 +23,7 @@
       <param name="can_interface">can0</param>
     </hardware>
     <joint name="motor_joint_0">
-      <param name="node_id">0</param>
+      <param name="node_id">6</param>
       <param name="axis">0</param>
       <param name="torque_constant">8.27</param>
       <param name="gear_ratio">10.0</param>
@@ -34,7 +34,7 @@
       <state_interface name="velocity"/>
     </joint>
     <joint name="motor_joint_1">
-      <param name="node_id">1</param>
+      <param name="node_id">7</param>
       <param name="axis">1</param>
       <param name="torque_constant">8.27</param>
       <param name="gear_ratio">10.0</param>
