@@ -21,6 +21,13 @@ class BodyMotionPlanner():
 
         self.cmd.leg.foot_zero_pnt[:,1] = self.__L1
 
+        # Height ramp state: slews foot_zero_pnt height toward cmd.body.height
+        # instead of snapping instantly, to avoid current-limit spikes on
+        # hardware when standing up from rest.
+        self._ramped_height = float(self.cmd.body.height)
+        self._last_ramp_time = time.time()
+        self.HEIGHT_RAMP_RATE = 60.0  # mm/second
+
     def set_init_pose(self):
         self.body.roll = 0
         self.body.pitch = 0
@@ -42,20 +49,33 @@ class BodyMotionPlanner():
     
     def run(self):
         while self.running:
-            self.cmd.leg.foot_zero_pnt[:,2] = np.array(self.cmd.body.height) 
-            """ uncomment below 2 lines to activate slant from joystick"""
-            self.cmd.leg.foot_zero_pnt[:,1] = self.__L1
-            # self.cmd.leg.foot_zero_pnt[::2,:2] = np.array([0,self.__L1]) + self.cmd.body.slant[:2]
-            # self.cmd.leg.foot_zero_pnt[1::2,:2] = np.array([0,self.__L1]) + self.cmd.body.slant[:2]*np.array([1,-1])
-            self.body.roll = self.cmd.body.roll
-            self.body.pitch = self.cmd.body.pitch
-            self.body.yaw = self.cmd.body.yaw
-            # if np.any(self.cmd.body.slant != self.prev_slant):
-            #     self.leg.FR.pose.cur_coord[:2] = 
-            self.leg.FR.pose.cur_coord[:] = np.array(self.cmd.leg.foot_zero_pnt[0,:]) + self.gait.FR_traj[:] + self.body.ZMP_handler[0,:]*np.array([0,1,0]) #+ self.cmd.body.slant[:]*np.array([1,1,0])
-            self.leg.FL.pose.cur_coord[:] = np.array(self.cmd.leg.foot_zero_pnt[1,:]) + self.gait.FL_traj[:] + self.body.ZMP_handler[1,:]*np.array([0,1,0]) #+ self.cmd.body.slant[:]*np.array([1,-1,0])
-            self.leg.BR.pose.cur_coord[:] = np.array(self.cmd.leg.foot_zero_pnt[2,:]) + self.gait.BR_traj[:] + self.body.ZMP_handler[2,:]*np.array([0,1,0])#+ self.cmd.body.slant[:]*np.array([1,1,0])
-            self.leg.BL.pose.cur_coord[:] = np.array(self.cmd.leg.foot_zero_pnt[3,:]) + self.gait.BL_traj[:] + self.body.ZMP_handler[3,:]*np.array([0,1,0])#+ self.cmd.body.slant[:]*np.array([1,-1,0])
+            if True:  # HyperDog: no start gate
+                now = time.time()
+                dt = now - self._last_ramp_time
+                self._last_ramp_time = now
+                target_height = float(self.cmd.body.height)
+                max_step = self.HEIGHT_RAMP_RATE * dt
+                delta = target_height - self._ramped_height
+                if delta > max_step:
+                    delta = max_step
+                elif delta < -max_step:
+                    delta = -max_step
+                self._ramped_height += delta
+                self.cmd.leg.foot_zero_pnt[:,2] = np.array(self._ramped_height)
+                """ uncomment below 2 lines to activate slant from joystick"""
+                self.cmd.leg.foot_zero_pnt[:,1] = self.__L1
+                # self.cmd.leg.foot_zero_pnt[::2,:2] = np.array([0,self.__L1]) + self.cmd.body.slant[:2]
+                # self.cmd.leg.foot_zero_pnt[1::2,:2] = np.array([0,self.__L1]) + self.cmd.body.slant[:2]*np.array([1,-1])
+                self.body.roll = self.cmd.body.roll
+                self.body.pitch = self.cmd.body.pitch
+                self.body.yaw = self.cmd.body.yaw
+                # if np.any(self.cmd.body.slant != self.prev_slant):
+                #     self.leg.FR.pose.cur_coord[:2] = 
+                with self.gait.lock:
+                    self.leg.FR.pose.cur_coord[:] = np.array(self.cmd.leg.foot_zero_pnt[0,:]) + self.gait.FR_traj[:] + self.body.ZMP_handler[0,:]*np.array([0,1,0]) #+ self.cmd.body.slant[:]*np.array([1,1,0])
+                    self.leg.FL.pose.cur_coord[:] = np.array(self.cmd.leg.foot_zero_pnt[1,:]) + self.gait.FL_traj[:] + self.body.ZMP_handler[1,:]*np.array([0,1,0]) #+ self.cmd.body.slant[:]*np.array([1,-1,0])
+                    self.leg.BR.pose.cur_coord[:] = np.array(self.cmd.leg.foot_zero_pnt[2,:]) + self.gait.BR_traj[:] + self.body.ZMP_handler[2,:]*np.array([0,1,0])#+ self.cmd.body.slant[:]*np.array([1,1,0])
+                    self.leg.BL.pose.cur_coord[:] = np.array(self.cmd.leg.foot_zero_pnt[3,:]) + self.gait.BL_traj[:] + self.body.ZMP_handler[3,:]*np.array([0,1,0])#+ self.cmd.body.slant[:]*np.array([1,-1,0])
             
             time.sleep(0.0002)
         # print(self.leg.FR.pose.cur_coord[:]) 

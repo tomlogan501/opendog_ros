@@ -1,18 +1,40 @@
 <?xml version="1.0" ?>
 <robot name="opendog_nostand" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
-<!-- Configuration of Robot Links-->  
+  <!-- ========================================= -->
+  <!--     CONFIGURATION ARGUMENTS              -->
+  <!-- ========================================= -->
 
-<xacro:include filename="$(find opendog_description)/urdf/opendog_links.xacro" />
+  <!-- Hardware interface type selection -->
+  <xacro:arg name="use_gazebo" default="false"/>
 
-<!-- Configuration of Robot Joints-->  
+  <!-- ========================================= -->
+  <!--     MECHANICAL DESCRIPTION (ALWAYS)      -->
+  <!-- ========================================= -->
+  
+  <!-- Configuration of Robot Links-->  
 
-<xacro:include filename="$(find opendog_description)/urdf/opendog_joints.xacro" />
+  <!-- Configuration of Robot Joints -->
+    <xacro:include filename="$(find opendog_description)/urdf/opendog_stand_links.xacro"/> 
+  <xacro:include filename="$(find opendog_description)/urdf/opendog_stand_joints.xacro"/>
+  <xacro:include filename="$(find opendog_description)/urdf/opendog_links.xacro"/>
+  <xacro:include filename="$(find opendog_description)/urdf/opendog_joints.xacro"/>
 
+  <!-- Other Configurations -->
+  <xacro:include filename="$(find opendog_description)/urdf/materials.xacro"/>
+  <xacro:include filename="$(find opendog_description)/urdf/opendog.trans"/>
 
-<!-- Other Configurations-->
+  <!-- ========================================= -->
+  <!--     HARDWARE INTERFACE (CONDITIONAL)     -->
+  <!-- ========================================= -->
 
-<xacro:include filename="$(find opendog_description)/urdf/materials.xacro" />
-<xacro:include filename="$(find opendog_description)/urdf/opendog.trans" />
+  <!-- In gazebo mode, never load the real hardware interface (CAN) -->
+<xacro:unless value="$(arg use_gazebo)">
+  <!-- CAN MODE -->
+  <xacro:include filename="$(find opendog_hardware_layer_can)/urdf/opendog_ros2_control_can.xacro"/>
+  <xacro:opendog_ros2_control_can name="opendog_hw"/>
+</xacro:unless>
+
+  <!-- ========================================= -->
 
 </robot>

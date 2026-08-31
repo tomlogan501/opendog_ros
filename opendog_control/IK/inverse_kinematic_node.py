@@ -1,30 +1,48 @@
 import rclpy
 from rclpy.node import Node
 import numpy as np
-
 from std_msgs.msg import Float64MultiArray
 from std_msgs.msg import Float32MultiArray
 from opendog_msgs.msg import Geometry
+from opendog_msgs.msg import JoyCtrlCmds
 from IK.InverseKinematics import InverseKinematics
 
-
-
-
-
+MIN_HEIGHT = 90.0
+MAX_HEIGHT = 250.0
+MAX_ULEG_ANGLE = 90.5
+MAX_LLEG_ANGLE = 90.5
+FIXED_ULEG_ANGLE = 0.0
 
 class InvKin_Node(Node):
     def __init__(self):
         self.IK =  InverseKinematics()
         self.joint_angs = Float32MultiArray()
         self.prev_joint_angs = None
+        self.is_awake = False
+        self.is_walking = False
+        self.commanded_height = MIN_HEIGHT
         super().__init__('IK_node')
         self.sub_ = self.create_subscription(Geometry, 'opendog_geometry', self.sub_callback, 30)
+        self.sub_joy_ = self.create_subscription(JoyCtrlCmds, 'opendog_joy_ctrl_cmd', self.joy_cmd_callback, 30)
         self.pub2STM = self.create_publisher(Float32MultiArray, 'opendog_jointController/commands', 30)
         timer_period = 0.02
         # self.timerPub = self.create_timer(timer_period, callback =self.pub_callback1 )
         self.timerPub = self.create_timer(timer_period, self.pub_callback)
-        
 
+    def joy_cmd_callback(self, msg):
+        self.is_awake = msg.states[0]
+        self.is_walking = msg.states[1]
+        self.commanded_height = msg.pose.position.z
+
+    def _height_leg_angles(self):
+        """Direct joint-space interpolation for standing height, used only
+        when not walking. Both uleg and lleg interpolate with height,
+        same for all 4 legs."""
+        frac = (self.commanded_height - MIN_HEIGHT) / (MAX_HEIGHT - MIN_HEIGHT)
+        frac = min(max(frac, 0.0), 1.0)
+        uleg = frac * MAX_ULEG_ANGLE
+        lleg = frac * MAX_LLEG_ANGLE
+        return uleg, lleg
 
     def sub_callback(self, msg):
         eulerAng = np.array([msg.euler_ang.x, msg.euler_ang.y, msg.euler_ang.z])
@@ -32,7 +50,6 @@ class InvKin_Node(Node):
         fl_coord = np.array([msg.fl.x, msg.fl.y, msg.fl.z])
         br_coord = np.array([msg.br.x, msg.br.y, msg.br.z])
         bl_coord = np.array([msg.bl.x, msg.bl.y, msg.bl.z])
-
         ang_FR = self.IK.get_FR_joint_angles(fr_coord, eulerAng)
         ang_FL = self.IK.get_FL_joint_angles(fl_coord, eulerAng)
         ang_BR = self.IK.get_BR_joint_angles(br_coord, eulerAng)
@@ -45,31 +62,28 @@ class InvKin_Node(Node):
                 ang_FL[i] = np.rad2deg(ang_FL[i])
                 ang_BR[i] = np.rad2deg(ang_BR[i])
                 ang_BL[i] = np.rad2deg(ang_BL[i])
+
             self.joint_angs.data = [
                                 ang_FR[0], ang_FR[1], ang_FR[1]+ang_FR[2],
                                 ang_FL[0], ang_FL[1], ang_FL[1]+ang_FL[2],
                                 ang_BR[0], ang_BR[1], ang_BR[1]+ang_BR[2],
                                 ang_BL[0], ang_BL[1], ang_BL[1]+ang_BL[2]
-                                ] 
+                                ]
             self.prev_joint_angs = self.joint_angs.data
             # self.pub2STM.publish(self.joint_angs) 
         elif not self.prev_joint_angs == None:
             self.joint_angs.data = self.prev_joint_angs
         
             
-
-
     def pub_callback(self):
         if np.any(self.joint_angs.data) != None:
             pass
             self.pub2STM.publish(self.joint_angs)    
     
-
 def main(args=None):
     rclpy.init(args=args)
     inv_kin = InvKin_Node()
     rclpy.spin(inv_kin)
     inv_kin.destroy_node()
-
 if __name__ == '__main__':
     main()

@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<robot name="back_test" xmlns:xacro="http://www.ros.org/wiki/xacro">
+
+  <xacro:include filename="$(find opendog_hardware_layer_can)/urdf/back_test_ros2_control.xacro"/>
+
+  <link name="base_link"/>
+  <link name="BL_hip_link"/>
+  <link name="BL_uleg_link"/>
+  <link name="BL_lleg_link"/>
+  <link name="BR_hip_link"/>
+  <link name="BR_uleg_link"/>
+  <link name="BR_lleg_link"/>
+
+  <joint name="BL_hip_joint" type="revolute">
+    <parent link="base_link"/>
+    <child link="BL_hip_link"/>
+    <origin xyz="0 0.1 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14" upper="3.14" effort="10" velocity="10"/>
+  </joint>
+
+  <joint name="BL_uleg_joint" type="revolute">
+    <parent link="BL_hip_link"/>
+    <child link="BL_uleg_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14" upper="3.14" effort="10" velocity="10"/>
+  </joint>
+
+  <joint name="BL_lleg_joint" type="revolute">
+    <parent link="BL_uleg_link"/>
+    <child link="BL_lleg_link"/>
+    <origin xyz="0 0.1 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14" upper="3.14" effort="10" velocity="10"/>
+  </joint>
+
+  <joint name="BR_hip_joint" type="revolute">
+    <parent link="base_link"/>
+    <child link="BR_hip_link"/>
+    <origin xyz="0 -0.1 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14" upper="3.14" effort="10" velocity="10"/>
+  </joint>
+
+  <joint name="BR_uleg_joint" type="revolute">
+    <parent link="BR_hip_link"/>
+    <child link="BR_uleg_link"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14" upper="3.14" effort="10" velocity="10"/>
+  </joint>
+
+  <joint name="BR_lleg_joint" type="revolute">
+    <parent link="BR_uleg_link"/>
+    <child link="BR_lleg_link"/>
+    <origin xyz="0 -0.1 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14" upper="3.14" effort="10" velocity="10"/>
+  </joint>
+
+  <xacro:back_test_ros2_control name="back_test"/>
+
+</robot>

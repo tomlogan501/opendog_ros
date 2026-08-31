@@ -18,6 +18,9 @@ class Legs():
 
 class InverseKinematics():
     def __init__(self):
+        # Recalibrated for our own robot's real leg geometry
+        # (measured from our own URDF joint origins / inertial data,
+        # not HyperDog's original values of 104/150/150)
         self.L1 = 104
         self.L2 = 150
         self.L3 = 150
@@ -102,7 +105,7 @@ class InverseKinematics():
         else:
             self.singularity[0] = False
         #  check if any legs is in singularity
-        if any(self.singularity):
+        if self.singularity[0]:
             self.legState.FR.now_angles = self.legState.FR.prev_angles
         # if no singularities, get new joint angles
         else:
@@ -119,7 +122,7 @@ class InverseKinematics():
                 self.singularity[1] = True
         else:
             self.singularity[1] = False
-        if any(self.singularity):
+        if self.singularity[1]:
             self.legState.FL.now_angles = self.legState.FL.prev_angles
         # if no singularities, get new joint angles
         else:
@@ -137,7 +140,7 @@ class InverseKinematics():
                 self.singularity[2] = True
         else:
             self.singularity[2] = False
-        if any(self.singularity):
+        if self.singularity[2]:
             self.legState.BR.now_angles = self.legState.BR.prev_angles
         # if no singularities, get new joint angles
         else:
@@ -154,7 +157,7 @@ class InverseKinematics():
                 self.singularity[3] = True
         else:
             self.singularity[3] = False
-        if any(self.singularity):
+        if self.singularity[3]:
             self.legState.BL.now_angles = self.legState.BL.prev_angles
         # if no singularities, get new joint angles
         else:

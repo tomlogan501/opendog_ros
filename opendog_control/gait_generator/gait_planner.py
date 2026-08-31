@@ -1,4 +1,5 @@
 import numpy as np
+import threading
 import matplotlib.pyplot as plt
 # from time import time
 import time
@@ -13,6 +14,7 @@ class GaitPlanner():
         self.leg = leg
         self.body = body
         self.running = True
+        self.lock = threading.Lock()
 
         self.gnd_touched = np.ones([4]) #fr,fl,br,bl
         self.sample_time = 0.001
@@ -360,24 +362,25 @@ class GaitPlanner():
                 if dt >= self.sample_time*i:
                     i += 1
                     # FR,BL - swing |   FL,BR - stance
-                    if dt <= self.cmd.gait.swing_time:
-                        self.swing_FR(dt)
-                        self.stance_FL(dt)
-                        self.stance_BR(dt)
-                        self.swing_BL(dt)
-                    # All - stance
-                    elif dt > self.cmd.gait.swing_time and dt < self.cmd.gait.cycle_time - self.cmd.gait.swing_time:
-                        self.stance_FR(dt - self.cmd.gait.swing_time)
-                        self.stance_FL(dt)
-                        self.stance_BR(dt)
-                        self.stance_BL(dt - self.cmd.gait.swing_time)
-                    # FR,BL - stance |   FL,BR - swing
-                    else:
-                        stance_t = self.cmd.gait.cycle_time - self.cmd.gait.swing_time
-                        self.stance_FR(dt - self.cmd.gait.swing_time)
-                        self.swing_FL(dt - stance_t)
-                        self.swing_BR(dt - stance_t)
-                        self.stance_BL(dt - self.cmd.gait.swing_time)
+                    with self.lock:
+                        if dt <= self.cmd.gait.swing_time:
+                            self.swing_FR(dt)
+                            self.stance_FL(dt)
+                            self.stance_BR(dt)
+                            self.swing_BL(dt)
+                        # All - stance
+                        elif dt > self.cmd.gait.swing_time and dt < self.cmd.gait.cycle_time - self.cmd.gait.swing_time:
+                            self.stance_FR(dt - self.cmd.gait.swing_time)
+                            self.stance_FL(dt)
+                            self.stance_BR(dt)
+                            self.stance_BL(dt - self.cmd.gait.swing_time)
+                        # FR,BL - stance |   FL,BR - swing
+                        else:
+                            stance_t = self.cmd.gait.cycle_time - self.cmd.gait.swing_time
+                            self.stance_FR(dt - self.cmd.gait.swing_time)
+                            self.swing_FL(dt - stance_t)
+                            self.swing_BR(dt - stance_t)
+                            self.stance_BL(dt - self.cmd.gait.swing_time)
             else:
                 # cycle reset
                 i = 0
@@ -394,25 +397,26 @@ class GaitPlanner():
             if dt <= self.cmd.gait.cycle_time:
                 if dt >= self.sample_time*i:
                     i += 1
-                    # FR,BL - swing |   FL,BR - stance
-                    if dt <= self.cmd.gait.swing_time:
-                        self.swing_FR(dt)
-                        self.stance_FL(dt)
-                        self.stance_BR(dt)
-                        self.swing_BL(dt)
-                    # All - stance
-                    elif dt > self.cmd.gait.swing_time and dt < (self.cmd.gait.cycle_time - self.cmd.gait.swing_time)/2:
-                        self.stance_FR(dt - self.cmd.gait.swing_time)
-                        self.stance_FL(dt)
-                        self.stance_BR(dt)
-                        self.stance_BL(dt - self.cmd.gait.swing_time)
-                    # FR,BL - stance |   FL,BR - swing
-                    else:
-                        stance_t = self.cmd.gait.cycle_time - self.cmd.gait.swing_time
-                        self.stance_FR(dt - self.cmd.gait.swing_time)
-                        self.swing_FL(dt - stance_t)
-                        self.swing_BR(dt - stance_t)
-                        self.stance_BL(dt - self.cmd.gait.swing_time)
+                    with self.lock:
+                        # FR,BL - swing |   FL,BR - stance
+                        if dt <= self.cmd.gait.swing_time:
+                            self.swing_FR(dt)
+                            self.stance_FL(dt)
+                            self.stance_BR(dt)
+                            self.swing_BL(dt)
+                        # All - stance
+                        elif dt > self.cmd.gait.swing_time and dt < (self.cmd.gait.cycle_time - self.cmd.gait.swing_time)/2:
+                            self.stance_FR(dt - self.cmd.gait.swing_time)
+                            self.stance_FL(dt)
+                            self.stance_BR(dt)
+                            self.stance_BL(dt - self.cmd.gait.swing_time)
+                        # FR,BL - stance |   FL,BR - swing
+                        else:
+                            stance_t = self.cmd.gait.cycle_time - self.cmd.gait.swing_time
+                            self.stance_FR(dt - self.cmd.gait.swing_time)
+                            self.swing_FL(dt - stance_t)
+                            self.swing_BR(dt - stance_t)
+                            self.stance_BL(dt - self.cmd.gait.swing_time)
             else:
                 # cycle reset
                 i = 0
@@ -434,50 +438,51 @@ class GaitPlanner():
             zone_time = self.cmd.gait.cycle_time/4
             if dt <= self.cmd.gait.cycle_time + 2*t_zmp:
                 if dt >= self.sample_time*i:
-                    i += 1
-                    # ZMP body move left
-                    if dt <= t_zmp/2:
-                        self.body.ZMP_handler[::2,1] = dt*zmp_len/(t_zmp/2)  
-                        self.body.ZMP_handler[1::2,1] = -dt*zmp_len/(t_zmp/2) 
+                    with self.lock:
+                        i += 1
+                        # ZMP body move left
+                        if dt <= t_zmp/2:
+                            self.body.ZMP_handler[::2,1] = dt*zmp_len/(t_zmp/2)  
+                            self.body.ZMP_handler[1::2,1] = -dt*zmp_len/(t_zmp/2) 
 
-                    # BR - swing |   other - stance
-                    elif dt > t_zmp/2 and dt <= zone_time + t_zmp/2:
-                        self.swing_BR(dt - t_zmp/2)
-                        self.stance_FR(stance_zone_count[0]*zone_time + dt - t_zmp/2) 
-                        self.stance_BL(stance_zone_count[3]*zone_time + dt - t_zmp/2)
-                        self.stance_FL(dt- t_zmp/2)
-                        stance_zone_count[2] = 0
-                    # FR - swing | other stance
-                    elif dt > zone_time + t_zmp/2 and dt <= 2*zone_time + t_zmp/2:
-                        self.stance_BR(dt-zone_time - t_zmp/2)
-                        self.swing_FR(dt-zone_time - t_zmp/2)
-                        self.stance_BL(stance_zone_count[3]*zone_time + dt - t_zmp/2)
-                        self.stance_FL(dt - t_zmp/2)
-                        stance_zone_count[0] = 0
+                        # BR - swing |   other - stance
+                        elif dt > t_zmp/2 and dt <= zone_time + t_zmp/2:
+                            self.swing_BR(dt - t_zmp/2)
+                            self.stance_FR(stance_zone_count[0]*zone_time + dt - t_zmp/2) 
+                            self.stance_BL(stance_zone_count[3]*zone_time + dt - t_zmp/2)
+                            self.stance_FL(dt- t_zmp/2)
+                            stance_zone_count[2] = 0
+                        # FR - swing | other stance
+                        elif dt > zone_time + t_zmp/2 and dt <= 2*zone_time + t_zmp/2:
+                            self.stance_BR(dt-zone_time - t_zmp/2)
+                            self.swing_FR(dt-zone_time - t_zmp/2)
+                            self.stance_BL(stance_zone_count[3]*zone_time + dt - t_zmp/2)
+                            self.stance_FL(dt - t_zmp/2)
+                            stance_zone_count[0] = 0
 
-                    # ZMP move body right
-                    elif dt > 2*zone_time + t_zmp/2 and dt <= 2*zone_time + 3*t_zmp/2:
-                        self.body.ZMP_handler[::2,1] = zmp_len-(dt-2*zone_time - t_zmp/2)*2*zmp_len/t_zmp  
-                        self.body.ZMP_handler[1::2,1] = -zmp_len+ (dt-2*zone_time - t_zmp/2)*2*zmp_len/t_zmp 
+                        # ZMP move body right
+                        elif dt > 2*zone_time + t_zmp/2 and dt <= 2*zone_time + 3*t_zmp/2:
+                            self.body.ZMP_handler[::2,1] = zmp_len-(dt-2*zone_time - t_zmp/2)*2*zmp_len/t_zmp  
+                            self.body.ZMP_handler[1::2,1] = -zmp_len+ (dt-2*zone_time - t_zmp/2)*2*zmp_len/t_zmp 
 
-                    # BL - swing | other - stance
-                    elif dt > 2*zone_time + 3*t_zmp/2 and dt <= 3*zone_time + 3*t_zmp/2:
-                        self.stance_BR(dt-zone_time - 3/2*t_zmp)
-                        self.stance_FR(dt-2*zone_time - 3/2*t_zmp)
-                        self.swing_BL(dt-2*zone_time - 3/2*t_zmp)
-                        self.stance_FL(dt - 3/2*t_zmp)
-                        stance_zone_count[3] = 0
-                    # FL - swing | other - stance
-                    elif dt > 3*zone_time + 3/2*t_zmp and dt <= 4*zone_time + 3/2*t_zmp:
-                        self.stance_BR(dt-zone_time - 3/2*t_zmp)
-                        self.stance_FR(dt-2*zone_time - 3/2*t_zmp)
-                        self.stance_BL(dt-3*zone_time - 3/2*t_zmp)
-                        self.swing_FL(dt-3*zone_time - 3/2*t_zmp)
-                        stance_zone_count[1] = 0
+                        # BL - swing | other - stance
+                        elif dt > 2*zone_time + 3*t_zmp/2 and dt <= 3*zone_time + 3*t_zmp/2:
+                            self.stance_BR(dt-zone_time - 3/2*t_zmp)
+                            self.stance_FR(dt-2*zone_time - 3/2*t_zmp)
+                            self.swing_BL(dt-2*zone_time - 3/2*t_zmp)
+                            self.stance_FL(dt - 3/2*t_zmp)
+                            stance_zone_count[3] = 0
+                        # FL - swing | other - stance
+                        elif dt > 3*zone_time + 3/2*t_zmp and dt <= 4*zone_time + 3/2*t_zmp:
+                            self.stance_BR(dt-zone_time - 3/2*t_zmp)
+                            self.stance_FR(dt-2*zone_time - 3/2*t_zmp)
+                            self.stance_BL(dt-3*zone_time - 3/2*t_zmp)
+                            self.swing_FL(dt-3*zone_time - 3/2*t_zmp)
+                            stance_zone_count[1] = 0
 
-                    else:
-                        self.body.ZMP_handler[::2,1] =  -zmp_len + (dt-4*zone_time - 3/2*t_zmp)*zmp_len/(t_zmp/2)  
-                        self.body.ZMP_handler[1::2,1] = zmp_len -(dt-4*zone_time- 3/2*t_zmp)*zmp_len/(t_zmp/2)
+                        else:
+                            self.body.ZMP_handler[::2,1] =  -zmp_len + (dt-4*zone_time - 3/2*t_zmp)*zmp_len/(t_zmp/2)  
+                            self.body.ZMP_handler[1::2,1] = zmp_len -(dt-4*zone_time- 3/2*t_zmp)*zmp_len/(t_zmp/2)
                         
             else:
                 if np.any(self.cmd.gait.step_len[:2] != 0):
@@ -504,8 +509,10 @@ class GaitPlanner():
         self.body.ZMP_handler[1::2,1] = -self.len_zmp_wavegait 
            
         while self.cmd.mode.gait_type == 0 and self.running:
-            self.FR_traj[0] = self.cmd.gait.step_len[0]
-            self.FR_traj[2] = self.cmd.gait.step_len[1]
+            with self.lock:
+                self.FR_traj[0] = self.cmd.gait.step_len[0]
+                self.FR_traj[1] = self.cmd.gait.step_len[1]
+            time.sleep(0.001)
            
 
 
@@ -536,6 +543,7 @@ class GaitPlanner():
                 self.BR_traj[2] = 0
                 self.BL_traj[2] = 0
                 self.body.ZMP_handler[:,:] = 0
+                time.sleep(0.01)
         
 
     

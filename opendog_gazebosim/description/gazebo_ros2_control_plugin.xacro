@@ -11,6 +11,9 @@
             <command_interface name="position">
                 <param name="min">-1.57</param>
                 <param name="max">1.57</param>
+                <param name="p">100.0</param>
+                <param name="i">0.0</param>
+                <param name="d">5.0</param>
             </command_interface>
             <state_interface name="position">
                 <param name="initial_value">0.0</param>
@@ -23,6 +26,9 @@
             <command_interface name="position">
                 <param name="min">-1.2217</param>
                 <param name="max">3.14</param>
+                <param name="p">150.0</param>
+                <param name="i">0.0</param>
+                <param name="d">10.0</param>
             </command_interface>
             <state_interface name="position">
                 <param name="initial_value">0.0</param>
@@ -35,6 +41,9 @@
             <command_interface name="position">
                 <param name="min">0.45</param>
                 <param name="max">2.3562</param>
+                <param name="p">50.0</param>
+                <param name="i">0.0</param>
+                <param name="d">2.0</param>
             </command_interface>
             <state_interface name="position">
                 <param name="initial_value">0.45</param>
@@ -47,6 +56,9 @@
             <command_interface name="position">
                 <param name="min">-1.57</param>
                 <param name="max">1.57</param>
+                <param name="p">100.0</param>
+                <param name="i">0.0</param>
+                <param name="d">5.0</param>
             </command_interface>
             <state_interface name="position">
                 <param name="initial_value">0.0</param>
@@ -59,6 +71,9 @@
             <command_interface name="position">
                 <param name="min">-1.2217</param>
                 <param name="max">3.14</param>
+                <param name="p">150.0</param>
+                <param name="i">0.0</param>
+                <param name="d">10.0</param>
             </command_interface>
             <state_interface name="position">
                 <param name="initial_value">0.0</param>
@@ -71,6 +86,9 @@
             <command_interface name="position">
                 <param name="min">0.45</param>
                 <param name="max">2.3562</param>
+                <param name="p">50.0</param>
+                <param name="i">0.0</param>
+                <param name="d">2.0</param>
             </command_interface>
             <state_interface name="position">
                 <param name="initial_value">0.45</param>
@@ -83,6 +101,9 @@
             <command_interface name="position">
                 <param name="min">-1.57</param>
                 <param name="max">1.57</param>
+                <param name="p">100.0</param>
+                <param name="i">0.0</param>
+                <param name="d">5.0</param>
             </command_interface>
             <state_interface name="position">
                 <param name="initial_value">0.0</param>
@@ -95,6 +116,9 @@
             <command_interface name="position">
                 <param name="min">-1.2217</param>
                 <param name="max">3.14</param>
+                <param name="p">150.0</param>
+                <param name="i">0.0</param>
+                <param name="d">10.0</param>
             </command_interface>
             <state_interface name="position">
                 <param name="initial_value">0.0</param>
@@ -107,6 +131,9 @@
             <command_interface name="position">
                 <param name="min">0.45</param>
                 <param name="max">2.3562</param>
+                <param name="p">50.0</param>
+                <param name="i">0.0</param>
+                <param name="d">2.0</param>
             </command_interface>
             <state_interface name="position">
                 <param name="initial_value">0.45</param>
@@ -119,6 +146,9 @@
             <command_interface name="position">
                 <param name="min">-1.57</param>
                 <param name="max">1.57</param>
+                <param name="p">100.0</param>
+                <param name="i">0.0</param>
+                <param name="d">5.0</param>
             </command_interface>
             <state_interface name="position">
                 <param name="initial_value">0.0</param>
@@ -131,6 +161,9 @@
             <command_interface name="position">
                 <param name="min">-1.2217</param>
                 <param name="max">3.14</param>
+                <param name="p">150.0</param>
+                <param name="i">0.0</param>
+                <param name="d">10.0</param>
             </command_interface>
             <state_interface name="position">
                 <param name="initial_value">0.0</param>
@@ -143,6 +176,9 @@
             <command_interface name="position">
                 <param name="min">0.45</param>
                 <param name="max">2.3562</param>
+                <param name="p">50.0</param>
+                <param name="i">0.0</param>
+                <param name="d">2.0</param>
             </command_interface>
             <state_interface name="position">
                 <param name="initial_value">0.45</param>

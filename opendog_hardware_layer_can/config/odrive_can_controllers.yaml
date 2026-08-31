@@ -1,0 +1,32 @@
+controller_manager:
+  ros__parameters:
+    update_rate: 100  # Hz
+    
+    # Controller declarations
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+    
+    all_joints_controller:
+      type: position_controllers/JointGroupPositionController
+
+# CAN HARDWARE configuration - COMPATIBLE STRUCTURE
+opendog_hardware_interface_can:
+  ros__parameters:
+    can_interface: "can0"
+    
+    # FLAT LISTS - 12 elements (1 per joint)
+    # Each axis has its own node_id (0-11) on firmware v0.5.6
+    can_node_ids: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+    axes: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    enable_watchdogs: [true, true, true, true, true, true, true, true, true, true, true, true]
+    watchdog_timeouts: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1]
+
+# State broadcaster (required)
+joint_state_broadcaster:
+  ros__parameters:
+    {}
+
+# GROUPED controller for ALL joints (12 axes)
+all_joints_controller:
+  ros__parameters:
+    joints: ["FR_hip_joint", "FR_uleg_joint", "FR_lleg_joint", "FL_hip_joint", "FL_uleg_joint", "FL_lleg_joint", "BR_hip_joint", "BR_uleg_joint", "BR_lleg_joint", "BL_hip_joint", "BL_uleg_joint", "BL_lleg_joint"]

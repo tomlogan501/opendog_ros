@@ -1,23 +1,18 @@
 import rclpy
 from rclpy.node import Node
 import numpy as np
-
 from opendog_msgs.msg import JoyCtrlCmds
 from opendog_msgs.msg import Geometry
 from geometry_msgs.msg import Twist
 from IK.InverseKinematics import InverseKinematics
 from cmd_manager.opendog_variables import Body, Leg, Cmds
-
 from std_msgs.msg import String
 import threading
 from threading import Thread
 import logging
 import time
-
-
 class CmdManager_ROS():
     def __init__(self, set_msgs, send_msgs, node_name = 'cmd_manager_node'):
-
         super(CmdManager_ROS, self).__init__()
         # ROS parameters
         self.node = None
@@ -42,26 +37,22 @@ class CmdManager_ROS():
         self.pub_timer = None
         self.pub_queueSize = 1
         self.pub_callback = self._pub_callback
-
         self.stop = True
         
         # Robot cmds
         self.cmd = set_msgs
         self.pub_msgs = send_msgs
-        
-        
+      
     def _createNode(self):
         rclpy.init(args=None)
         self.node = rclpy.create_node(self.node_name)
         # self.node.get_logger().info('{} node was created!'.format(self.node_name))
         
-
     def create_sub1(self):
         self.sub1 = self.node.create_subscription(
                         self.sub1_interface, 
                         self.sub1_name, 
-                        self.sub1_callback, 
-                        self.sub1_queueSize)
+                        self.sub1_callback, self.sub1_queueSize)
         # self.node.get_logger().info('{} subscriber was created!'.format(self.sub1_name))
     
     def create_sub2(self):
@@ -81,10 +72,10 @@ class CmdManager_ROS():
         self.pub_timer = self.node.create_timer(self.pub_timer_period, self.pub_callback)
         # self.node.get_logger().info('{} subscriber was created!'.format(self.pub_name))
 
-
     def _joy_cmd_callback(self, msg):
         # ------------------------------------------
-        self.cmd.mode.start = msg.states[0]
+        new_start = msg.states[0]
+        self.cmd.mode.start = new_start
         if self.cmd.mode.start:
             self.cmd.mode.walk = msg.states[1]
             self.cmd.mode.side_walk_mode = msg.states[2]
@@ -102,13 +93,14 @@ class CmdManager_ROS():
             self.cmd.gait.step_len[0] = msg.gait_step.x
             self.cmd.gait.step_len[1] = msg.gait_step.y
             self.cmd.gait.swing_step_h = msg.gait_step.z
-
     def _sub2_callback(self, msg):
         self.cmd.gait.cycle_time = msg.linear.x
         self.cmd.gait.swing_time = msg.angular.x
     
-
     def _pub_callback(self):
+        self._publish_geometry()
+
+    def _publish_geometry(self):
         msg = Geometry()
         
         msg.fr.x= self.pub_msgs[0].FR.pose.cur_coord[0]
@@ -130,7 +122,6 @@ class CmdManager_ROS():
         msg.euler_ang.x = np.deg2rad(self.pub_msgs[1].roll)
         msg.euler_ang.y = np.deg2rad(self.pub_msgs[1].pitch)
         msg.euler_ang.z = np.deg2rad(self.pub_msgs[1].yaw)
-
         self.pub.publish(msg)
         
         # self.node.get_logger().info('Publishing message')
@@ -138,7 +129,6 @@ class CmdManager_ROS():
     
     def get_numOf_threads(self):
         return threading.active_count()
-
     def start(self):
         
         self._createNode()
@@ -151,10 +141,7 @@ class CmdManager_ROS():
         self.stop = False
         
         
-
     def stop(self):
         self.stop = True
-
     def run(self):
         pass
-        

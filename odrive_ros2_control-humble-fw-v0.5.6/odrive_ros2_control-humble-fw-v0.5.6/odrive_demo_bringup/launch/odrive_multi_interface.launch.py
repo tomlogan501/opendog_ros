@@ -1,4 +1,4 @@
-# Copyright 2021 Factor Robotics
+# Copyright 2026 Reebot
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -18,65 +18,43 @@ from launch.conditions import IfCondition
 from launch.substitutions import Command, FindExecutable, LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
+from launch_ros.parameter_descriptions import ParameterValue
 
 
 def generate_launch_description():
     declared_arguments = []
 
+    # Argument to enable/disable individual controllers
     declared_arguments.append(
         DeclareLaunchArgument(
-            "enable_joint0",
+            "enable_individual_controllers",
             default_value="true",
+            description="Enable individual controllers for each joint",
         )
     )
 
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "enable_joint1",
-            default_value="false",
-        )
-    )
+    # Retrieve arguments
+    enable_individual_controllers = LaunchConfiguration("enable_individual_controllers")
 
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "joint0_controller",
-            default_value="joint0_velocity_controller",
-        )
-    )
-
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            "joint1_controller",
-            default_value="joint1_velocity_controller",
-        )
-    )
-
-    enable_joint0 = LaunchConfiguration("enable_joint0")
-    enable_joint1 = LaunchConfiguration("enable_joint1")
-    joint0_controller = LaunchConfiguration("joint0_controller")
-    joint1_controller = LaunchConfiguration("joint1_controller")
-
+    # Robot description - uses the OpenDog URDF
     robot_description_content = Command(
         [
             PathJoinSubstitution([FindExecutable(name="xacro")]),
             " ",
             PathJoinSubstitution(
                 [
-                    FindPackageShare("odrive_demo_description"),
+                    FindPackageShare("opendog_description"),
                     "urdf",
-                    "odrive.urdf.xacro",
+                    "opendog.urdf.xacro",
                 ]
             ),
-            " ",
-            "enable_joint0:=",
-            enable_joint0,
-            " ",
-            "enable_joint1:=",
-            enable_joint1,
         ]
     )
-    robot_description = {"robot_description": robot_description_content}
+    
+    # Convert to string to avoid parsing issues
+    robot_description_str = ParameterValue(robot_description_content, value_type=str)
 
+    # Path to the controller configuration file
     robot_controllers = PathJoinSubstitution(
         [
             FindPackageShare("odrive_demo_bringup"),
@@ -85,46 +63,139 @@ def generate_launch_description():
         ]
     )
 
+    # Combined parameters for the control node
+    controller_params = {
+        "robot_description": robot_description_str,
+        "robot_controller_config_file": robot_controllers,
+    }
+
+    # ROS 2 control node
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
         output="both",
-        parameters=[robot_description, robot_controllers],
+        parameters=[controller_params, robot_controllers],
     )
 
+    # Robot state publisher node
     robot_state_pub_node = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
         output="both",
-        parameters=[robot_description],
+        parameters=[{"robot_description": robot_description_str}],
     )
 
+    # Joint state broadcaster (always enabled)
     joint_state_broadcaster_spawner = Node(
         package="controller_manager",
         executable="spawner",
         arguments=["joint_state_broadcaster", "-c", "/controller_manager"],
     )
 
-    joint0_controller_spawner = Node(
+    # Individual controllers for each joint (same casing as in the YAML)
+    FR_hip_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=[joint0_controller, "-c", "/controller_manager"],
-        condition=IfCondition(enable_joint0),
+        arguments=["FR_hip_joint_controller", "-c", "/controller_manager"],
+        condition=IfCondition(enable_individual_controllers),
     )
 
-    joint1_controller_spawner = Node(
+    FL_hip_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
-        arguments=[joint1_controller, "-c", "/controller_manager"],
-        condition=IfCondition(enable_joint1),
+        arguments=["FL_hip_joint_controller", "-c", "/controller_manager"],
+        condition=IfCondition(enable_individual_controllers),
     )
+
+    BR_hip_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["BR_hip_joint_controller", "-c", "/controller_manager"],
+        condition=IfCondition(enable_individual_controllers),
+    )
+
+    BL_hip_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["BL_hip_joint_controller", "-c", "/controller_manager"],
+        condition=IfCondition(enable_individual_controllers),
+    )
+
+    FR_uleg_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["FR_uleg_joint_controller", "-c", "/controller_manager"],
+        condition=IfCondition(enable_individual_controllers),
+    )
+
+    FL_uleg_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["FL_uleg_joint_controller", "-c", "/controller_manager"],
+        condition=IfCondition(enable_individual_controllers),
+    )
+
+    BR_uleg_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["BR_uleg_joint_controller", "-c", "/controller_manager"],
+        condition=IfCondition(enable_individual_controllers),
+    )
+
+    BL_uleg_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["BL_uleg_joint_controller", "-c", "/controller_manager"],
+        condition=IfCondition(enable_individual_controllers),
+    )
+
+    FR_lleg_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["FR_lleg_joint_controller", "-c", "/controller_manager"],
+        condition=IfCondition(enable_individual_controllers),
+    )
+
+    FL_lleg_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["FL_lleg_joint_controller", "-c", "/controller_manager"],
+        condition=IfCondition(enable_individual_controllers),
+    )
+
+    BR_lleg_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["BR_lleg_joint_controller", "-c", "/controller_manager"],
+        condition=IfCondition(enable_individual_controllers),
+    )
+
+    BL_lleg_controller_spawner = Node(
+        package="controller_manager",
+        executable="spawner",
+        arguments=["BL_lleg_joint_controller", "-c", "/controller_manager"],
+        condition=IfCondition(enable_individual_controllers),
+    )
+
+    # NOTE: The global "all_joints_position_controller" controller was removed
+    # so that only the individual controllers are used (claimed individually).
 
     nodes = [
         control_node,
         robot_state_pub_node,
         joint_state_broadcaster_spawner,
-        joint0_controller_spawner,
-        joint1_controller_spawner,
+        FR_hip_controller_spawner,
+        FL_hip_controller_spawner,
+        BR_hip_controller_spawner,
+        BL_hip_controller_spawner,
+        FR_uleg_controller_spawner,
+        FL_uleg_controller_spawner,
+        BR_uleg_controller_spawner,
+        BL_uleg_controller_spawner,
+        FR_lleg_controller_spawner,
+        FL_lleg_controller_spawner,
+        BR_lleg_controller_spawner,
+        BL_lleg_controller_spawner,
     ]
 
     return LaunchDescription(declared_arguments + nodes)

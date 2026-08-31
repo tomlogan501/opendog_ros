@@ -1,0 +1,866 @@
+// Copyright 2026 Reebot
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+#include "odrive_hardware_interface_can.hpp"
+
+#include "pluginlib/class_list_macros.hpp"
+#include "odrive_endpoints.hpp"
+#include <set>
+#include <algorithm>
+#include <chrono>
+#include <cmath>
+#include <limits>
+#include <string>
+#include <thread>
+
+namespace odrive_ros2_control
+{
+namespace
+{
+std::string format_axis_error(uint32_t axis_error)
+{
+  if (axis_error == 0) {
+    return "none";
+  }
+
+  // Bit values from ODrive's own source of truth:
+  // https://github.com/odriverobotics/ODrive/blob/master/tools/odrive/enums.py
+  // (class AxisError). The previous table here had every label from 0x40
+  // onward shifted/wrong (e.g. 0x40 was labeled "MISALIGNMENT" but is
+  // actually MOTOR_FAILED; 0x200 was labeled "ENCODER_FAILED" but is
+  // actually CONTROLLER_FAILED) — this caused real misdiagnosis earlier in
+  // this debugging session, since the numeric bits were always correct but
+  // the printed names weren't real ODrive error names at all.
+  struct Flag { uint32_t mask; const char * name; };
+  static const Flag kFlags[] = {
+    {0x00000001, "INVALID_STATE"},
+    {0x00000040, "MOTOR_FAILED"},
+    {0x00000080, "SENSORLESS_ESTIMATOR_FAILED"},
+    {0x00000100, "ENCODER_FAILED"},
+    {0x00000200, "CONTROLLER_FAILED"},
+    {0x00000800, "WATCHDOG_TIMER_EXPIRED"},
+    {0x00001000, "MIN_ENDSTOP_PRESSED"},
+    {0x00002000, "MAX_ENDSTOP_PRESSED"},
+    {0x00004000, "ESTOP_REQUESTED"},
+    {0x00020000, "HOMING_WITHOUT_ENDSTOP"},
+    {0x00040000, "OVER_TEMP"},
+    {0x00080000, "UNKNOWN_POSITION"},
+  };
+
+  std::string out;
+  for (const auto & flag : kFlags) {
+    if (axis_error & flag.mask) {
+      if (!out.empty()) {
+        out += " | ";
+      }
+      out += flag.name;
+    }
+  }
+  if (out.empty()) {
+    out = "unknown bits";
+  }
+  return out;
+}
+}  // namespace
+
+CallbackReturn ODriveHardwareInterfaceCAN::on_init(const hardware_interface::HardwareInfo & info)
+{
+  if (hardware_interface::SystemInterface::on_init(info) != CallbackReturn::SUCCESS) {
+    return CallbackReturn::ERROR;
+  }
+
+  RCLCPP_INFO(rclcpp::get_logger("ODriveHardwareInterfaceCAN"), "Initializing ODrive CAN Hardware Interface");
+
+  // Utilisation d'un set pour stocker les node_ids uniques
+  std::set<int> unique_node_ids;
+
+  // Initialize data vectors
+  hw_vbus_voltages_.resize(info_.sensors.size(), std::numeric_limits<double>::quiet_NaN());
+  hw_positions_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+  hw_velocities_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+  hw_efforts_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+  hw_commands_positions_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+  hw_commands_velocities_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+  hw_commands_efforts_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+
+  hw_axis_errors_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+  hw_motor_errors_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+  hw_encoder_errors_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+  hw_controller_errors_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+  hw_fet_temperatures_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+  hw_motor_temperatures_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
+
+  // Vectors to store node_ids per joint/sensor (kept for compatibility)
+  joint_node_ids_.resize(info_.joints.size());
+  sensor_node_ids_.resize(info_.sensors.size());
+
+  // Lecture des node_ids pour les sensors
+  for (size_t i = 0; i < info_.sensors.size(); i++) {
+    int node_id = std::stoi(info_.sensors[i].parameters.at("node_id"));
+    sensor_node_ids_[i] = node_id;
+    unique_node_ids.insert(node_id);
+    
+    RCLCPP_INFO(
+      rclcpp::get_logger("ODriveHardwareInterfaceCAN"), 
+      "Sensor '%s' -> node_id: %d", 
+      info_.sensors[i].name.c_str(), 
+      node_id
+    );
+  }
+
+  // Read parameters for the joints
+  for (size_t i = 0; i < info_.joints.size(); i++) {
+    int node_id = std::stoi(info_.joints[i].parameters.at("node_id"));
+    joint_node_ids_[i] = node_id;
+    unique_node_ids.insert(node_id);
+    
+    axes_.emplace_back(std::stoi(info_.joints[i].parameters.at("axis")));
+    enable_watchdogs_.emplace_back(info_.joints[i].parameters.at("enable_watchdog") == "true");
+
+    double gear_ratio = 1.0;
+    if (info_.joints[i].parameters.count("gear_ratio")) {
+      gear_ratio = std::stod(info_.joints[i].parameters.at("gear_ratio"));
+    }
+    gear_ratios_.emplace_back(gear_ratio);
+
+    // Per-joint zero offset, in MOTOR TURNS. Shifts the reported/commanded
+    // position so the joint's mechanical reference maps to the angle the
+    // controller expects. Applied on the turns side, before the gear_ratio
+    // conversion, so it is independent of gear_ratio's sign. Defaults to 0.0
+    // for any joint that doesn't declare it.
+    double zero_offset = 0.0;
+    if (info_.joints[i].parameters.count("zero_offset")) {
+      zero_offset = std::stod(info_.joints[i].parameters.at("zero_offset"));
+    }
+    zero_offsets_.emplace_back(zero_offset);
+
+    RCLCPP_INFO(
+      rclcpp::get_logger("ODriveHardwareInterfaceCAN"),
+      "Joint '%s' -> node_id: %d, axis: %d, watchdog: %s",
+      info_.joints[i].name.c_str(), 
+      node_id, 
+      axes_.back(),
+      enable_watchdogs_.back() ? "enabled" : "disabled"
+    );
+  }
+
+  // Print all detected unique node_ids
+  RCLCPP_INFO(
+    rclcpp::get_logger("ODriveHardwareInterfaceCAN"),
+    "Detected %zu unique ODrive node IDs", 
+    unique_node_ids.size()
+  );
+
+  // Convertir le set en vector pour l'initialisation de ODriveCAN
+  std::vector<std::vector<int64_t>> node_ids_grouped(2);
+  
+  // Groupe 0: sensors
+  for (int node_id : sensor_node_ids_) {
+    if (std::find(node_ids_grouped[0].begin(), node_ids_grouped[0].end(), node_id) == node_ids_grouped[0].end()) {
+      node_ids_grouped[0].push_back(static_cast<int64_t>(node_id));
+    }
+  }
+  
+  // Groupe 1: joints
+  for (int node_id : joint_node_ids_) {
+    if (std::find(node_ids_grouped[1].begin(), node_ids_grouped[1].end(), node_id) == node_ids_grouped[1].end()) {
+      node_ids_grouped[1].push_back(static_cast<int64_t>(node_id));
+    }
+  }
+
+  // Initialisation de l'interface CAN
+  RCLCPP_INFO(rclcpp::get_logger("ODriveHardwareInterfaceCAN"), "Initializing ODriveCAN");
+  odrive_can_ = new ODriveCAN();
+
+  CHECK_TS(odrive_can_->init(node_ids_grouped));
+  RCLCPP_INFO(rclcpp::get_logger("ODriveHardwareInterfaceCAN"), "ODriveCAN initialized successfully");
+
+  // Torque constant from URDF (effort read is disabled; avoid CAN dictionary reads).
+  for (size_t i = 0; i < info_.joints.size(); i++) {
+    double torque_constant = 0.1;
+    if (info_.joints[i].parameters.count("torque_constant")) {
+      torque_constant = std::stod(info_.joints[i].parameters.at("torque_constant"));
+    }
+    torque_constants_.emplace_back(static_cast<float>(torque_constant));
+  }
+
+  control_level_.resize(info_.joints.size(), integration_level_t::UNDEFINED);
+  last_sent_position_turns_.resize(info_.joints.size(), std::numeric_limits<float>::quiet_NaN());
+  
+  RCLCPP_INFO(
+    rclcpp::get_logger("ODriveHardwareInterfaceCAN"), 
+    "ODrive CAN Hardware Interface initialized with %zu joints and %zu sensors", 
+    info_.joints.size(),
+    info_.sensors.size()
+  );
+
+  return CallbackReturn::SUCCESS;
+}
+
+CallbackReturn ODriveHardwareInterfaceCAN::on_activate(const rclcpp_lifecycle::State &)
+{
+  RCLCPP_INFO(rclcpp::get_logger("ODriveHardwareInterfaceCAN"), "Activating ODrive CAN Hardware Interface");
+
+  for (size_t i = 0; i < info_.joints.size(); i++) {
+    if (enable_watchdogs_[i]) {
+      int node_id = joint_node_ids_[i];
+      odrive_can_->call(node_id, AXIS__WATCHDOG_FEED + per_axis_offset * axes_[i]);
+    }
+  }
+
+  // Force all axes IDLE + clear. Closed loop is entered later when the position
+  // controller activates (perform_command_mode_switch), not here — entering CL
+  // during activate crashes ros2_control_node if the axis faults on enable.
+  if (!idle_and_clear_all_axes()) {
+    return CallbackReturn::ERROR;
+  }
+
+  RCLCPP_INFO(rclcpp::get_logger("ODriveHardwareInterfaceCAN"), "ODrive CAN Hardware Interface activated");
+  return CallbackReturn::SUCCESS;
+}
+
+bool ODriveHardwareInterfaceCAN::idle_and_clear_all_axes()
+{
+  bool already_clean = true;
+  for (size_t i = 0; i < info_.joints.size(); i++) {
+    const int node_id = joint_node_ids_[i];
+    uint32_t axis_error = UINT32_MAX;
+    uint8_t axis_state = 0;
+    if (!odrive_can_->get_heartbeat(node_id, axis_error, axis_state) ||
+        axis_state != AXIS_STATE_IDLE || axis_error != 0)
+    {
+      already_clean = false;
+      break;
+    }
+  }
+  constexpr int kMaxRounds = 5;
+  const int rounds_to_run = already_clean ? 0 : kMaxRounds;
+  for (int round = 0; round < rounds_to_run; ++round) {
+    for (size_t i = 0; i < info_.joints.size(); i++) {
+      const int node_id = joint_node_ids_[i];
+      odrive_can_->send_set_axis_state(node_id, AXIS_STATE_IDLE);
+      std::this_thread::sleep_for(std::chrono::milliseconds(15));
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    for (size_t i = 0; i < info_.joints.size(); i++) {
+      odrive_can_->send_clear_errors(joint_node_ids_[i]);
+      std::this_thread::sleep_for(std::chrono::milliseconds(15));
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(150));
+  }
+
+  constexpr int kMaxNodeRetriesAxis0 = 4;
+  constexpr int kMaxNodeRetriesAxis1 = 7;
+  constexpr int kNodeWaitMsAxis0 = 900;
+  constexpr int kNodeWaitMsAxis1 = 1500;
+
+  std::vector<size_t> check_order(info_.joints.size());
+  for (size_t i = 0; i < info_.joints.size(); i++) { check_order[i] = i; }
+  std::sort(check_order.begin(), check_order.end(),
+    [this](size_t a, size_t b) {
+      return joint_node_ids_[a] > joint_node_ids_[b];
+    });
+
+  bool all_clean = true;
+  for (const size_t i : check_order) {
+    const int node_id = joint_node_ids_[i];
+    // axis1 nodes have consistently needed more time/retries than
+    // axis0 all session (nodes 1, 3, 7, 9, 11 vs 0, 2, 6, 8, 10) --
+    // very likely each board's single CAN controller services axis0
+    // before axis1 internally. Give axis1 more patience rather than
+    // treating both axes identically.
+    const bool is_axis1 = (node_id % 2 == 1);
+    const int kMaxNodeRetries = is_axis1 ? kMaxNodeRetriesAxis1 : kMaxNodeRetriesAxis0;
+    const int kNodeWaitMs = is_axis1 ? kNodeWaitMsAxis1 : kNodeWaitMsAxis0;
+    bool clean = false;
+    uint32_t axis_error = 0;
+    uint8_t axis_state = 0;
+    bool has_heartbeat = false;
+    for (int attempt = 0; attempt <= kMaxNodeRetries; ++attempt) {
+      if (attempt > 0) {
+        odrive_can_->send_set_axis_state(node_id, AXIS_STATE_IDLE);
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+        odrive_can_->send_clear_errors(node_id);
+        std::this_thread::sleep_for(std::chrono::milliseconds(30));
+      }
+      const bool idle_ok = odrive_can_->wait_for_axis_state(
+        node_id, AXIS_STATE_IDLE, 0, kNodeWaitMs);
+      has_heartbeat = odrive_can_->get_heartbeat(node_id, axis_error, axis_state);
+      clean = has_heartbeat && idle_ok &&
+        axis_state == AXIS_STATE_IDLE && axis_error == 0;
+      if (clean) {
+        if (attempt > 0) {
+          RCLCPP_INFO(
+            rclcpp::get_logger("ODriveHardwareInterfaceCAN"),
+            "Node %d: clean on retry attempt %d", node_id, attempt);
+        }
+        break;
+      }
+    }
+    if (!clean) {
+      all_clean = false;
+    }
+    if (has_heartbeat) {
+      RCLCPP_INFO(
+        rclcpp::get_logger("ODriveHardwareInterfaceCAN"),
+        "Node %d: prep state=%u error=0x%X (%s)%s",
+        node_id, axis_state, axis_error, format_axis_error(axis_error).c_str(),
+        clean ? "" : "  *** NOT CLEAN ***");
+    } else {
+      RCLCPP_WARN(
+        rclcpp::get_logger("ODriveHardwareInterfaceCAN"),
+        "Node %d: no heartbeat during prep (after %d retries)",
+        node_id, kMaxNodeRetries);
+    }
+  }
+  if (!all_clean) {
+    RCLCPP_ERROR(
+      rclcpp::get_logger("ODriveHardwareInterfaceCAN"),
+      "Axes not clean after CAN clear — CAN Clear_Errors cannot fix latched faults. "
+      "In odrivetool: set both axes IDLE, run clear_errors(), dump_errors(), reboot(), "
+      "then verify with candump (heartbeat error must be 0x00000000) before relaunching.");
+  }
+  return all_clean;
+}
+
+bool ODriveHardwareInterfaceCAN::is_axis_in_healthy_closed_loop(size_t joint_index)
+{
+  const int node_id = joint_node_ids_[joint_index];
+  uint32_t axis_error = UINT32_MAX;
+  uint8_t axis_state = 0;
+  if (!odrive_can_->get_heartbeat(node_id, axis_error, axis_state)) {
+    return false;
+  }
+  return axis_state == AXIS_STATE_CLOSED_LOOP_CONTROL && axis_error == 0;
+}
+
+bool ODriveHardwareInterfaceCAN::is_axis_clean_idle(size_t joint_index)
+{
+  const int node_id = joint_node_ids_[joint_index];
+  uint32_t axis_error = UINT32_MAX;
+  uint8_t axis_state = 0;
+  if (!odrive_can_->get_heartbeat(node_id, axis_error, axis_state)) {
+    return false;
+  }
+  return axis_state == AXIS_STATE_IDLE && axis_error == 0;
+}
+
+void ODriveHardwareInterfaceCAN::sync_command_from_encoder(size_t joint_index)
+{
+  const int node_id = joint_node_ids_[joint_index];
+  float pos_turns = 0.0f;
+  float vel_turns = 0.0f;
+  if (!odrive_can_->get_encoder_estimates(node_id, pos_turns, vel_turns)) {
+    return;
+  }
+
+  hw_positions_[joint_index] = ((pos_turns - zero_offsets_[joint_index]) * 2.0 * M_PI) / gear_ratios_[joint_index];
+  hw_velocities_[joint_index] = (vel_turns * 2.0 * M_PI) / gear_ratios_[joint_index];
+  hw_commands_positions_[joint_index] = hw_positions_[joint_index];
+  hw_commands_velocities_[joint_index] = 0.0;
+  hw_commands_efforts_[joint_index] = 0.0;
+  last_sent_position_turns_[joint_index] = pos_turns;
+}
+
+bool ODriveHardwareInterfaceCAN::verify_closed_loop_stable(
+  size_t joint_index, int hold_ms)
+{
+  const int node_id = joint_node_ids_[joint_index];
+  const auto deadline = std::chrono::steady_clock::now() + std::chrono::milliseconds(hold_ms);
+  while (std::chrono::steady_clock::now() < deadline) {
+    uint32_t axis_error = UINT32_MAX;
+    uint8_t axis_state = 0;
+    if (!odrive_can_->get_heartbeat(node_id, axis_error, axis_state) ||
+        axis_state != AXIS_STATE_CLOSED_LOOP_CONTROL ||
+        axis_error != 0)
+    {
+      return false;
+    }
+    std::this_thread::sleep_for(std::chrono::milliseconds(20));
+  }
+  return true;
+}
+
+bool ODriveHardwareInterfaceCAN::enter_position_closed_loop(size_t joint_index)
+{
+  const int node_id = joint_node_ids_[joint_index];
+
+  // REWRITTEN — non-blocking. Every previous version of this function
+  // blocked for up to ~1.6s per attempt (up to 3 attempts = several
+  // seconds), inside perform_command_mode_switch(), which
+  // controller_manager's real-time control loop expects back promptly
+  // (its update cycle budget at 50Hz is 20ms). Python's bringup_axes()
+  // does the same clear+request+poll steps, but as an ordinary script
+  // with zero scheduling obligations — it can block for 3 full seconds
+  // per axis with no consequence. Our C++ cannot: blocking the RT
+  // control loop for multiple seconds is a real, structural difference
+  // from Python that no amount of matching "the same steps" fixes,
+  // because the OBLIGATION not to block is what actually differs.
+  //
+  // Fix: send the request once, take a single short (non-blocking-shaped)
+  // look at the result for logging purposes, then return immediately.
+  // The axis's real state is already tracked every single cycle by
+  // read()'s regular heartbeat polling, and write() already correctly
+  // gates on is_axis_in_healthy_closed_loop() before sending any
+  // position command — so this function no longer needs to busy-wait to
+  // be safe. It only needs to have sent the request.
+  odrive_can_->send_clear_errors(node_id);
+  if (!odrive_can_->send_set_axis_state(node_id, AXIS_STATE_CLOSED_LOOP_CONTROL)) {
+    RCLCPP_WARN(
+      rclcpp::get_logger("ODriveHardwareInterfaceCAN"),
+      "Node %d: failed to send closed-loop request", node_id);
+    return false;
+  }
+
+  // One short, bounded look — well under the 20ms/cycle budget multiplied
+  // a few times, not the old ~1.6s wait — purely for an informative log
+  // line. Does not gate success: write()'s per-cycle health check is the
+  // real safety gate regardless of what we see here.
+  uint32_t axis_error = 0;
+  uint8_t axis_state = 0;
+  bool quick_confirm = odrive_can_->wait_for_axis_state(node_id, AXIS_STATE_CLOSED_LOOP_CONTROL, 0, 60);
+  odrive_can_->get_heartbeat(node_id, axis_error, axis_state);
+
+  if (quick_confirm && axis_state == AXIS_STATE_CLOSED_LOOP_CONTROL && axis_error == 0) {
+    sync_command_from_encoder(joint_index);
+    float pos_turns = 0.0f, vel_turns = 0.0f;
+    odrive_can_->get_encoder_estimates(node_id, pos_turns, vel_turns);
+    RCLCPP_INFO(
+      rclcpp::get_logger("ODriveHardwareInterfaceCAN"),
+      "Node %d: closed-loop request sent, confirmed quickly at %.4f motor turns",
+      node_id, pos_turns);
+  } else {
+    RCLCPP_INFO(
+      rclcpp::get_logger("ODriveHardwareInterfaceCAN"),
+      "Node %d: closed-loop request sent (not yet confirmed — state=%u error=0x%X, "
+      "read() will report the real state over the next cycles)",
+      node_id, axis_state, axis_error);
+  }
+
+  // Always report success here — the request was sent. Whether it's
+  // actually healthy from here on is read()'s/write()'s job every cycle,
+  // exactly as it already was for steady-state operation.
+  return true;
+}
+
+CallbackReturn ODriveHardwareInterfaceCAN::on_deactivate(const rclcpp_lifecycle::State &)
+{
+  RCLCPP_INFO(rclcpp::get_logger("ODriveHardwareInterfaceCAN"), "Deactivating ODrive CAN Hardware Interface");
+
+  for (size_t i = 0; i < info_.joints.size(); i++) {
+    const int node_id = joint_node_ids_[i];
+    odrive_can_->send_set_axis_state(node_id, AXIS_STATE_IDLE);
+    RCLCPP_INFO(
+      rclcpp::get_logger("ODriveHardwareInterfaceCAN"),
+      "Node %d: set to IDLE on shutdown", node_id);
+  }
+
+  RCLCPP_INFO(rclcpp::get_logger("ODriveHardwareInterfaceCAN"), "ODrive CAN Hardware Interface deactivated");
+  return CallbackReturn::SUCCESS;
+}
+
+std::vector<hardware_interface::StateInterface> ODriveHardwareInterfaceCAN::export_state_interfaces()
+{
+  std::vector<hardware_interface::StateInterface> state_interfaces;
+
+  RCLCPP_INFO(
+    rclcpp::get_logger("ODriveHardwareInterfaceCAN"), 
+    "Exporting state interfaces for %zu sensors and %zu joints",
+    info_.sensors.size(), 
+    info_.joints.size()
+  );
+
+  // Interfaces pour les sensors (vbus voltage)
+  for (size_t i = 0; i < info_.sensors.size(); i++) {
+    state_interfaces.emplace_back(hardware_interface::StateInterface(
+      info_.sensors[i].name, "vbus_voltage", &hw_vbus_voltages_[i]));
+  }
+
+  // Interfaces pour les joints
+  for (size_t i = 0; i < info_.joints.size(); i++) {
+    state_interfaces.emplace_back(hardware_interface::StateInterface(
+      info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_positions_[i]));
+    state_interfaces.emplace_back(hardware_interface::StateInterface(
+      info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_velocities_[i]));
+    state_interfaces.emplace_back(hardware_interface::StateInterface(
+      info_.joints[i].name, hardware_interface::HW_IF_EFFORT, &hw_efforts_[i]));
+
+    // Interfaces for diagnostic data
+    state_interfaces.emplace_back(hardware_interface::StateInterface(
+      info_.joints[i].name, "axis_error", &hw_axis_errors_[i]));
+    state_interfaces.emplace_back(hardware_interface::StateInterface(
+      info_.joints[i].name, "motor_error", &hw_motor_errors_[i]));
+    state_interfaces.emplace_back(hardware_interface::StateInterface(
+      info_.joints[i].name, "encoder_error", &hw_encoder_errors_[i]));
+    state_interfaces.emplace_back(hardware_interface::StateInterface(
+      info_.joints[i].name, "controller_error", &hw_controller_errors_[i]));
+    state_interfaces.emplace_back(hardware_interface::StateInterface(
+      info_.joints[i].name, "fet_temperature", &hw_fet_temperatures_[i]));
+    state_interfaces.emplace_back(hardware_interface::StateInterface(
+      info_.joints[i].name, "motor_temperature", &hw_motor_temperatures_[i]));
+  }
+
+  return state_interfaces;
+}
+
+std::vector<hardware_interface::CommandInterface>
+ODriveHardwareInterfaceCAN::export_command_interfaces()
+{
+  std::vector<hardware_interface::CommandInterface> command_interfaces;
+
+  RCLCPP_INFO(
+    rclcpp::get_logger("ODriveHardwareInterfaceCAN"), 
+    "Exporting command interfaces for %zu joints", 
+    info_.joints.size()
+  );
+
+  for (size_t i = 0; i < info_.joints.size(); i++) {
+    command_interfaces.emplace_back(hardware_interface::CommandInterface(
+      info_.joints[i].name, hardware_interface::HW_IF_POSITION, &hw_commands_positions_[i]));
+    command_interfaces.emplace_back(hardware_interface::CommandInterface(
+      info_.joints[i].name, hardware_interface::HW_IF_VELOCITY, &hw_commands_velocities_[i]));
+    command_interfaces.emplace_back(hardware_interface::CommandInterface(
+      info_.joints[i].name, hardware_interface::HW_IF_EFFORT, &hw_commands_efforts_[i]));
+  }
+
+  return command_interfaces;
+}
+
+return_type ODriveHardwareInterfaceCAN::prepare_command_mode_switch(
+  const std::vector<std::string> & start_interfaces,
+  const std::vector<std::string> & stop_interfaces)
+{
+  for (const std::string& key : stop_interfaces) {
+    for (size_t i = 0; i < info_.joints.size(); i++) {
+      if (key.find(info_.joints[i].name) != std::string::npos) {
+        control_level_[i] = integration_level_t::UNDEFINED;
+        RCLCPP_DEBUG(
+          rclcpp::get_logger("ODriveHardwareInterfaceCAN"), 
+          "Joint '%s' control level reset to UNDEFINED", 
+          info_.joints[i].name.c_str()
+        );
+      }
+    }
+  }
+
+  for (const std::string& key : start_interfaces) {
+    for (size_t i = 0; i < info_.joints.size(); i++) {
+      if (key == info_.joints[i].name + "/" + hardware_interface::HW_IF_POSITION) {
+        control_level_[i] = integration_level_t::POSITION;
+        RCLCPP_DEBUG(
+          rclcpp::get_logger("ODriveHardwareInterfaceCAN"), 
+          "Joint '%s' control level set to POSITION", 
+          info_.joints[i].name.c_str()
+        );
+      } else if (key == info_.joints[i].name + "/" + hardware_interface::HW_IF_VELOCITY) {
+        control_level_[i] = integration_level_t::VELOCITY;
+        RCLCPP_DEBUG(
+          rclcpp::get_logger("ODriveHardwareInterfaceCAN"), 
+          "Joint '%s' control level set to VELOCITY", 
+          info_.joints[i].name.c_str()
+        );
+      } else if (key == info_.joints[i].name + "/" + hardware_interface::HW_IF_EFFORT) {
+        control_level_[i] = integration_level_t::EFFORT;
+        RCLCPP_DEBUG(
+          rclcpp::get_logger("ODriveHardwareInterfaceCAN"), 
+          "Joint '%s' control level set to EFFORT", 
+          info_.joints[i].name.c_str()
+        );
+      }
+    }
+  }
+
+  return return_type::OK;
+}
+
+return_type ODriveHardwareInterfaceCAN::perform_command_mode_switch(
+  const std::vector<std::string> &, const std::vector<std::string> &)
+{
+  bool activation_ok = true;
+
+  for (size_t i = 0; i < info_.joints.size(); i++) {
+    int node_id = joint_node_ids_[i];
+
+    switch (control_level_[i]) {
+      case integration_level_t::UNDEFINED:
+        odrive_can_->send_set_axis_state(node_id, AXIS_STATE_IDLE);
+        RCLCPP_INFO(
+          rclcpp::get_logger("ODriveHardwareInterfaceCAN"),
+          "Node %d: set to IDLE", node_id);
+        break;
+
+      case integration_level_t::POSITION:
+        if (is_axis_in_healthy_closed_loop(i)) {
+          sync_command_from_encoder(i);
+          RCLCPP_INFO(
+            rclcpp::get_logger("ODriveHardwareInterfaceCAN"),
+            "Node %d: already in healthy closed loop, synced command", node_id);
+        } else if (!enter_position_closed_loop(i)) {
+          activation_ok = false;
+        }
+        break;
+
+      case integration_level_t::VELOCITY:
+        hw_commands_velocities_[i] = hw_velocities_[i];
+        odrive_can_->send_set_controller_mode(node_id, 2, 1);
+        odrive_can_->send_set_axis_state(node_id, AXIS_STATE_CLOSED_LOOP_CONTROL);
+        break;
+
+      case integration_level_t::EFFORT:
+        hw_commands_efforts_[i] = hw_efforts_[i];
+        odrive_can_->send_set_controller_mode(node_id, 1, 1);
+        odrive_can_->send_set_axis_state(node_id, AXIS_STATE_CLOSED_LOOP_CONTROL);
+        break;
+    }
+  }
+
+  return activation_ok ? return_type::OK : return_type::ERROR;
+}
+
+return_type ODriveHardwareInterfaceCAN::read(const rclcpp::Time &, const rclcpp::Duration &)
+{
+  // Counter to reduce read frequency for non-critical data
+  static int slow_read_counter = 0;
+  slow_read_counter++;
+  
+  // Read sensor data (vbus voltage) - only every 100 cycles (1 Hz)
+  if (false && slow_read_counter % 100 == 0) {
+    for (size_t i = 0; i < info_.sensors.size(); i++) {
+      int node_id = sensor_node_ids_[i];
+      float vbus_voltage;
+
+      if (odrive_can_->get_vbus_voltage(node_id, vbus_voltage)) {
+        hw_vbus_voltages_[i] = vbus_voltage;
+      }
+    }
+  }
+
+  // Read joint data - position, velocity, and torque ONLY
+  for (size_t i = 0; i < info_.joints.size(); i++) {
+    int node_id = joint_node_ids_[i];
+    float pos_estimate, vel_estimate, iq_measured;
+
+    // Read position and velocity via optimized CAN (automatic heartbeat messages)
+    if (odrive_can_->get_encoder_estimates(node_id, pos_estimate, vel_estimate)) {
+      hw_positions_[i] = ((pos_estimate - zero_offsets_[i]) * 2 * M_PI) / gear_ratios_[i];  // Conversion rev -> rad, gear- and zero-corrected
+      hw_velocities_[i] = (vel_estimate * 2 * M_PI) / gear_ratios_[i]; // Conversion rev/s -> rad/s, gear-corrected
+    }
+
+    // READ ONLY MODE: torque reading disabled to avoid CAN saturation
+    /* TEMPORARILY DISABLED
+    float iq_setpoint;
+    if (odrive_can_->get_iq_measured(node_id, iq_measured, iq_setpoint)) {
+      hw_efforts_[i] = iq_measured * torque_constants_[i];
+    }
+    */
+
+    uint32_t axis_error = 0;
+    uint8_t axis_state = 0;
+    if (odrive_can_->get_heartbeat(node_id, axis_error, axis_state)) {
+      hw_axis_errors_[i] = static_cast<double>(axis_error);
+      if (control_level_[i] == integration_level_t::POSITION &&
+          (axis_state != AXIS_STATE_CLOSED_LOOP_CONTROL || axis_error != 0))
+      {
+        static rclcpp::Clock steady_clock(RCL_STEADY_TIME);
+        RCLCPP_ERROR_THROTTLE(
+          rclcpp::get_logger("ODriveHardwareInterfaceCAN"),
+          steady_clock, 1000,
+          "Node %d: lost closed loop (state=%u error=0x%X) — motors will not move",
+          node_id, axis_state, axis_error);
+      }
+    }
+
+    if (false && slow_read_counter % 10 == 0) {
+      uint32_t axis_error;
+      uint64_t motor_error;
+      uint16_t encoder_error;
+      uint8_t controller_error;
+
+      if (odrive_can_->read(node_id, AXIS__ERROR + per_axis_offset * axes_[i], axis_error) == 0) {
+        hw_axis_errors_[i] = static_cast<double>(axis_error);
+      }
+
+      if (odrive_can_->read(node_id, AXIS__MOTOR__ERROR + per_axis_offset * axes_[i], motor_error) == 0) {
+        hw_motor_errors_[i] = static_cast<double>(motor_error);
+      }
+
+      if (odrive_can_->read(node_id, AXIS__ENCODER__ERROR + per_axis_offset * axes_[i], encoder_error) == 0) {
+        hw_encoder_errors_[i] = static_cast<double>(encoder_error);
+      }
+
+      if (odrive_can_->read(node_id, AXIS__CONTROLLER__ERROR + per_axis_offset * axes_[i], controller_error) == 0) {
+        hw_controller_errors_[i] = static_cast<double>(controller_error);
+      }
+    }
+
+    // TEMPORARY DIAGNOSTIC: disabled to test whether this is the fault trigger.
+    if (false && slow_read_counter % 100 == 0) {
+      float fet_temperature, motor_temperature;
+
+      if (odrive_can_->read(node_id, AXIS__MOTOR__FET_THERMISTOR__TEMPERATURE + per_axis_offset * axes_[i], fet_temperature) == 0) {
+        hw_fet_temperatures_[i] = fet_temperature;
+      }
+
+      if (odrive_can_->read(node_id, AXIS__MOTOR__MOTOR_THERMISTOR__TEMPERATURE + per_axis_offset * axes_[i], motor_temperature) == 0) {
+        hw_motor_temperatures_[i] = motor_temperature;
+      }
+    }
+  }
+  
+  return return_type::OK;
+}
+
+return_type ODriveHardwareInterfaceCAN::write(const rclcpp::Time &, const rclcpp::Duration &)
+{
+  // TEMPORARY DIAGNOSTIC: write() disabled entirely, to test whether the
+  // OVERSPEED/CONTROLLER_FAILED fault happens purely from initialization +
+  // read() + closed-loop entry, with zero possibility of write() sending
+  // anything, checking anything, or touching the CAN bus at all. This
+  // removes "nothing was published so it should be a no-op" as an
+  // assumption and makes it a certainty. Restore the real body below once
+  // this test is done.
+  constexpr float kMinTurnDelta = 5e-5f;
+
+  // REVERTED: this used to call enter_position_closed_loop() (a blocking,
+  // multi-second, multi-attempt routine) directly from here every time an
+  // axis was found unhealthy. That's a real lifecycle violation — write()
+  // runs on the tight 50Hz control loop and should stay lightweight;
+  // heavy setup/recovery work belongs in on_activate() or a dedicated
+  // out-of-band mechanism, never inside read()/write() themselves. Calling
+  // a ~1.5s blocking routine from write() stalls the control cycle for
+  // that long every retry, which can itself destabilize the control loop
+  // (stiff pos_gain reacting to a loop that's periodically frozen for over
+  // a second) — plausibly the actual cause of the symmetric
+  // CONTROLLER_FAILED loop seen after this was added. If automatic
+  // recovery is wanted, it should run on a separate timer/thread outside
+  // this function, not block write() itself. For now, write() just
+  // reports the unhealthy state and does nothing else — re-activating the
+  // node (or a deliberate, out-of-loop recovery step) is what should
+  // bring the axis back, same as it did reliably all session before this
+  // was added.
+  for (size_t i = 0; i < info_.joints.size(); i++) {
+    int node_id = joint_node_ids_[i];
+
+    switch (control_level_[i]) {
+      case integration_level_t::POSITION: {
+        if (!is_axis_in_healthy_closed_loop(i)) {
+          static rclcpp::Clock steady_clock(RCL_STEADY_TIME);
+          RCLCPP_WARN_THROTTLE(
+            rclcpp::get_logger("ODriveHardwareInterfaceCAN"),
+            steady_clock, 2000,
+            "Node %d: skipping position write — not in healthy closed loop",
+            node_id);
+
+          // RETRY: enter_position_closed_loop() only ever sends the request
+          // ONCE, at activation. If that frame is dropped or lands while the
+          // axis is still settling, the axis stays in IDLE forever with no
+          // error and nothing ever re-requests it. Re-send here, rate-limited,
+          // but ONLY when the axis is error-free — a real fault must still
+          // stop us rather than being retried over.
+          static std::vector<rclcpp::Time> last_retry(info_.joints.size(),
+                                                      rclcpp::Time(0, 0, RCL_STEADY_TIME));
+          rclcpp::Time now_t = steady_clock.now();
+          if (hw_axis_errors_[i] == 0.0 &&
+              (now_t - last_retry[i]).seconds() > 1.0)
+          {
+            // Round-robin gate: CAN arbitration always favors low node IDs.
+            // Since all joints activate together, their 1-second retry
+            // timers become "overdue" in the same instant every time,
+            // causing all six to fire in one burst -- high-ID nodes then
+            // lose arbitration every single cycle. Only allow ONE joint to
+            // actually send per kSlotWidthSec wall-clock slot, chosen
+            // deterministically by time. Pure arithmetic, no blocking --
+            // safe for the RT loop -- and spreads retries out instead of
+            // bursting them together.
+            constexpr double kSlotWidthSec = 0.05;
+            const size_t num_joints = info_.joints.size();
+            const size_t current_slot =
+              static_cast<size_t>(now_t.seconds() / kSlotWidthSec) % num_joints;
+            if (current_slot == i) {
+              last_retry[i] = now_t;
+              RCLCPP_INFO(
+                rclcpp::get_logger("ODriveHardwareInterfaceCAN"),
+                "Node %d: re-requesting closed loop (was idle, no error)", node_id);
+              odrive_can_->send_set_axis_state(node_id, AXIS_STATE_CLOSED_LOOP_CONTROL);
+            }
+          }
+          break;
+        }
+
+        if (!std::isnan(hw_commands_positions_[i])) {
+          const float position_turns = static_cast<float>(
+            ((hw_commands_positions_[i] * gear_ratios_[i]) / (2.0 * M_PI)) + zero_offsets_[i]);
+
+          if (!std::isnan(last_sent_position_turns_[i]) &&
+              std::abs(position_turns - last_sent_position_turns_[i]) < kMinTurnDelta)
+          {
+            break;
+          }
+
+          float command_turns = position_turns;
+          if (!std::isnan(last_sent_position_turns_[i])) {
+            constexpr float kMaxStepTurns = 0.05f;
+            const float delta = command_turns - last_sent_position_turns_[i];
+            if (std::abs(delta) > kMaxStepTurns) {
+              command_turns = last_sent_position_turns_[i] +
+                std::copysign(kMaxStepTurns, delta);
+              static rclcpp::Clock steady_clock(RCL_STEADY_TIME);
+              RCLCPP_WARN_THROTTLE(
+                rclcpp::get_logger("ODriveHardwareInterfaceCAN"),
+                steady_clock, 2000,
+                "Node %d: clamping position step %.4f -> %.4f turns",
+                node_id, position_turns, command_turns);
+            }
+          }
+
+          float vel_ff = 0.0f;
+          if (!std::isnan(hw_commands_velocities_[i])) {
+            vel_ff = static_cast<float>(
+              (hw_commands_velocities_[i] * gear_ratios_[i]) / (2.0 * M_PI));
+          }
+
+          if (odrive_can_->send_set_input_pos(node_id, command_turns, vel_ff, 0.0f)) {
+            last_sent_position_turns_[i] = command_turns;
+          }
+        }
+        break;
+      }
+      case integration_level_t::VELOCITY: {
+        if (!std::isnan(hw_commands_velocities_[i])) {
+          const float velocity_turns_s = static_cast<float>(
+            (hw_commands_velocities_[i] * gear_ratios_[i]) / (2.0 * M_PI));
+          odrive_can_->send_set_input_vel(node_id, velocity_turns_s, 0.0f);
+        }
+        break;
+      }
+      case integration_level_t::EFFORT: {
+        if (!std::isnan(hw_commands_efforts_[i])) {
+          odrive_can_->send_set_input_torque(node_id, static_cast<float>(hw_commands_efforts_[i]));
+        }
+        break;
+      }
+      case integration_level_t::UNDEFINED:
+      default:
+        break;
+    }
+  }
+
+  return return_type::OK;
+}
+
+}  // namespace odrive_ros2_control
+
+PLUGINLIB_EXPORT_CLASS(
+  odrive_ros2_control::ODriveHardwareInterfaceCAN,
+  hardware_interface::SystemInterface)
