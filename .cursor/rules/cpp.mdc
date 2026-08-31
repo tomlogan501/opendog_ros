@@ -1,0 +1,282 @@
+---
+description: Modern C++ development standards for
+globs: ["**/*.cpp", "**/*.hpp", "**/*.tpp", "**/*.cu", "**/*.cuh"]
+alwaysApply: true
+---
+
+# Modern C++ Standards —
+
+## 🎯 Core Philosophy
+
+### Fundamental Principles
+
+- **Zero-Cost Abstractions**: Use C++20 features that compile to optimal machine code without runtime overhead
+- **Type Safety**: Enforce compile-time type safety using concepts, constexpr, and designated initializers
+- **RAII**: All resources must be acquired in constructors and released in destructors automatically
+- **Move Semantics**: Use perfect forwarding and structured bindings for efficient data handling
+- **Const Correctness**: Default to const and constexpr wherever possible
+  - Const references for function parameters to avoid unnecessary copies
+  - Const methods to indicate read-only operations
+  - Const local variables to prevent accidental modification
+  - Const member variables for immutable class state
+- **Business/ROS2 Separation**: Domain logic must never depend on ROS2 types or functions
+
+### C++20 Features for Simplicity
+
+- **Concepts**: Replace complex SFINAE with readable concept constraints
+- **Ranges**: Use ranges views for functional, lazy data processing pipelines
+- **Designated Initializers**: Use for clear, self-documenting object construction
+- **constexpr**: Maximize compile-time computation for better performance
+- **std::span**: Use for safe, non-owning array access
+- **Three-way Comparison**: Use spaceship operator (<=>) for automatic comparison operators
+
+## 🏗️ Clean Architecture Structure
+
+### Mandatory Project Organization
+
+- **Domain Layer**: Pure business logic in src/domain/ (entities, value_objects, interfaces)
+- **Use Cases Layer**: Application business rules in src/use_cases/ (interfaces, implementations)
+- **Adapters Layer**: Interface conversion in src/adapters/ (ros2, repositories, presenters)
+- **Frameworks Layer**: External tools in src/frameworks/ (nodes, launch, config)
+- **Entry Point**: main.cpp contains only initialization and framework setup
+- **Public Headers**: All public interfaces in include/[package_name]/
+- **CUDA Code**: Specialized GPU code in cuda/ (memory, kernels, host)
+- **Tests**: Organized by architecture layer in test/
+
+### Architecture Layer Rules for Business/ROS2 Separation
+
+- **Domain**: Pure C++ business logic - NO rclcpp includes, NO ROS messages, NO ROS types
+- **Use Cases**: Application workflows using only domain interfaces and standard C++ types
+- **Adapters**: Convert between domain objects and ROS2 messages using explicit conversion functions
+- **Frameworks**: All ROS2-specific code (nodes, publishers, subscribers, services)
+- **Dependency Rule**: ROS2 types confined to frameworks layer only
+
+### Business Logic Isolation Requirements
+
+- **Domain Classes**: Use only standard C++ types (std::string, std::vector, std::chrono, etc.)
+- **Value Objects**: Immutable business data with C++20 designated initializers
+- **Business Rules**: Expressed in pure C++ without any ROS2 dependencies
+- **Error Types**: Domain-specific error enums, not ROS2 status codes
+- **Data Transfer**: Use standard C++ containers between layers
+
+### Namespace Organization
+
+- **domain::amr**: Core AMR business logic (navigation, intervention, supervision)
+- **domain::perception**: Fire detection and thermal analysis logic
+- **domain::actuation**: Turret, cannon, and pump control logic
+- **use_cases::mission**: Mission execution workflows
+- **adapters::ros2**: ROS2 message conversion and communication
+- **frameworks::nodes**: ROS2 node implementations
+
+## 🚀 C++20 Features for Ease of Use
+
+### Simple and Readable Concepts
+
+- **Domain Concepts**: Define intuitive concepts (ThermalData, NavigationPoint, FireEvent)
+- **Readable Constraints**: Use clear requires clauses that express business intent
+- **Type Safety**: Prevent template misuse with meaningful error messages
+- **Self-Documenting**: Concepts that read like business requirements
+
+### Ranges for Data Processing
+
+- **Thermal Data Processing**: Use ranges views for image/thermal data pipelines
+- **Mission Planning**: Process waypoints and trajectories with functional style
+- **Sensor Fusion**: Combine multiple data streams using ranges algorithms
+- **Error-Safe Pipelines**: Use ranges with std::optional for safe data processing
+- **Memory Efficient**: Lazy evaluation prevents unnecessary data copies
+
+### Modern Value Types with Designated Initializers
+
+- **Clear Construction**: Use designated initializers for configuration objects
+- **Self-Documenting Code**: Parameter names visible at call site
+- **Default Values**: Combine with default member initializers
+- **Aggregate Types**: Prefer aggregates over complex constructors for data classes
+- **Validation**: Use constexpr functions for compile-time validation
+
+### constexpr for Compile-Time Computation
+
+- **Configuration**: Compute robot parameters at compile time
+- **Lookup Tables**: Generate thermal thresholds and conversion tables
+- **Mathematical Constants**: All robot-specific constants computed at compile time
+- **Type Traits**: Use constexpr for domain-specific type checking
+- **Performance**: Eliminate runtime computation for known values
+
+## 🔧 Memory Management & Performance
+
+### Simple and Safe Memory Management
+
+- **std::unique_ptr**: Default choice for single ownership, automatic cleanup
+- **std::shared_ptr**: Only when multiple owners needed (sensor calibration data, configurations)
+- **std::span**: For safe array access without ownership (thermal image data, waypoint arrays)
+- **Stack Allocation**: Prefer stack objects for temporary data processing
+- **RAII Everywhere**: Hardware resources (cameras, CAN controllers) wrapped in RAII classes
+
+### Efficient Data Handling with C++20
+
+- **Structured Bindings**: Decompose sensor data and coordinates clearly
+- **Perfect Forwarding**: Use for efficient sensor data pipelines
+- **Move Semantics**: Essential for large thermal images and point clouds
+- **std::optional**: For optional sensor readings and navigation results
+- **Copy Elision**: Rely on guaranteed copy elision for return values
+
+### Simple Thread Safety
+
+- **std::atomic**: For simple flags and counters (robot state, mission status)
+- **std::mutex**: For protecting shared resources (sensor calibration, mission data)
+- **std::shared_mutex**: For read-heavy data (configuration, lookup tables)
+- **Thread-Safe Initialization**: Use std::call_once for expensive initialization
+- **Lock-Free Design**: Prefer message passing over shared mutable state
+
+## 🔒 Simple and Safe Error Handling
+
+### Business-Friendly Error Types
+
+- **Domain Errors**: NavigationError, ThermalError, InterventionError, MissionError
+- **std::expected**: Use for operations that can fail (sensor reading, navigation planning)
+- **Error Chaining**: Use and_then() for sequential operations that can fail
+- **Early Returns**: Use std::expected to avoid deep nesting
+- **Clear Error Messages**: Each error carries human-readable description
+
+### Defensive Programming
+
+- **Input Validation**: Check all parameters at function entry points
+- **Preconditions**: Use assert() or custom macros for debug-time checks
+- **Postconditions**: Validate function results in debug builds
+- **Invariants**: Check object state consistency in debug mode
+- **Fail Fast**: Detect problems early rather than propagating invalid state
+
+### Exception Safety for Simplicity
+
+- **RAII Only**: Use RAII for all resources, avoid explicit exception handling
+- **Strong Guarantee**: Operations either succeed completely or leave unchanged state
+- **No-Throw Destructors**: All cleanup code marked noexcept
+- **Resource Safety**: Hardware interfaces wrapped in RAII classes
+- **Simple Recovery**: Log errors and return to safe state
+
+## 🧪 Testing & Validation
+
+### Modern Testing Requirements
+
+- **Framework**: Use GTest for all unit and integration tests
+- **Layer Testing**: Test each Clean Architecture layer independently
+- **Mock Objects**: Use Google Mock for dependency injection testing
+- **Property Testing**: Include property-based tests for algorithmic code
+- **Performance Testing**: Use benchmarking for performance-critical code
+
+### Test Organization
+
+- **Test Structure**: Mirror source directory structure in test/
+- **Naming**: Use descriptive test names with domain/feature tags
+- **Sections**: Use SECTION for multiple test scenarios
+- **Assertions**: Use REQUIRE for critical checks, CHECK for additional validation
+- **Matchers**: Use Catch2 matchers for floating-point and complex comparisons
+
+## 🎨 Code Style & Conventions
+
+### Naming Standards
+
+- **Variables/Functions**: snake_case (current_position, calculate_distance)
+- **Classes/Types**: PascalCase (RobotController, NavigationState)
+- **Concepts**: PascalCase (Serializable, Movable)
+- **Constants**: kScreamingSnakeCase (kMaxSpeed, kDefaultTimeout)
+- **Private Members**: trailing underscore (internal*state*, resource\_)
+- **Namespaces**: snake_case matching directory structure
+
+### File Organization Requirements
+
+- **Header Guards**: Use #pragma once in all header files
+- **Include Order**: Standard library, third-party, local headers
+- **Documentation**: Doxygen comments for all public interfaces
+- **Forward Declarations**: Use forward declarations to minimize dependencies
+- **Explicit Constructors**: Mark single-parameter constructors explicit
+
+### Function Design
+
+- **Return Types**: Use trailing return type syntax for complex types
+- **Parameters**:
+  - **const reference** (`const T&`) for read-only parameters of non-trivial types (classes, structs, containers)
+  - **Value** (`T`) for cheap-to-copy types (primitives, small aggregates, trivially copyable types)
+  - **Move semantics** (`T&&` or rvalue reference) for taking ownership of large objects
+  - **std::span** for non-owning array/container views
+- **Const Correctness**:
+  - Mark function parameters `const` when they are not modified
+  - Use `const` methods for read-only operations on objects
+  - Mark local variables `const` when they are not reassigned
+  - Prefer `const` member variables when values don't change after construction
+- **Attributes**: Use [[nodiscard]] for all functions returning values
+- **Noexcept**: Mark all non-throwing functions noexcept
+- **Overloads**: Provide const and non-const overloads where appropriate
+
+## 🚄 CUDA Integration
+
+### CUDA Memory Management
+
+- **RAII Wrappers**: Use RAII for all CUDA memory allocations
+- **Custom Deleters**: Implement CudaDeleter for automatic cleanup
+- **Error Handling**: Use std::expected for CUDA operation results
+- **Memory Pools**: Implement memory pools for frequent allocations
+- **Type Safety**: Use typed pointers with custom deleters
+
+### CUDA Code Organization
+
+- **Kernel Separation**: One file per kernel type (processing, filtering, segmentation)
+- **Host Wrappers**: Provide C++ wrapper functions for all CUDA kernels
+- **Error Checking**: Centralize CUDA error checking in dedicated handlers
+- **Performance Monitoring**: Include automatic profiling for all kernel launches
+- **Device Functions**: Separate device functions in dedicated files
+
+## 🔄 ROS 2 Integration with Clean Separation
+
+### Strict Layer Isolation
+
+- **Domain Independence**: Business logic never includes rclcpp headers
+- **Adapter Pattern**: Explicit conversion functions between ROS types and domain types
+- **Message Translation**: Convert geometry_msgs::Pose to domain::Position in adapters
+- **Error Translation**: Convert domain errors to ROS service responses
+- **Type Safety**: Use strong types to prevent ROS/domain type mixing
+
+### Simple ROS 2 Node Design
+
+- **Constructor Injection**: Inject domain use cases into node constructors
+- **Single Responsibility**: Each node handles one specific ROS interface
+- **Message Validation**: Validate incoming ROS messages before domain conversion
+- **Error Logging**: Use RCLCPP\_\* macros only in frameworks layer
+- **Lifecycle Management**: Use RAII for ROS subscriptions and publishers
+
+### Efficient Message Handling
+
+- **Zero-Copy When Possible**: Use std::move for large data transfers
+- **Structured Bindings**: Decompose ROS messages clearly
+- **std::span**: Access message arrays without copying
+- **Batch Processing**: Process multiple messages efficiently
+- **Memory Pools**: Reuse message objects for high-frequency topics
+
+## 📏 Performance with Simplicity
+
+### C++20 Performance Features
+
+- **constexpr**: Compute robot constants at compile time
+- **consteval**: Force compile-time evaluation for critical calculations
+- **Ranges Views**: Zero-cost lazy evaluation for data processing
+- **std::span**: Avoid copying for array parameters
+- **Move Semantics**: Essential for thermal images and sensor data
+
+### Simple Performance Patterns
+
+- **Stack First**: Use stack allocation for temporary objects
+- **Pool Reuse**: Reuse objects for high-frequency operations (message processing)
+- **Batch Processing**: Process sensor data in batches, not individual readings
+- **Cache-Friendly**: Keep related data together (sensor readings with timestamps)
+- **Lazy Loading**: Load configuration and calibration data only when needed
+
+### Easy Profiling and Optimization
+
+- **Built-in Timing**: Use std::chrono for simple performance measurement
+- **Debug Assertions**: Check performance assumptions in debug builds
+- **Memory Tracking**: Monitor allocation patterns for sensor data processing
+- **Hot Path Identification**: Profile typical mission execution scenarios
+- **Realistic Testing**: Use actual thermal data and mission scenarios for benchmarks
+
+---
+
+_Modern C++ standards optimized for robotics, AI, and high-performance applications at ._

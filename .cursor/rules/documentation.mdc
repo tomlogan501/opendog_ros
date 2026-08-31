@@ -1,0 +1,561 @@
+---
+description: Documentation standards and organization
+globs: ["**/docs/**/*.md", "**/*.md"]
+alwaysApply: true
+---
+
+# Documentation Standards —
+
+## 🎯 Core Principles
+
+- **MANDATORY**: All documentation MUST be organized in `docs/` directory structure
+- **MANDATORY**: Documentation MUST be concise and focused (max 2 pages per document)
+- **MANDATORY**: Essential information only - remove verbose explanations
+- **MANDATORY**: Use bullet points and structured formats for clarity
+- **MANDATORY**: Separate concerns into dedicated files
+- **MANDATORY**: No code allowed in documentation
+
+## 📁 Documentation Organization
+
+### Mandatory Structure
+
+```
+docs/
+├── README.md                    # Documentation index (max 1 page)
+├── SYSTEM_STATUS.md            # Current status and progress (max 1 page)
+├── architecture/               # System design (max 1 page each)
+│   └── architecture.md         # Complete architecture design
+├── interfaces/                 # Interface specifications (max 1 page each)
+│   └── messages.md             # ROS2 interface specifications
+├── diagrams/                   # Mermaid diagrams (no limit)
+│   └── system-architecture.md  # System architecture diagrams
+├── behavior/                   # System behavior (max 1 page each)
+│   └── system-behavior.md      # System behavior and workflows
+├── testing/                    # Testing documentation (max 1 page each)
+│   ├── README.md              # Testing strategy
+│   └── e2e-testing-strategy.md # E2E test scenarios
+└── guides/                     # User guides (max 2 pages each)
+    └── user-guide.md          # User documentation
+```
+
+## 📄 Documentation Templates
+
+### Main README.md
+
+````markdown
+# Package Name
+
+## Overview
+
+Brief description of the package purpose and functionality (2-3 sentences).
+
+## Features
+
+- Feature 1: Description
+- Feature 2: Description
+- Feature 3: Description
+
+## Architecture
+
+High-level architecture summary with link to detailed documentation.
+
+See [Architecture Documentation](docs/architecture/architecture.md) for details.
+
+## Quick Start
+
+### Build
+
+```bash
+colcon build --symlink-install --cmake-args -GNinja -DCMAKE_EXPORT_COMPILE_COMMANDS=ON --packages-select <package-name>
+```
+````
+
+### Run
+
+```bash
+ros2 launch <package-name> <package-launch>.launch.py
+```
+
+### Test
+
+```bash
+colcon test --packages-select <package-name> --event-handlers console_direct+
+colcon test-result --all --test-result-base build/<package-name>
+```
+
+## ROS2 Interface
+
+[Interface summary table]
+
+## Dependencies
+
+- ROS 2 Humble
+- package_interfaces
+- rclcpp
+
+## Documentation
+
+- [Architecture](docs/architecture/architecture.md)
+- [Interfaces](docs/interfaces/messages.md)
+- [Behavior](docs/behavior/system-behavior.md)
+- [Testing](docs/testing/README.md)
+- [System Status](docs/SYSTEM_STATUS.md)
+
+## License
+
+Proprietary - . All rights reserved.
+
+````
+
+### Architecture Documentation
+
+```markdown
+# Architecture - Package Name
+
+## System Overview
+Brief system description and purpose.
+
+## Architecture Layers
+
+### Business Logic Layer (core/)
+**Purpose:** Pure C++ business logic
+
+**Components:**
+- **ComponentA** (`component_a.hpp/cpp`): Description
+- **ComponentB** (`component_b.hpp/cpp`): Description
+
+**Responsibilities:**
+- Responsibility 1
+- Responsibility 2
+
+**Dependencies:** None (pure C++)
+
+### ROS2 Interface Layer (ros2_interface/)
+**Purpose:** ROS2 integration
+
+**Components:**
+- **NodeName** (`node_name.hpp/cpp`): ROS2 node implementation
+- **Adapter** (`adapter.hpp/cpp`): Message conversion
+
+**Responsibilities:**
+- ROS2 lifecycle management
+- Message publishing/subscribing
+- Service handling
+- Parameter loading
+
+**Dependencies:** rclcpp, package_interfaces
+
+## Component Interactions
+[Sequence diagram]
+
+## Data Flow
+[Data flow diagram]
+
+## Design Patterns
+- **Pattern 1**: Description and usage
+- **Pattern 2**: Description and usage
+
+## Configuration
+Configuration files location and format.
+
+## Error Handling
+Error handling strategy and recovery mechanisms.
+````
+
+### Interface Documentation
+
+```markdown
+# ROS2 Interfaces - Package Name
+
+## Messages
+
+### Status Message
+
+**Type:** `package_interfaces/msg/Status`
+
+**File:** `msg/Status.msg`
+```
+
+# Status message for package
+
+float64 value # Current value
+bool is_enabled # Enabled state
+bool is_running # Running state
+bool is_fault # Fault state
+string error_message # Error description
+builtin_interfaces/Time timestamp
+
+```
+
+**Usage:**
+- Published on: `/status`
+- Rate: 10 Hz
+- Description: System status information
+
+## Services
+
+### Activate Service
+**Type:** `package_interfaces/srv/Activate`
+
+**File:** `srv/Activate.srv`
+
+```
+
+# Request
+
+float64 speed # Target speed
+bool enable # Enable/disable
+
+---
+
+# Response
+
+bool success # Operation success
+string message # Result message
+
+```
+
+**Usage:**
+- Service name: `/activate`
+- Description: Activate/deactivate system
+
+## Topic Summary
+[Topic summary table]
+
+## Service Summary
+[Service summary table]
+```
+
+### System Behavior Documentation
+
+```markdown
+# System Behavior - Package Name
+
+## System States
+
+### State Machine
+
+[State diagram]
+
+### State Transitions
+
+- **Idle → Active**: Activation command received
+- **Active → Running**: Start command received
+- **Running → Active**: Stop command received
+- **Active → Idle**: Deactivation command received
+
+## Workflows
+
+### Activation Workflow
+
+1. Receive activation request
+2. Validate parameters
+3. Initialize hardware
+4. Start control loop
+5. Publish status updates
+
+### Error Handling Workflow
+
+1. Detect error condition
+2. Log error details
+3. Transition to error state
+4. Notify operators
+5. Attempt recovery
+
+## Performance Characteristics
+
+- **Control Loop Frequency**: 10 Hz
+- **Response Time**: < 100 ms
+- **Memory Usage**: < 50 MB
+- **CPU Usage**: < 20%
+
+## Safety Mechanisms
+
+- **Emergency Stop**: Immediate halt
+- **Limit Checking**: Parameter validation
+- **Timeout Handling**: Operation timeouts
+- **Error Recovery**: Automatic recovery attempts
+```
+
+### Testing Documentation
+
+```markdown
+# Testing Documentation
+
+## Test Strategy
+
+### Unit Tests
+
+- **Location**: `test/test_*.cpp`
+- **Framework**: Google Test
+- **Coverage**: Business logic (core/ directory)
+- **Execution**: `colcon test --packages-select <package-name> --ctest-args -R test_*`
+
+### Integration Tests
+
+- **Location**: `test/test_*_integration.py`
+- **Framework**: launch_testing
+- **Coverage**: ROS2 interface
+- **Execution**: `colcon test --packages-select <package-name> --pytest-args -k integration`
+
+### End-to-End Tests
+
+- **Location**: `test/test_*_e2e.py`
+- **Framework**: launch_testing
+- **Coverage**: Complete system behavior
+- **Execution**: `colcon test --packages-select <package-name> --pytest-args -k e2e`
+
+## Test Scenarios
+
+### E2E Test Scenarios
+
+#### Scenario 1: Activation/Deactivation
+
+- Activate system with valid parameters
+- Verify status updates
+- Deactivate system
+- Verify clean shutdown
+
+#### Scenario 2: Configuration Changes
+
+- Change configuration during operation
+- Verify configuration applied
+- Verify system continues operating
+
+#### Scenario 3: Error Handling
+
+- Send invalid commands
+- Verify error responses
+- Verify system recovery
+
+## Running Tests
+
+[Test execution commands]
+
+## Test Coverage Goals
+
+- [ ] All services tested
+- [ ] All topics tested
+- [ ] Error scenarios covered
+- [ ] Recovery mechanisms verified
+- [ ] Multi-node interaction tested
+```
+
+## 📐 Mermaid Diagram Standards
+
+### Diagram Organization
+
+- **Location**: `docs/diagrams/system-architecture.md`
+- **Format**: Mermaid syntax
+- **Validation**: Syntax must be valid
+- **Titles**: Clear, descriptive titles
+
+### Required Diagrams
+
+- **Component Diagram**: System components and relationships
+- **Class Diagram**: Class structure and inheritance
+- **Sequence Diagrams**: Key workflows and interactions
+- **State Diagram**: System state transitions
+
+### Diagram Template
+
+````markdown
+# System Architecture Diagrams
+
+## Component Diagram
+
+Brief description of the component diagram.
+
+```mermaid
+graph TB
+    subgraph "ROS2 Interface Layer"
+        Node[Node]
+        Adapter[Adapter]
+    end
+
+    subgraph "Business Logic Layer"
+        Controller[Controller]
+        Algorithm[Algorithm]
+    end
+
+    subgraph "Hardware/External"
+        Device[Device]
+    end
+
+    Node --> Adapter
+    Adapter --> Controller
+    Controller --> Algorithm
+    Algorithm --> Device
+```
+````
+
+## Class Diagram
+
+Brief description of the class diagram.
+
+```mermaid
+classDiagram
+    class Node {
+        -controller: Controller
+        -adapter: Adapter
+        +handle_service()
+        +publish_status()
+    }
+
+    class Controller {
+        -config: Config
+        +execute(command)
+        +get_status()
+    }
+
+    Node --> Controller
+    Node --> Adapter
+```
+
+## Sequence Diagrams
+
+### Activation Sequence
+
+Brief description of the activation sequence.
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Node
+    participant Controller
+    participant Device
+
+    Client->>Node: Activate Request
+    Node->>Controller: activate(params)
+    Controller->>Device: send_command()
+    Device-->>Controller: ack
+    Controller-->>Node: result
+    Node-->>Client: Response
+```
+
+## State Diagram
+
+Brief description of the state diagram.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Idle
+    Idle --> Active: Activate
+    Active --> Running: Start
+    Running --> Active: Stop
+    Active --> Idle: Deactivate
+    Running --> Error: Fault
+    Error --> Idle: Reset
+```
+
+````
+
+## 📊 System Status Documentation
+
+### Status Template
+```markdown
+# System Status
+
+**Package:** <package-name>
+**Last Updated:** YYYY-MM-DD
+**Status:** 🟢 Production / 🟡 Development / 🔴 Planning
+
+## Implementation Status
+
+### Completed ✅
+- [x] Business logic (core/)
+- [x] ROS2 interface (ros2_interface/)
+- [x] Unit tests
+- [x] Integration tests
+- [x] E2E tests
+- [x] Documentation
+
+### In Progress 🚧
+- [ ] Item in progress 1
+- [ ] Item in progress 2
+
+### Planned 📋
+- [ ] Future item 1
+- [ ] Future item 2
+
+## Known Issues
+[Issues table]
+
+## Test Results
+**Last Test Run:** YYYY-MM-DD
+
+- Unit Tests: XX/XX passed
+- Integration Tests: XX/XX passed
+- E2E Tests: XX/XX passed
+- Coverage: XX%
+
+## Performance Metrics
+- Control loop frequency: XX Hz
+- Response time: XX ms
+- Memory usage: XX MB
+
+## Recent Changes
+[Recent changes list]
+
+## Next Steps
+[Next steps list]
+````
+
+## ✅ Quality Gates
+
+### Documentation Completeness
+
+- [ ] README.md with overview (max 2 pages)
+- [ ] SYSTEM_STATUS.md updated (max 1 page)
+- [ ] architecture.md with design (max 2 pages)
+- [ ] system-architecture.md with diagrams
+- [ ] messages.md with all interfaces (max 2 pages)
+- [ ] system-behavior.md with workflows (max 1 page)
+- [ ] e2e-testing-strategy.md with scenarios (max 2 pages)
+
+### Documentation Quality
+
+- [ ] All sections filled (no placeholders)
+- [ ] Mermaid diagrams valid syntax
+- [ ] Code examples tested
+- [ ] Links working
+- [ ] Page limits respected
+- [ ] Clear and concise writing
+
+### Documentation Accuracy
+
+- [ ] Interfaces match implementation
+- [ ] Diagrams reflect actual architecture
+- [ ] Test scenarios implemented
+- [ ] Configuration examples valid
+- [ ] Dependencies listed correctly
+
+## 🎯 Best Practices
+
+### Writing Guidelines
+
+- Use clear, concise language
+- Include concrete examples
+- Define measurable criteria
+- Keep documentation up to date
+- Follow  naming conventions
+
+### Organization Guidelines
+
+- Separate concerns into dedicated files
+- Use consistent naming conventions
+- Maintain logical file structure
+- Link related documents
+- Update documentation with code changes
+
+### Maintenance Guidelines
+
+- Review documentation regularly
+- Update with each significant change
+- Validate links and examples
+- Remove outdated information
+- Track documentation quality metrics
+
+---
+
+_Documentation standards ensuring clear, accurate, and maintainable technical documentation for  projects._
