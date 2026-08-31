@@ -1,0 +1,117 @@
+---
+description: Python development standards with Flask and ML integration
+globs: ["**/*.py"]
+alwaysApply: true
+---
+
+# Python Standards —
+
+## Core Principles
+
+- **PEP 8 + Type hints**: Mandatory everywhere, dataclasses for state
+- **Clean Architecture**: entities/ → use_cases/ → adapters/ → frameworks/
+- **Dependency Rule**: Import only inward, no circular dependencies
+- **Abstractions**: Use protocols/ABCs, dependency injection patterns
+- **File Separation**: Main entry point separate from business logic and ROS 2 interfaces
+
+## Flask Development
+
+- **Application factories**: Use Flask application factories for modularity
+- **Blueprints**: Organize routes using Flask Blueprints
+- **Functional programming**: Avoid classes except for Flask views
+- **Naming**: Descriptive variable names with auxiliary verbs (is_active, has_permission)
+- **File structure**: Lowercase with underscores (blueprints/user_routes.py)
+- **RORO pattern**: Receive an Object, Return an Object where applicable
+- **Error handling**: Handle errors at function beginning, use early returns
+
+## ML/AI Development
+
+- **PyTorch**: nn.Module, autograd, proper init (kaiming/xavier), mixed precision
+- **Transformers**: HF models/tokenizers, LoRA/P-tuning for efficiency
+- **Diffusers**: Appropriate schedulers, attention slicing, model offloading
+- **Gradio**: Simple demos, validation, error handling
+
+## Quality Gates
+
+- **Static**: ruff (lint+format)
+- **Tests**: pytest + pytest-cov, mock externals
+- **Config**: Single `pyproject.toml` preferred
+- **Standards**: pathlib, custom exceptions, pre-commit hooks
+
+## Dependencies
+
+- **Core**: torch, transformers, diffusers, gradio, numpy, tqdm
+- **Flask**: flask, flask-restful, flask-sqlalchemy, flask-migrate, marshmallow, flask-jwt-extended
+- **Tracking**: TensorBoard/W&B
+- **Management**: requirements.txt/pyproject.toml, pinned versions
+
+## Clean Architecture Modulaire Python
+
+- **Main Entry Point**: Separate `main.py` or `__main__.py` file for entry point only
+- **ROS 2 Interfaces**: Separate files for ROS 2 publishers, subscribers, services, actions
+- **Business Logic**: Separate files for domain entities, use cases, and business rules
+- **Adapters**: Separate files for converting between ROS 2 messages and domain objects
+- **Framework Isolation**: ROS 2 specifics only in outermost layer
+
+## Structure Modulaire Python ROS 2
+
+```
+python_package/
+├── src/
+│   ├── package_name/              # Logique métier
+│   │   ├── domain/                # Domain Layer (entités métier)
+│   │   │   ├── entities/          # Entités métier
+│   │   │   ├── value_objects/     # Objets de valeur
+│   │   │   └── interfaces/         # Interfaces du domaine
+│   │   ├── use_cases/             # Use Cases Layer (logique applicative)
+│   │   │   ├── interfaces/        # Interfaces abstraites
+│   │   │   └── implementations/   # Implémentations concrètes
+│   │   ├── adapters/              # Adapters Layer (conversion d'interfaces)
+│   │   │   ├── ros2/              # Adaptateurs ROS 2
+│   │   │   ├── repositories/      # Accès aux données
+│   │   │   └── presenters/        # Formatage des réponses
+│   │   └── frameworks/            # Frameworks Layer (outils externes)
+│   │       ├── nodes/             # Nodes ROS 2
+│   │       ├── launch/            # Launch files
+│   │       └── config/            # Configuration
+│   └── main.py                    # Point d'entrée principal
+├── test/                          # Tests organisés par couche
+│   ├── test_domain/
+│   ├── test_use_cases/
+│   ├── test_adapters/
+│   └── test_frameworks/
+├── launch/                        # Launch files
+├── config/                        # Configuration
+├── setup.py                       # Configuration du package
+├── requirements.txt               # Dépendances
+└── README.md                      # Documentation
+```
+
+## Séparation des Fichiers Python
+
+- **main.py**: Point d'entrée uniquement, initialisation ROS 2 et lancement du node
+- **nodes/**: Classes de nodes ROS 2 avec interfaces ROS 2 uniquement
+- **domain/**: Entités métier pures sans dépendances ROS 2
+- **use_cases/**: Logique applicative avec interfaces abstraites
+- **adapters/**: Conversion entre ROS 2 et objets métier
+- **frameworks/**: Configuration et lancement ROS 2
+
+## Standards Python Modulaires
+
+- **Type Hints**: Obligatoires partout avec dataclasses pour l'état
+- **Protocols**: Utilisation de protocols pour les interfaces abstraites
+- **Dependency Injection**: Injection de dépendances pour la testabilité
+- **Error Handling**: Gestion d'erreurs centralisée avec exceptions personnalisées
+- **Logging**: Logging structuré avec niveaux appropriés
+- **Testing**: Tests unitaires pour chaque couche séparément
+
+## Script Management
+
+- **MANDATORY**: Search for existing Python scripts before creating new ones
+- **MANDATORY**: Extend existing scripts rather than creating new ones
+- **MANDATORY**: Use Python modules instead of scripts when possible
+- **MANDATORY**: Consolidate similar scripts into single, parameterized scripts
+
+---
+
+_Python standards ensuring clean, efficient, and maintainable code with Flask and ML best practices._

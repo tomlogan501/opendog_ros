@@ -1,0 +1,533 @@
+---
+description: ROS 2 package structure standards for
+globs: ["**/CMakeLists.txt", "**/package.xml"]
+alwaysApply: true
+---
+
+# ROS 2 Package Structure Standards —
+
+## 🎯 Core Principles
+
+### Mandatory Structure
+
+Every ROS 2 package MUST follow this organization:
+
+```
+package_name/
+├── CMakeLists.txt              # Build configuration
+├── package.xml                 # Package metadata
+├── README.md                   # Package overview
+├── include/package_name/       # Public headers
+│   ├── core/                   # Business logic (OR logic/)
+│   │   ├── *.hpp              # Domain entities, controllers
+│   │   └── *_config.hpp       # Configuration structures
+│   └── ros2_interface/         # ROS2 layer (OR ros2/)
+│       ├── *_node.hpp         # ROS2 node classes
+│       └── *_adapter.hpp      # Message conversion
+├── src/
+│   ├── core/                   # Business logic implementation
+│   │   └── *.cpp
+│   ├── ros2_interface/         # ROS2 implementation
+│   │   └── *.cpp
+│   └── main.cpp               # Entry point only
+├── launch/                     # Launch files (.launch.py)
+│   ├── *_control.launch.py    # Individual node launch
+│   └── *_system.launch.py     # Complete system launch
+├── config/                     # Configuration files
+│   └── *.yaml                 # Parameter files
+├── test/                       # Tests
+│   ├── test_*.cpp             # Unit tests (gtest)
+│   └── test_*_e2e.py          # E2E tests (launch_testing)
+└── docs/                       # Documentation
+    ├── README.md
+    ├── architecture/
+    ├── diagrams/
+    ├── interfaces/
+    └── testing/
+```
+
+## 🏗️ Directory Organization
+
+### Business Logic Layer (core/ or logic/)
+
+**Purpose:** Pure C++ business logic, NO ROS2 dependencies
+
+**Contents:**
+
+- Domain entities and value objects
+- Business controllers and algorithms
+- Configuration structures
+- Pure C++ interfaces
+
+**Rules:**
+
+- NEVER include rclcpp headers
+- NEVER use ROS2 message types
+- Use only standard C++ types (std::string, std::vector, std::chrono, etc.)
+- All business rules testable without ROS2
+
+**Example Files:**
+
+- `pump_controller.hpp/cpp` - Pump control logic
+- `flow_corrector.hpp/cpp` - Flow correction algorithm
+- `motor.hpp/cpp` - Motor control logic
+- `turret.hpp/cpp` - Turret coordination logic
+- `*_config.hpp/cpp` - Configuration structures
+
+### Architecture Patterns
+
+**Pattern 1: Modular Architecture (Recommended)**
+
+```
+package_name/
+├── src/core/              # Business logic (ROS-independent)
+├── src/ros2/    # ROS2 interface layer
+├── include/package_name/
+│   ├── core/              # Core headers
+│   └── ros2/    # ROS2 headers
+└── CMakeLists.txt         # Separate libraries
+```
+
+
+### ROS2 Interface Layer (ros2_interface/ or ros2/)
+
+**Purpose:** ROS2 integration only, delegates to business logic
+
+**Contents:**
+
+- ROS2 node classes
+- Message/service adapters
+- Topic publishers/subscribers
+- Service servers/clients
+- Parameter loading
+
+**Rules:**
+
+- ALL ROS2 dependencies confined here
+- Minimal business logic - delegate to core/
+- Handle ROS2 message conversion
+- Manage ROS2 lifecycle
+
+**Example Files:**
+
+- `pump_node.hpp/cpp` - ROS2 node for pump
+- `motor_node.hpp/cpp` - ROS2 node for motor
+- `turret_node.hpp/cpp` - ROS2 node for turret
+- `ros2_adapter.hpp/cpp` - Message conversion
+
+### Main Entry Point
+
+**src/main.cpp:**
+
+```cpp
+#include "package_name/ros2_interface/node_name.hpp"
+
+int main(int argc, char** argv) {
+    rclcpp::init(argc, argv);
+    auto node = std::make_shared<package_name::ros2_interface::NodeName>();
+    rclcpp::spin(node);
+    rclcpp::shutdown();
+    return 0;
+}
+```
+
+**Rules:**
+
+- ONLY initialization and spinning
+- NO business logic
+- NO parameter loading
+- Keep under 15 lines
+
+### Launch Files
+
+**Naming:**
+
+- `package_control.launch.py` - Single node launch
+- `package_system.launch.py` - Multi-node system launch
+
+**Structure:**
+
+```python
+from launch import LaunchDescription
+from launch_ros.actions import Node
+
+def generate_launch_description():
+    return LaunchDescription([
+        Node(
+            package='package_name',
+            executable='node_name',
+            name='node_name',
+            parameters=[config_file],
+            output='screen'
+        )
+    ])
+```
+
+**Rules:**
+
+- Use Node actions, not ExecuteProcess for ROS2 nodes
+- Load parameters from config/ directory
+- Set output='screen' for visibility
+- Document all launch arguments
+
+### Configuration Files
+
+**Location:** `config/*.yaml`
+
+**Structure:**
+
+```yaml
+/**:
+  ros__parameters:
+    # Hardware parameters
+    device_id: "device_001"
+
+    # Motion parameters
+    max_speed: 100.0
+    min_limit: -180.0
+    max_limit: 180.0
+
+    # ROS2 interface
+    status_rate_hz: 10.0
+```
+
+**Rules:**
+
+- Use `/**:` for node-agnostic parameters
+- Group related parameters
+- Include units in parameter names or comments
+- Provide sensible defaults in code
+
+### Tests
+
+**Pattern 1: Modular Architecture Testing**
+
+**Unit Tests (test\_\*.cpp):**
+
+- Test business logic only (core/ classes)
+- Use Google Test framework
+- NO ROS2 initialization
+- Fast execution (< 1s per test)
+- Link against core library only
+
+**E2E Tests (test\_\*\_e2e.py):**
+
+- Test complete ROS2 system
+- Use launch_testing framework
+- Test services, topics, parameters
+- Verify end-to-end behavior
+
+**Pattern 2: Simplified Architecture Testing**
+
+**E2E Tests (test\_\*\_e2e.py):**
+
+- Test complete ROS2 system
+- Use launch_testing framework
+- Test services, topics, parameters
+- Verify end-to-end behavior
+- Primary testing method for simplified packages
+
+### Documentation
+
+**Mandatory Files:**
+
+- `README.md` - Package overview
+- `docs/architecture/architecture.md` - System design
+- `docs/diagrams/system-architecture.md` - Mermaid diagrams
+- `docs/interfaces/messages.md` - ROS2 interfaces
+- `docs/testing/README.md` - Testing strategy
+
+## 📦 Package Types
+
+### Control Packages
+
+**Example:** pump_control, motor_control, turret_control
+
+**Structure:**
+
+- `include/{package}/core/` - Control algorithms
+- `include/{package}/ros2_interface/` - ROS2 nodes
+- Tests for both layers
+
+### Interface Packages
+
+**Example:** pump_control_interfaces, turret_interfaces
+
+**Structure:**
+
+```
+package_interfaces/
+├── msg/           # Message definitions
+├── srv/           # Service definitions
+├── action/        # Action definitions
+├── CMakeLists.txt
+├── package.xml
+└── README.md
+```
+
+**Rules:**
+
+- Separate package for interfaces
+- Clear, documented message fields
+- Follow ROS2 naming conventions
+
+### Library Packages
+
+**Example:** robot_common
+
+**Structure:**
+
+- Reusable components
+- No ROS2 node executables
+- Exported libraries for other packages
+
+## 🔧 Build Configuration
+
+### CMakeLists.txt
+
+**Pattern 1: Modular Architecture (Recommended)**
+
+```cmake
+cmake_minimum_required(VERSION 3.18)
+project(package_name LANGUAGES CXX)
+
+# Flags
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic -Wunused-parameter -Werror)
+endif()
+
+# C++20 standard
+set(CMAKE_CXX_STANDARD            20 )
+set(CMAKE_CXX_STANDARD_REQUIRED   ON )
+set(CMAKE_CXX_EXTENSIONS          OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON )
+
+# Find dependencies
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(package_interfaces REQUIRED)
+
+set(DEPENDENCIES
+  rclcpp
+  package_interfaces
+)
+
+# Include directories
+include_directories(include)
+
+# Core library (business logic - NO ROS2 dependencies)
+add_library(${PROJECT_NAME}_core SHARED
+    src/core/controller.cpp
+    src/core/config.cpp
+    # ... other core sources
+)
+
+# ROS2 library
+add_library(${PROJECT_NAME}_ros2 SHARED
+    src/ros2_interface/controller_node.cpp
+    # ... other ros2 sources
+)
+target_link_libraries(${PROJECT_NAME}_ros2
+  ${PROJECT_NAME}_core
+)
+ament_target_dependencies(${PROJECT_NAME}_ros2 ${DEPENDENCIES})
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+ament_export_dependencies(${DEPENDENCIES})
+
+# ROS2 node executable
+add_executable(${PROJECT_NAME}_node
+    src/main.cpp
+)
+target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME}_ros2)
+ament_target_dependencies(${PROJECT_NAME}_node ${DEPENDENCIES})
+
+# Install
+install(
+  TARGETS ${PROJECT_NAME}_core ${PROJECT_NAME}_ros2
+  EXPORT export_${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
+install(
+  TARGETS ${PROJECT_NAME}_node
+  DESTINATION lib/${PROJECT_NAME}
+)
+install(DIRECTORY include/ DESTINATION include)
+install(DIRECTORY launch/ config/ DESTINATION share/${PROJECT_NAME})
+
+# Testing
+if(BUILD_TESTING)
+    find_package(ament_cmake_gtest REQUIRED)
+    ament_add_gtest(${PROJECT_NAME}_core_test
+        tests/test_core.cpp
+    )
+    target_link_libraries(${PROJECT_NAME}_core_test ${PROJECT_NAME}_core)
+    ament_add_gtest(${PROJECT_NAME}_ros2_test
+        tests/test_ros2.cpp
+    )
+    target_link_libraries(${PROJECT_NAME}_ros2_test ${PROJECT_NAME}_ros2)
+endif()
+
+# Packaging
+ament_package()
+```
+
+**Pattern 2: Simplified Architecture (Alternative)**
+
+```cmake
+cmake_minimum_required(VERSION 3.18)
+project(package_name LANGUAGES CXX)
+
+# Flags
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic -Wunused-parameter -Werror)
+endif()
+
+# C++20 standard
+set(CMAKE_CXX_STANDARD            20 )
+set(CMAKE_CXX_STANDARD_REQUIRED   ON )
+set(CMAKE_CXX_EXTENSIONS          OFF)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON )
+
+# Find dependencies
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(package_interfaces REQUIRED)
+
+set(DEPENDENCIES
+  rclcpp
+  package_interfaces
+)
+
+# Include directories
+include_directories(include)
+
+# Single executable
+add_executable(${PROJECT_NAME}_node
+    src/main.cpp
+    src/ros2/node.cpp
+    src/logic/controller.cpp
+    # ... other sources
+)
+ament_target_dependencies(${PROJECT_NAME}_node ${DEPENDENCIES})
+
+# Install
+install(
+  TARGETS ${PROJECT_NAME}_core ${PROJECT_NAME}_ros2
+  EXPORT export_${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
+install(
+  TARGETS ${PROJECT_NAME}_node
+  DESTINATION lib/${PROJECT_NAME}
+)
+install(DIRECTORY include/ DESTINATION include)
+install(DIRECTORY launch/ config/ DESTINATION share/${PROJECT_NAME})
+
+# Testing
+if(BUILD_TESTING)
+    find_package(launch_testing_ament_cmake REQUIRED)
+    add_launch_test(test/test_e2e.py)
+endif()
+
+# Packaging
+ament_package()
+```
+
+### package.xml
+
+**Mandatory Fields:**
+
+```xml
+<?xml version="1.0"?>
+<package format="3">
+  <name>package_name</name>
+  <version>1.0.0</version>
+  <description>Clear package description</description>
+  <maintainer email="dev@TODO.com"> Team</maintainer>
+  <license>Proprietary</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <!-- ... other dependencies -->
+
+  <test_depend>ament_cmake_gtest</test_depend>
+  <test_depend>launch_testing_ament_cmake</test_depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>
+```
+
+## ✅ Quality Gates
+
+### Structure Validation
+
+**Pattern 1: Modular Architecture**
+
+- [ ] Correct directory organization (core/ + ros2_interface/)
+- [ ] Business logic separated from ROS2
+- [ ] main.cpp contains only initialization
+- [ ] Launch files in launch/ directory
+- [ ] Configuration files in config/ directory
+- [ ] Tests in test/ directory
+- [ ] Documentation in docs/ directory
+
+**Pattern 2: Simplified Architecture**
+
+- [ ] Correct directory organization (logic/ + ros2/)
+- [ ] Business logic separated from ROS2
+- [ ] main.cpp contains only initialization
+- [ ] Launch files in launch/ directory
+- [ ] Configuration files in config/ directory
+- [ ] Tests in test/ directory
+- [ ] Documentation in docs/ directory
+
+### Build Validation
+
+**Pattern 1: Modular Architecture**
+
+- [ ] Separate libraries for core and ROS2
+- [ ] Core library has NO rclcpp dependency
+- [ ] All targets compile without warnings
+- [ ] Install rules for executables and resources
+
+**Pattern 2: Simplified Architecture**
+
+- [ ] Single executable approach
+- [ ] Business logic separated from ROS2
+- [ ] All targets compile without warnings
+- [ ] Install rules for executables and resources
+
+### Test Validation
+
+**Pattern 1: Modular Architecture**
+
+- [ ] Unit tests for business logic
+- [ ] E2E tests with launch_testing
+- [ ] All tests pass
+- [ ] Test coverage > 80% for business logic
+
+**Pattern 2: Simplified Architecture**
+
+- [ ] E2E tests with launch_testing
+- [ ] All tests pass
+- [ ] Functional validation complete
+
+### Documentation Validation
+
+- [ ] README.md with overview
+- [ ] Architecture documentation
+- [ ] Interface documentation
+- [ ] Testing documentation
+
+---
+
+_ROS 2 package structure standards ensuring clean, maintainable, and testable robot applications._
