@@ -1,4 +1,4 @@
-# Copyright 2021 Factor Robotics
+# Copyright 2026 Reebot
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, TimerAction
@@ -10,18 +10,18 @@ from launch_ros.parameter_descriptions import ParameterValue
 def generate_launch_description():
     declared_arguments = []
 
-    # Argument pour l'interface CAN
+    # CAN interface argument
     declared_arguments.append(
         DeclareLaunchArgument(
             "can_interface",
             default_value="can0",
-            description="Interface CAN à utiliser",
+            description="CAN interface to use",
         )
     )
 
     can_interface = LaunchConfiguration("can_interface")
 
-    # ✅ Description du robot avec URDF CAN (ARGUMENT use_can:=true AJOUTÉ)
+    # Robot description with CAN URDF (use_can:=true argument added)
     robot_description_content = Command(
         [
             FindExecutable(name="xacro"),
@@ -33,15 +33,15 @@ def generate_launch_description():
                     "opendog.urdf.xacro",
                 ]
             ),
-            " use_can:=true",  # ← ✅ FORCE LE MODE CAN
+            " use_can:=true",  # forces CAN mode
             " use_gazebo:=false",
         ]
     )
 
-    # Conversion en ParameterValue
+    # Convert to ParameterValue
     robot_description_str = ParameterValue(robot_description_content, value_type=str)
 
-    # Fichier de configuration des contrôleurs CAN
+    # CAN controller configuration file
     robot_controllers = PathJoinSubstitution(
         [
             FindPackageShare("opendog_hardware_layer_can"),
@@ -50,7 +50,7 @@ def generate_launch_description():
         ]
     )
 
-    # Nœud de contrôle ROS2 avec CAN
+    # ROS2 control node with CAN
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
@@ -62,7 +62,7 @@ def generate_launch_description():
         ],
     )
 
-    # Nœud de publication de l'état du robot
+    # Robot state publisher node
     robot_state_pub_node = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
@@ -70,33 +70,33 @@ def generate_launch_description():
         parameters=[{"robot_description": robot_description_str}],
     )
 
-    # Broadcasteur d'état des joints
+    # Joint state broadcaster
     joint_state_broadcaster_spawner = Node(
         package="controller_manager",
         executable="spawner",
         arguments=["joint_state_broadcaster", "-c", "/controller_manager"],
     )
 
-    # MODE READ ONLY : Ne pas charger le controller de position
+    # READ ONLY MODE: do not load the position controller
     # all_joints_controller_spawner = Node(
     #     package="controller_manager",
     #     executable="spawner",
     #     arguments=["all_joints_controller", "-c", "/controller_manager"],
     # )
 
-    # Séquence de démarrage avec délais
+    # Startup sequence with delays
     nodes = [
-        # 1. Démarrer control_node et robot_state_publisher
+        # 1. Start control_node and robot_state_publisher
         control_node,
         robot_state_pub_node,
 
-        # 2. Démarrer le broadcaster après que control_node soit prêt
+        # 2. Start the broadcaster once control_node is ready
         TimerAction(
             period=3.0,
             actions=[joint_state_broadcaster_spawner]
         ),
 
-        # 3. MODE READ ONLY : Controller de position désactivé
+        # 3. READ ONLY MODE: position controller disabled
         # TimerAction(
         #     period=5.0,
         #     actions=[all_joints_controller_spawner]
