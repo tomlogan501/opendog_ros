@@ -1,68 +1,67 @@
 #!/bin/bash
 
-# Script pour activer TOUS les ODrives en CLOSED_LOOP_CONTROL via CAN
-# Node IDs: 0 à 11 (12 axes au total)
+# Script to activate ALL ODrives in CLOSED_LOOP_CONTROL via CAN
+# Node IDs: 0 to 11 (12 axes total)
 
 echo "=========================================="
-echo "ACTIVATION DE TOUS LES ODRIVES EN CLOSED_LOOP_CONTROL"
+echo "ACTIVATING ALL ODRIVES IN CLOSED_LOOP_CONTROL"
 echo "=========================================="
 echo ""
 
-# Fonction pour envoyer Set_Axis_State = CLOSED_LOOP_CONTROL (8)
+# Function to send Set_Axis_State = CLOSED_LOOP_CONTROL (8)
 send_closed_loop() {
     local node_id=$1
     local cmd_id=0x07  # Set_Axis_State
     local can_id=$((node_id * 32 + cmd_id))
     local can_id_hex=$(printf "0x%03X" $can_id)
     
-    # État CLOSED_LOOP_CONTROL = 8 (0x08000000 en little-endian sur 4 octets)
+    # CLOSED_LOOP_CONTROL state = 8 (0x08000000 little-endian, 4 bytes)
     local data="08 00 00 00"
     
-    echo "Node ID $node_id : Envoi Set_Axis_State = CLOSED_LOOP_CONTROL (8)"
+    echo "Node ID $node_id: sending Set_Axis_State = CLOSED_LOOP_CONTROL (8)"
     cansend can0 ${can_id_hex}#${data}
     
-    # Petit délai pour éviter de saturer le bus
+    # Small delay to avoid saturating the bus
     sleep 0.1
 }
 
-echo "Envoi des commandes Set_Axis_State = CLOSED_LOOP_CONTROL..."
+echo "Sending Set_Axis_State = CLOSED_LOOP_CONTROL commands..."
 echo ""
 
-# Boucle pour tous les Node IDs (0 à 11)
+# Loop over all Node IDs (0 to 11)
 for node_id in {0..11}; do
     send_closed_loop $node_id
 done
 
 echo ""
 echo "=========================================="
-echo "COMMANDES ENVOYÉES !"
+echo "COMMANDS SENT"
 echo "=========================================="
 echo ""
-echo "Vérification dans 2 secondes..."
+echo "Checking in 2 seconds..."
 sleep 2
 
 echo ""
 echo "=========================================="
-echo "VÉRIFICATION DES HEARTBEATS (5 secondes)"
+echo "CHECKING HEARTBEATS (5 seconds)"
 echo "=========================================="
 echo ""
-echo "Recherche des Heartbeat (CAN ID 0x001, 0x021, 0x041, etc.)"
-echo "Format attendu : [8] XX XX 00 00 08 00 00 00"
-echo "                              ^^-- État 8 = CLOSED_LOOP"
+echo "Looking for Heartbeat (CAN ID 0x001, 0x021, 0x041, etc.)"
+echo "Expected format: [8] XX XX 00 00 08 00 00 00"
+echo "                              ^^-- State 8 = CLOSED_LOOP"
 echo ""
 
-# Capture 50 messages et filtre les Heartbeat
+# Capture 50 messages and filter for Heartbeat
 candump can0 -n 50 | grep -E "0[0-9A-F]1   \[8\]"
 
 echo ""
 echo "=========================================="
-echo "VÉRIFICATION DES /joint_states"
+echo "CHECKING /joint_states"
 echo "=========================================="
 echo ""
-echo "Si les ODrives sont en CLOSED_LOOP, vous devriez voir des valeurs"
-echo "au lieu de '.nan' pour tous les joints."
+echo "If the ODrives are in CLOSED_LOOP, you should see values"
+echo "instead of '.nan' for all joints."
 echo ""
-echo "Exécutez maintenant :"
+echo "Now run:"
 echo "  ros2 topic echo /joint_states --once"
 echo ""
-

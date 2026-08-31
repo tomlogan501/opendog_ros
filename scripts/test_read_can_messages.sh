@@ -1,52 +1,52 @@
 #!/bin/bash
-# Script pour tester le hardware layer en mode READ
-# Ce script permet de vérifier que les messages CAN sont parsés correctement
+# Script to test the hardware layer in READ mode
+# This script checks that CAN messages are being parsed correctly
 
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "🔍 TEST DU HARDWARE LAYER EN MODE READ"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "=========================================="
+echo "TESTING THE HARDWARE LAYER IN READ MODE"
+echo "=========================================="
 echo ""
 
-# Vérifier que le bus CAN est actif
-echo "1️⃣  Vérification du bus CAN..."
+# Check that the CAN bus is active
+echo "1. Checking CAN bus..."
 if ! ip link show can0 | grep -q "UP"; then
-    echo "❌ Le bus CAN n'est pas actif !"
-    echo "   Configuration du bus CAN..."
+    echo "CAN bus is not active!"
+    echo "   Configuring CAN bus..."
     sudo ip link set can0 down 2>/dev/null
     sudo ip link set can0 type can bitrate 250000 restart-ms 100
     sudo ip link set can0 txqueuelen 1000
     sudo ip link set can0 up
-    echo "✅ Bus CAN configuré (250 kbps)"
+    echo "CAN bus configured (250 kbps)"
 else
-    echo "✅ Bus CAN actif"
+    echo "CAN bus active"
 fi
 
-# Afficher les paramètres CAN
+# Show CAN parameters
 echo ""
-echo "📊 Paramètres CAN :"
+echo "CAN parameters:"
 ip -details link show can0 | grep -E "can|bitrate|txqueue"
 
-# Vérifier les messages CAN
+# Check CAN messages
 echo ""
-echo "2️⃣  Vérification des messages CAN (5 secondes)..."
-echo "   (Si vous voyez des messages, les ODrives communiquent)"
+echo "2. Checking CAN messages (5 seconds)..."
+echo "   (If you see messages, the ODrives are communicating)"
 echo ""
 timeout 5 candump can0 | head -20
 
 if [ $? -eq 124 ]; then
     echo ""
-    echo "✅ Capture terminée"
+    echo "Capture complete"
 else
     echo ""
-    echo "❌ Aucun message CAN détecté !"
-    echo "   → Vérifiez que les ODrives sont en CLOSED_LOOP_CONTROL"
-    echo "   → Vérifiez les connexions CAN (CANH, CANL, GND)"
+    echo "No CAN messages detected!"
+    echo "   -> Check that the ODrives are in CLOSED_LOOP_CONTROL"
+    echo "   -> Check the CAN connections (CANH, CANL, GND)"
     exit 1
 fi
 
 echo ""
-echo "3️⃣  Lancement du hardware layer ROS2..."
-echo "   (Les logs seront enregistrés dans /tmp/opendog_read_test.log)"
+echo "3. Launching the ROS2 hardware layer..."
+echo "   (Logs will be saved to /tmp/opendog_read_test.log)"
 echo ""
 
 # Source ROS2
@@ -54,13 +54,7 @@ cd /home/dev/opendog_ws
 source /opt/ros/humble/setup.bash
 source install/setup.bash
 
-# Lancer le hardware layer et enregistrer les logs
-echo "🚀 Démarrage..."
+# Launch the hardware layer and log output
+echo "Starting..."
 echo ""
 ros2 launch opendog_bringup opendog_bringup_can.launch.py 2>&1 | tee /tmp/opendog_read_test.log
-
-
-
-
-
-

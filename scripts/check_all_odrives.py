@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Script pour vérifier l'état de tous les ODrives connectés via USB
+Script to check the state of all ODrives connected via USB
 """
 
 import odrive
@@ -8,12 +8,12 @@ from odrive.enums import *
 import sys
 
 def check_odrive(odrv, odrv_serial):
-    """Vérifier l'état d'un ODrive"""
+    """Check the state of an ODrive"""
     print(f"\n{'='*70}")
     print(f"  ODrive Serial: {odrv_serial}")
     print(f"{'='*70}")
     
-    # Vérifier les deux axes
+    # Check both axes
     for axis_num in [0, 1]:
         axis = getattr(odrv, f'axis{axis_num}')
         node_id = axis.config.can.node_id
@@ -27,9 +27,9 @@ def check_odrive(odrv, odrv_serial):
         print(f"  Encoder ready: {axis.encoder.is_ready}")
         print(f"  Encoder shadow_count: {axis.encoder.shadow_count}")
         
-        # Décodage des erreurs
+        # Decode errors
         if axis.error != 0:
-            print(f"  ⚠️  ERREUR AXIS DÉTECTÉE:")
+            print(f"  AXIS ERROR DETECTED:")
             if axis.error & 0x0001:
                 print(f"      - INITIALIZING")
             if axis.error & 0x0002:
@@ -70,34 +70,33 @@ def check_odrive(odrv, odrv_serial):
                 print(f"      - UNKNOWN_POSITION")
 
 def main():
-    print("╔════════════════════════════════════════════════════════════════╗")
-    print("║  Vérification de tous les ODrives connectés via USB           ║")
-    print("╔════════════════════════════════════════════════════════════════╗")
+    print("=" * 70)
+    print("  Checking all ODrives connected via USB")
+    print("=" * 70)
     
     try:
-        print("\n🔍 Recherche d'un ODrive...")
-        print("⚠️  Branchez UN SEUL ODrive à la fois via USB\n")
+        print("\nSearching for an ODrive...")
+        print("Connect ONLY ONE ODrive at a time via USB\n")
         
         odrv = odrive.find_any(timeout=10)
         
         if not odrv:
-            print("❌ Aucun ODrive trouvé !")
+            print("No ODrive found!")
             sys.exit(1)
         
-        print(f"✅ ODrive trouvé : {odrv.serial_number}")
+        print(f"ODrive found: {odrv.serial_number}")
         
         check_odrive(odrv, odrv.serial_number)
         
         print(f"\n{'='*70}")
-        print("  Vérification terminée")
+        print("  Check complete")
         print(f"{'='*70}\n")
         
     except Exception as e:
-        print(f"❌ Erreur: {e}")
+        print(f"Error: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)
 
 if __name__ == "__main__":
     main()
-

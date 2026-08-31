@@ -1,16 +1,16 @@
 #!/bin/bash
-# Script pour restaurer la configuration de toutes les cartes ODrive
+# Script to restore the configuration of all ODrive boards
 
-echo "🔄 RESTAURATION DES CONFIGURATIONS ODRIVE"
+echo "RESTORING ODRIVE CONFIGURATIONS"
 echo "=========================================="
 echo ""
-echo "⚠️  INSTRUCTIONS :"
-echo "   1. Branchez UNE SEULE carte ODrive à la fois en USB"
-echo "   2. Appuyez sur ENTRÉE pour restaurer sa configuration"
-echo "   3. Débranchez-la et branchez la suivante"
+echo "INSTRUCTIONS:"
+echo "   1. Connect ONE ODrive board at a time via USB"
+echo "   2. Press ENTER to restore its configuration"
+echo "   3. Disconnect it and connect the next one"
 echo ""
 
-# Liste des fichiers de backup
+# List of backup files
 declare -a configs=(
     "/home/divin/my_odrive_config_card1.json"
     "/home/divin/my_odrive_config_card2.json"
@@ -25,38 +25,38 @@ for i in "${!configs[@]}"; do
     config_file="${configs[$i]}"
     
     echo ""
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "📋 CARTE $card_num / 6"
-    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "=========================================="
+    echo "BOARD $card_num / 6"
+    echo "=========================================="
     echo ""
-    echo "1️⃣  Branchez la CARTE $card_num en USB"
-    echo "2️⃣  Appuyez sur ENTRÉE pour restaurer..."
+    echo "1. Connect BOARD $card_num via USB"
+    echo "2. Press ENTER to restore..."
     read -p ""
     
     echo ""
-    echo "🔍 Recherche de l'ODrive..."
-    if ! odrivetool shell -c "print('ODrive trouvé')" 2>/dev/null; then
-        echo "❌ Aucun ODrive détecté !"
-        echo "   → Vérifiez la connexion USB"
-        echo "   → Appuyez sur ENTRÉE pour réessayer..."
+    echo "Searching for the ODrive..."
+    if ! odrivetool shell -c "print('ODrive found')" 2>/dev/null; then
+        echo "No ODrive detected!"
+        echo "   -> Check the USB connection"
+        echo "   -> Press ENTER to retry..."
         read -p ""
         continue
     fi
     
-    echo "✅ ODrive détecté !"
+    echo "ODrive detected!"
     echo ""
-    echo "🔄 Restauration de la configuration..."
-    echo "   Fichier : $config_file"
+    echo "Restoring configuration..."
+    echo "   File: $config_file"
     
     if odrivetool restore-config "$config_file"; then
         echo ""
-        echo "✅✅✅ CARTE $card_num RESTAURÉE AVEC SUCCÈS !"
+        echo "BOARD $card_num RESTORED SUCCESSFULLY!"
         echo ""
-        echo "📊 Vérification de la configuration..."
-        odrivetool shell << 'EOF'
+        echo "Checking configuration..."
+        odrivetool shell << 'INNER_MARKER'
 import odrive
 odrv0 = odrive.find_any()
-print(f"\n=== CONFIGURATION RESTAURÉE ===")
+print(f"\n=== RESTORED CONFIGURATION ===")
 print(f"Serial: {odrv0.serial_number}")
 print(f"CAN baud rate: {odrv0.can.config.baud_rate}")
 print(f"Axis0 node_id: {odrv0.axis0.config.can.node_id}")
@@ -65,38 +65,32 @@ print(f"Axis0 motor calibrated: {odrv0.axis0.motor.config.pre_calibrated}")
 print(f"Axis0 encoder ready: {odrv0.axis0.encoder.is_ready}")
 print(f"Axis1 motor calibrated: {odrv0.axis1.motor.config.pre_calibrated}")
 print(f"Axis1 encoder ready: {odrv0.axis1.encoder.is_ready}")
-print(f"\n✅ Carte $card_num prête à l'emploi !")
-EOF
+print(f"\nBoard $card_num ready to use!")
+INNER_MARKER
     else
         echo ""
-        echo "❌ ÉCHEC DE LA RESTAURATION"
-        echo "   → Vérifiez que le fichier existe"
-        echo "   → Vérifiez que l'ODrive est bien connecté"
+        echo "RESTORE FAILED"
+        echo "   -> Check that the file exists"
+        echo "   -> Check that the ODrive is properly connected"
     fi
     
     if [ $card_num -lt 6 ]; then
         echo ""
-        echo "➡️  Débranchez la CARTE $card_num et branchez la CARTE $((card_num + 1))"
-        echo "    Appuyez sur ENTRÉE pour continuer..."
+        echo "Disconnect BOARD $card_num and connect BOARD $((card_num + 1))"
+        echo "    Press ENTER to continue..."
         read -p ""
     fi
 done
 
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "🎉 RESTAURATION TERMINÉE !"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "=========================================="
+echo "RESTORE COMPLETE"
+echo "=========================================="
 echo ""
-echo "✅ Les 6 cartes ODrive ont été restaurées"
+echo "All 6 ODrive boards have been restored"
 echo ""
-echo "📋 PROCHAINES ÉTAPES :"
-echo "   1. Débranchez l'USB de toutes les cartes"
-echo "   2. Vérifiez que le bus CAN est actif (can0)"
-echo "   3. Lancez le hardware layer ROS2"
+echo "NEXT STEPS:"
+echo "   1. Disconnect USB from all boards"
+echo "   2. Check that the CAN bus is active (can0)"
+echo "   3. Launch the ROS2 hardware layer"
 echo ""
-
-
-
-
-
-
