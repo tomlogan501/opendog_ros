@@ -2,7 +2,7 @@
 <robot  xmlns:xacro="http://www.ros.org/wiki/xacro">
 
 
- <!-- Définition du lien du stand -->
+ <!-- Stand link definition -->
  <!-- World link -->
  <link name="world"/>
  <!-- Stand link -->
@@ -12,7 +12,7 @@
     <geometry>
       <box size="0.5 0.5 0.2"/>
     </geometry>
-    <material name="green"> <!-- Changez le nom pour éviter les conflits -->
+    <material name="green"> <!-- Change the name to avoid conflicts -->
       <color rgba="0 0 0.8 1.0"/>
     </material>
   </visual>
@@ -27,7 +27,7 @@
     <inertia ixx="1" iyy="1" izz="1" ixy="0" ixz="0" iyz="0"/>
   </inertial>
   </link>
-    <!-- Gazebo - rendre le stand statique pour éviter que le robot "tourne" dans la simulation -->
+    <!-- Gazebo - make the stand static so the robot doesn't "spin" in simulation -->
     <gazebo reference="stand_link">
       <static>true</static>
     </gazebo>

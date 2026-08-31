@@ -1,4 +1,4 @@
-// Copyright 2021 Factor Robotics
+// Copyright 2026 Reebot
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -42,12 +42,12 @@ int ODriveUSB::init(const std::vector<std::vector<int64_t>> & serial_numbers)
   
   int ret = libusb_init(&libusb_context_);
   if (ret != LIBUSB_SUCCESS) {
-    RCLCPP_ERROR(rclcpp::get_logger("ODriveUSB"), "Échec de l'initialisation de libusb: %s", libusb_error_name(ret));
+    RCLCPP_ERROR(rclcpp::get_logger("ODriveUSB"), "libusb initialization failed: %s", libusb_error_name(ret));
     return ret;
   }
 
-  // Afficher tous les numéros de série attendus depuis la configuration
-  RCLCPP_INFO(rclcpp::get_logger("ODriveUSB"), "Numéros de série attendus depuis la configuration:");
+  // Print all expected serial numbers from the configuration
+  RCLCPP_INFO(rclcpp::get_logger("ODriveUSB"), "Expected serial numbers from configuration:");
   for (size_t i = 0; i < serial_numbers.size(); ++i) {
     for (size_t j = 0; j < serial_numbers[i].size(); ++j) {
       RCLCPP_INFO(rclcpp::get_logger("ODriveUSB"), "  Groupe %zu, Index %zu: %ld (0x%lX)", 
@@ -58,11 +58,11 @@ int ODriveUSB::init(const std::vector<std::vector<int64_t>> & serial_numbers)
   libusb_device ** device_list;
   ssize_t device_count = libusb_get_device_list(libusb_context_, &device_list);
   if (device_count <= 0) {
-    RCLCPP_ERROR(rclcpp::get_logger("ODriveUSB"), "Aucun périphérique USB détecté: %s", libusb_error_name(device_count));
+    RCLCPP_ERROR(rclcpp::get_logger("ODriveUSB"), "No USB device detected: %s", libusb_error_name(device_count));
     return device_count;
   }
 
-  RCLCPP_INFO(rclcpp::get_logger("ODriveUSB"), "%ld périphériques USB détectés, recherche des ODrives...", device_count);
+  RCLCPP_INFO(rclcpp::get_logger("ODriveUSB"), "%ld USB devices detected, searching for ODrives...", device_count);
 
   int odrive_count = 0;
   int connected_count = 0;
@@ -74,21 +74,21 @@ int ODriveUSB::init(const std::vector<std::vector<int64_t>> & serial_numbers)
       continue;
     }
 
-    // Vérifier si c'est un ODrive (VendorID/ProductID)
+    // Check if this is an ODrive (VendorID/ProductID)
     if (descriptor.idVendor == ODRIVE_USB_VENDORID && descriptor.idProduct == ODRIVE_USB_PRODUCTID) {
       odrive_count++;
-      RCLCPP_INFO(rclcpp::get_logger("ODriveUSB"), "ODrive #%d détecté", odrive_count);
+      RCLCPP_INFO(rclcpp::get_logger("ODriveUSB"), "ODrive #%d detected", odrive_count);
 
       libusb_device_handle * device_handle;
       if (libusb_open(device, &device_handle) != LIBUSB_SUCCESS) {
-        RCLCPP_WARN(rclcpp::get_logger("ODriveUSB"), "Échec de l'ouverture de l'ODrive #%d", odrive_count);
+        RCLCPP_WARN(rclcpp::get_logger("ODriveUSB"), "Failed to open ODrive #%d", odrive_count);
         continue;
       }
 
-      // Détacher le pilote kernel si nécessaire
+      // Detach the kernel driver if necessary
       if (libusb_kernel_driver_active(device_handle, 2) == 1) {
         if (libusb_detach_kernel_driver(device_handle, 2) != LIBUSB_SUCCESS) {
-          RCLCPP_WARN(rclcpp::get_logger("ODriveUSB"), "Échec du détachement du pilote kernel pour ODrive #%d", odrive_count);
+          RCLCPP_WARN(rclcpp::get_logger("ODriveUSB"), "Failed to detach kernel driver for ODrive #%d", odrive_count);
           libusb_close(device_handle);
           continue;
         }
@@ -96,24 +96,24 @@ int ODriveUSB::init(const std::vector<std::vector<int64_t>> & serial_numbers)
 
       // Revendiquer l'interface
       if (libusb_claim_interface(device_handle, 2) != LIBUSB_SUCCESS) {
-        RCLCPP_WARN(rclcpp::get_logger("ODriveUSB"), "Échec de la revendication de l'interface pour ODrive #%d", odrive_count);
+        RCLCPP_WARN(rclcpp::get_logger("ODriveUSB"), "Failed to claim interface for ODrive #%d", odrive_count);
         libusb_close(device_handle);
         continue;
       }
 
-      // Lire le numéro de série
+      // Read the serial number
       uint64_t serial_number;
       if (read(device_handle, SERIAL_NUMBER, serial_number) != LIBUSB_SUCCESS) {
-        RCLCPP_WARN(rclcpp::get_logger("ODriveUSB"), "Échec de la lecture du numéro de série pour ODrive #%d", odrive_count);
+        RCLCPP_WARN(rclcpp::get_logger("ODriveUSB"), "Failed to read serial number for ODrive #%d", odrive_count);
         libusb_release_interface(device_handle, 2);
         libusb_close(device_handle);
         continue;
       }
 
-      RCLCPP_INFO(rclcpp::get_logger("ODriveUSB"), "ODrive #%d - Numéro de série lu: %lu (0x%lX)", 
+      RCLCPP_INFO(rclcpp::get_logger("ODriveUSB"), "ODrive #%d - Serial number read: %lu (0x%lX)", 
                  odrive_count, serial_number, serial_number);
 
-      // Vérifier si ce numéro de série est dans la liste demandée
+      // Check if this serial number is in the requested list
       bool match_found = true;
       for (const auto & group : serial_numbers) {
         for (auto expected_serial : group) {
@@ -121,7 +121,7 @@ int ODriveUSB::init(const std::vector<std::vector<int64_t>> & serial_numbers)
           uint64_t expected_serial_uint = static_cast<uint64_t>(expected_serial);
           if (serial_number == expected_serial_uint) {
             match_found = true;
-            RCLCPP_INFO(rclcpp::get_logger("ODriveUSB"), "Correspondance trouvée: %lu (0x%lX)", serial_number, serial_number);
+            RCLCPP_INFO(rclcpp::get_logger("ODriveUSB"), "Match found: %lu (0x%lX)", serial_number, serial_number);
             break;
           }
         }
@@ -131,9 +131,9 @@ int ODriveUSB::init(const std::vector<std::vector<int64_t>> & serial_numbers)
       if (match_found) {
         odrive_map_[serial_number] = device_handle;
         connected_count++;
-        RCLCPP_INFO(rclcpp::get_logger("ODriveUSB"), "ODrive connecté avec SN: %lu (0x%lX)", serial_number, serial_number);
+        RCLCPP_INFO(rclcpp::get_logger("ODriveUSB"), "ODrive connected with SN: %lu (0x%lX)", serial_number, serial_number);
       } else {
-        RCLCPP_WARN(rclcpp::get_logger("ODriveUSB"), "ODrive avec SN %lu (0x%lX) non demandé, ignoré", serial_number, serial_number);
+        RCLCPP_WARN(rclcpp::get_logger("ODriveUSB"), "ODrive with SN %lu (0x%lX) not requested, ignoring", serial_number, serial_number);
         libusb_release_interface(device_handle, 2);
         libusb_close(device_handle);
       }
@@ -142,25 +142,25 @@ int ODriveUSB::init(const std::vector<std::vector<int64_t>> & serial_numbers)
 
   libusb_free_device_list(device_list, 1);
 
-  RCLCPP_INFO(rclcpp::get_logger("ODriveUSB"), "ODrives détectés: %d, ODrives connectés: %d", odrive_count, connected_count);
+  RCLCPP_INFO(rclcpp::get_logger("ODriveUSB"), "ODrives detected: %d, ODrives connected: %d", odrive_count, connected_count);
 
   if (odrive_map_.empty()) {
-    RCLCPP_ERROR(rclcpp::get_logger("ODriveUSB"), "Aucun ODrive valide détecté ou connecté");
+    RCLCPP_ERROR(rclcpp::get_logger("ODriveUSB"), "No valid ODrive detected or connected");
     return LIBUSB_ERROR_NO_DEVICE;
   }
 
-  RCLCPP_INFO(rclcpp::get_logger("ODriveUSB"), "%zu ODrive(s) initialisé(s) avec succès", odrive_map_.size());
+  RCLCPP_INFO(rclcpp::get_logger("ODriveUSB"), "%zu ODrive(s) successfully initialized", odrive_map_.size());
   return LIBUSB_SUCCESS;
 }
 
 template <typename T>
 int ODriveUSB::read(int64_t & serial_number, short endpoint_id, T & value)
 {
-  // Convertir le numéro de série en uint64_t pour la recherche
+  // Convert the serial number to uint64_t for lookup
   uint64_t serial_uint = static_cast<uint64_t>(serial_number);
   
   if (odrive_map_.find(serial_uint) == odrive_map_.end()) {
-    RCLCPP_ERROR(rclcpp::get_logger("ODriveUSB"), "Tentative de lecture sur ODrive non connecté: %ld", serial_number);
+    RCLCPP_ERROR(rclcpp::get_logger("ODriveUSB"), "Attempted read on disconnected ODrive: %ld", serial_number);
     return LIBUSB_ERROR_NO_DEVICE;
   }
   return read(odrive_map_[serial_uint], endpoint_id, value);
@@ -175,7 +175,7 @@ int ODriveUSB::read(libusb_device_handle * odrive_handle, short endpoint_id, T &
   int ret = endpointOperation(
     odrive_handle, endpoint_id, sizeof(value), request_payload, response_payload, 1);
   if (ret != LIBUSB_SUCCESS) {
-    RCLCPP_ERROR(rclcpp::get_logger("ODriveUSB"), "Échec de la lecture endpoint %d: %s", endpoint_id, libusb_error_name(ret));
+    RCLCPP_ERROR(rclcpp::get_logger("ODriveUSB"), "Failed to read endpoint %d: %s", endpoint_id, libusb_error_name(ret));
     return ret;
   }
 
@@ -187,11 +187,11 @@ int ODriveUSB::read(libusb_device_handle * odrive_handle, short endpoint_id, T &
 template <typename T>
 int ODriveUSB::write(int64_t & serial_number, short endpoint_id, const T & value)
 {
-  // Convertir le numéro de série en uint64_t pour la recherche
+  // Convert the serial number to uint64_t for lookup
   uint64_t serial_uint = static_cast<uint64_t>(serial_number);
   
   if (odrive_map_.find(serial_uint) == odrive_map_.end()) {
-    RCLCPP_ERROR(rclcpp::get_logger("ODriveUSB"), "Tentative d'écriture sur ODrive non connecté: %ld", serial_number);
+    RCLCPP_ERROR(rclcpp::get_logger("ODriveUSB"), "Attempted write on disconnected ODrive: %ld", serial_number);
     return LIBUSB_ERROR_NO_DEVICE;
   }
   return write(odrive_map_[serial_uint], endpoint_id, value);
@@ -209,7 +209,7 @@ int ODriveUSB::write(libusb_device_handle * odrive_handle, short endpoint_id, co
 
   int ret = endpointOperation(odrive_handle, endpoint_id, 0, request_payload, response_payload, 1);
   if (ret != LIBUSB_SUCCESS) {
-    RCLCPP_ERROR(rclcpp::get_logger("ODriveUSB"), "Échec de l'écriture endpoint %d: %s", endpoint_id, libusb_error_name(ret));
+    RCLCPP_ERROR(rclcpp::get_logger("ODriveUSB"), "Failed to write endpoint %d: %s", endpoint_id, libusb_error_name(ret));
   }
   
   return ret;
@@ -217,11 +217,11 @@ int ODriveUSB::write(libusb_device_handle * odrive_handle, short endpoint_id, co
 
 int ODriveUSB::call(int64_t & serial_number, short endpoint_id)
 {
-  // Convertir le numéro de série en uint64_t pour la recherche
+  // Convert the serial number to uint64_t for lookup
   uint64_t serial_uint = static_cast<uint64_t>(serial_number);
   
   if (odrive_map_.find(serial_uint) == odrive_map_.end()) {
-    RCLCPP_ERROR(rclcpp::get_logger("ODriveUSB"), "Tentative d'appel sur ODrive non connecté: %ld", serial_number);
+    RCLCPP_ERROR(rclcpp::get_logger("ODriveUSB"), "Attempted call on disconnected ODrive: %ld", serial_number);
     return LIBUSB_ERROR_NO_DEVICE;
   }
   return call(odrive_map_[serial_uint], endpoint_id);
@@ -234,7 +234,7 @@ int ODriveUSB::call(libusb_device_handle * odrive_handle, short endpoint_id)
 
   int ret = endpointOperation(odrive_handle, endpoint_id, 0, request_payload, response_payload, 1);
   if (ret != LIBUSB_SUCCESS) {
-    RCLCPP_ERROR(rclcpp::get_logger("ODriveUSB"), "Échec de l'appel endpoint %d: %s", endpoint_id, libusb_error_name(ret));
+    RCLCPP_ERROR(rclcpp::get_logger("ODriveUSB"), "Failed call on endpoint %d: %s", endpoint_id, libusb_error_name(ret));
   }
   
   return ret;

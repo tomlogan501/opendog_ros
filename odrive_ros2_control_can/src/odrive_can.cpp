@@ -1,4 +1,4 @@
-// Copyright 2021 Factor Robotics
+// Copyright 2026 Reebot
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ ODriveCAN::ODriveCAN() : can_socket_(-1), running_(false) {}
 
 ODriveCAN::~ODriveCAN()
 {
-  // Arrêter le thread de réception
+  // Stop the receive thread
   running_ = false;
   if (receive_thread_.joinable()) {
     receive_thread_.join();
@@ -100,7 +100,7 @@ int ODriveCAN::init(const std::vector<std::vector<int64_t>>& node_ids, const std
     }
   }
 
-  // Démarrer le thread de réception CAN
+  // Start the CAN receive thread
   running_ = true;
   receive_thread_ = std::thread(&ODriveCAN::receive_loop, this);
   RCLCPP_INFO(rclcpp::get_logger("ODriveCAN"), "CAN receive thread started");
@@ -108,12 +108,12 @@ int ODriveCAN::init(const std::vector<std::vector<int64_t>>& node_ids, const std
   return 0;
 }
 
-// Implémentation des templates de lecture/écriture pour compatibilité avec l'interface existante
+// Read/write template implementation for compatibility with the existing interface
 template <typename T>
 int ODriveCAN::read(int64_t node_id, short endpoint_id, T& value)
 {
-  // Pour la compatibilité avec le code existant, nous implémentons une lecture générique
-  // Cette méthode est moins efficace que les méthodes spécifiques
+  // For compatibility with existing code, we implement a generic read
+  // This method is less efficient than the specific methods
   std::lock_guard<std::mutex> lock(can_mutex_);
   
   // Envoi de la commande de lecture
@@ -121,22 +121,22 @@ int ODriveCAN::read(int64_t node_id, short endpoint_id, T& value)
   struct can_frame frame;
   std::memset(&frame, 0, sizeof(frame));
   frame.can_id = can_id | CAN_RTR_FLAG;
-  frame.can_dlc = 0; // Lecture sans données
+  frame.can_dlc = 0; // Read with no data
   
   if (canSend(frame) != 0) {
     return -1;
   }
   
-  // Attente de la réponse (simplifié)
+  // Wait for the response (simplified)
   struct can_frame response;
   std::memset(&response, 0, sizeof(response));
   if (canReceive(response, 100) == 0) {
-    // Traitement de la réponse basique
+    // Basic response handling
     if (sizeof(T) <= static_cast<size_t>(response.can_dlc)) {
       std::memcpy(&value, response.data, sizeof(T));
       return 0;
     } else {
-      // réponse trop courte
+      // response too short
       return -1;
     }
   }
@@ -173,7 +173,7 @@ int ODriveCAN::write(int64_t node_id, short endpoint_id, const T& value)
 
 int ODriveCAN::call(int64_t node_id, short endpoint_id)
 {
-  // Pour un call, on envoie juste la commande sans données
+  // For a call, we just send the command with no data
   std::lock_guard<std::mutex> lock(can_mutex_);
   
   uint32_t can_id = endpoint_to_can_id(node_id, endpoint_id, false);
@@ -185,7 +185,7 @@ int ODriveCAN::call(int64_t node_id, short endpoint_id)
   return canSend(frame);
 }
 
-// Implémentation des fonctions CAN spécifiques
+// CAN-specific function implementations
 bool ODriveCAN::send_set_axis_state(int64_t node_id, int32_t requested_state)
 {
   invalidate_heartbeat(node_id);
@@ -292,7 +292,7 @@ bool ODriveCAN::get_encoder_estimates(int64_t node_id, float& pos_estimate, floa
 
 bool ODriveCAN::get_iq_measured(int64_t node_id, float& iq_measured, float& iq_setpoint)
 {
-  // Envoyer une requête à 2 Hz pour éviter la saturation
+  // Send a request at 2 Hz to avoid saturating the bus
   // FIX: same unsynchronized data race as get_encoder_estimates() — see
   // the comment there for why this matters.
   static std::unordered_map<int64_t, int> request_counter;
@@ -319,7 +319,7 @@ bool ODriveCAN::get_iq_measured(int64_t node_id, float& iq_measured, float& iq_s
   
   if (iq_measured_cache_.find(node_id) != iq_measured_cache_.end()) {
     iq_measured = iq_measured_cache_[node_id];
-    // iq_setpoint non implémenté pour le moment
+    // iq_setpoint not implemented yet
     iq_setpoint = 0.0f;
     return true;
   }
@@ -329,7 +329,7 @@ bool ODriveCAN::get_iq_measured(int64_t node_id, float& iq_measured, float& iq_s
 
 bool ODriveCAN::get_vbus_voltage(int64_t node_id, float& vbus_voltage)
 {
-  // Envoyer une requête très rarement (1 Hz au lieu de 100 Hz)
+  // Send a request very rarely (1 Hz instead of 100 Hz)
   // FIX: same unsynchronized data race as get_encoder_estimates() — see
   // the comment there for why this matters.
   static std::unordered_map<int64_t, int> request_counter;
@@ -451,7 +451,7 @@ bool ODriveCAN::wait_for_encoder_estimate(
   return false;
 }
 
-// Fonctions privées
+// Private functions
 int ODriveCAN::canSend(const struct can_frame& frame)
 {
   ssize_t ret = ::write(can_socket_, &frame, sizeof(frame));
@@ -514,9 +514,9 @@ int ODriveCAN::canReceive(struct can_frame& frame, int timeout_ms)
 
 uint32_t ODriveCAN::endpoint_to_can_id(int64_t node_id, short endpoint_id, bool is_request)
 {
-  // Implémentation basique de conversion endpoint vers CAN ID
-  // À adapter selon le protocole CAN de votre ODrive
-  // Ce code préserve ta logique actuelle : node_id in high bits, endpoint low bits
+  // Basic endpoint-to-CAN-ID conversion implementation
+  // Adjust according to your ODrive's CAN protocol
+  // This code preserves the current logic: node_id in high bits, endpoint low bits
   return static_cast<uint32_t>((static_cast<uint32_t>(node_id) << 5) | (static_cast<uint32_t>(endpoint_id) & 0x1F));
 }
 
@@ -610,7 +610,7 @@ int32_t ODriveCAN::bytes_to_int32(const uint8_t* bytes)
   return i;
 }
 
-// Thread de réception CAN
+// CAN receive thread
 void ODriveCAN::receive_loop()
 {
   RCLCPP_INFO(rclcpp::get_logger("ODriveCAN"), "CAN receive loop started");
@@ -620,13 +620,13 @@ void ODriveCAN::receive_loop()
   while (running_) {
     std::memset(&frame, 0, sizeof(frame));
     
-    // Lecture non-bloquante avec timeout court
+    // Non-blocking read with short timeout
     if (canReceive(frame, 10) == 0) {
-      // Traiter le message reçu
+      // Process the received message
       process_can_message(frame);
     }
     
-    // Petite pause pour éviter de surcharger le CPU
+    // Small pause to avoid overloading the CPU
     std::this_thread::sleep_for(std::chrono::microseconds(100));
   }
   

@@ -6,12 +6,12 @@
 <joint name="world_to_stand_link" type="fixed">
   <parent link="world"/>
   <child link="stand_link"/>
-  <origin xyz="0 0 0.1" rpy="0 0 0"/> <!-- Centre du cylindre à 0.5m -->
+  <origin xyz="0 0 0.1" rpy="0 0 0"/> <!-- Cylinder center at 0.5m -->
 </joint> 
   <!-- Joint fixe entre stand et base_link -->
 <joint name="stand_to_base" type="fixed">
   <origin xyz="0 0 0.3" rpy="0 0 0"/>
-  <!-- Positionné au sommet du stand (z=0.5 + 0.5 = 1m) -->
+  <!-- Positioned at the top of the stand (z=0.5 + 0.5 = 1m) -->
   <parent link="stand_link"/>
   <child link="base_link"/>
 </joint>

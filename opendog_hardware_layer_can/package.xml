@@ -3,13 +3,13 @@
 <package format="3">
   <name>opendog_hardware_layer_can</name>
   <version>0.0.1</version>
-  <description>Configuration, launch et URDF pour la couche hardware CAN d'OpenDog</description>
-  <maintainer email="you@example.com">You</maintainer>
+  <description>Configuration, launch and URDF for OpenDog's CAN hardware layer</description>
+  <maintainer email="jobs@reebot.tech">Reebot</maintainer>
   <license>Apache-2.0</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
 
-  <!-- Dépendances ROS2 -->
+  <!-- ROS2 dependencies -->
   <depend>rclcpp</depend>
   <depend>std_msgs</depend>
   <depend>controller_manager</depend>
@@ -17,19 +17,18 @@
   <depend>ros2_control</depend>
   <depend>ros2_controllers</depend>
   
-  <!-- Dépendances pour le lancement -->
+  <!-- Launch dependencies -->
   <exec_depend>launch</exec_depend>
   <exec_depend>launch_ros</exec_depend>
   
-  <!-- Dépendances pour description du robot -->
+  <!-- Robot description dependencies -->
   <exec_depend>robot_state_publisher</exec_depend>
   <exec_depend>xacro</exec_depend>
   
-  <!-- Dépendances de vos autres packages -->
+  <!-- Dependencies on other packages -->
   <exec_depend>opendog_description</exec_depend>
-  <exec_depend>odrive_hardware_interface</exec_depend>
 
-  <!-- Installation des dossiers -->
+  <!-- Folder installation -->
   <export>
     <build_type>ament_cmake</build_type>
   </export>

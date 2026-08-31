@@ -1,4 +1,4 @@
-// Copyright 2021 Factor Robotics
+// Copyright 2026 Reebot
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -85,7 +85,7 @@ CallbackReturn ODriveHardwareInterfaceCAN::on_init(const hardware_interface::Har
   // Utilisation d'un set pour stocker les node_ids uniques
   std::set<int> unique_node_ids;
 
-  // Initialisation des vecteurs de données
+  // Initialize data vectors
   hw_vbus_voltages_.resize(info_.sensors.size(), std::numeric_limits<double>::quiet_NaN());
   hw_positions_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   hw_velocities_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
@@ -101,7 +101,7 @@ CallbackReturn ODriveHardwareInterfaceCAN::on_init(const hardware_interface::Har
   hw_fet_temperatures_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
   hw_motor_temperatures_.resize(info_.joints.size(), std::numeric_limits<double>::quiet_NaN());
 
-  // Vecteurs pour stocker les node_ids par joint/sensor (on garde pour compatibilité)
+  // Vectors to store node_ids per joint/sensor (kept for compatibility)
   joint_node_ids_.resize(info_.joints.size());
   sensor_node_ids_.resize(info_.sensors.size());
 
@@ -119,7 +119,7 @@ CallbackReturn ODriveHardwareInterfaceCAN::on_init(const hardware_interface::Har
     );
   }
 
-  // Lecture des paramètres pour les joints
+  // Read parameters for the joints
   for (size_t i = 0; i < info_.joints.size(); i++) {
     int node_id = std::stoi(info_.joints[i].parameters.at("node_id"));
     joint_node_ids_[i] = node_id;
@@ -155,7 +155,7 @@ CallbackReturn ODriveHardwareInterfaceCAN::on_init(const hardware_interface::Har
     );
   }
 
-  // Afficher tous les node_ids uniques détectés
+  // Print all detected unique node_ids
   RCLCPP_INFO(
     rclcpp::get_logger("ODriveHardwareInterfaceCAN"),
     "Detected %zu unique ODrive node IDs", 
@@ -496,7 +496,7 @@ std::vector<hardware_interface::StateInterface> ODriveHardwareInterfaceCAN::expo
     state_interfaces.emplace_back(hardware_interface::StateInterface(
       info_.joints[i].name, hardware_interface::HW_IF_EFFORT, &hw_efforts_[i]));
 
-    // Interfaces pour les données de diagnostic
+    // Interfaces for diagnostic data
     state_interfaces.emplace_back(hardware_interface::StateInterface(
       info_.joints[i].name, "axis_error", &hw_axis_errors_[i]));
     state_interfaces.emplace_back(hardware_interface::StateInterface(
@@ -630,11 +630,11 @@ return_type ODriveHardwareInterfaceCAN::perform_command_mode_switch(
 
 return_type ODriveHardwareInterfaceCAN::read(const rclcpp::Time &, const rclcpp::Duration &)
 {
-  // Compteur pour réduire la fréquence de lecture des données non-critiques
+  // Counter to reduce read frequency for non-critical data
   static int slow_read_counter = 0;
   slow_read_counter++;
   
-  // Lecture des données des sensors (vbus voltage) - seulement tous les 100 cycles (1 Hz)
+  // Read sensor data (vbus voltage) - only every 100 cycles (1 Hz)
   if (false && slow_read_counter % 100 == 0) {
     for (size_t i = 0; i < info_.sensors.size(); i++) {
       int node_id = sensor_node_ids_[i];
@@ -646,19 +646,19 @@ return_type ODriveHardwareInterfaceCAN::read(const rclcpp::Time &, const rclcpp:
     }
   }
 
-  // Lecture des données des joints - UNIQUEMENT position, vitesse et couple
+  // Read joint data - position, velocity, and torque ONLY
   for (size_t i = 0; i < info_.joints.size(); i++) {
     int node_id = joint_node_ids_[i];
     float pos_estimate, vel_estimate, iq_measured;
 
-    // Lecture position et vitesse via CAN optimisé (messages heartbeat automatiques)
+    // Read position and velocity via optimized CAN (automatic heartbeat messages)
     if (odrive_can_->get_encoder_estimates(node_id, pos_estimate, vel_estimate)) {
       hw_positions_[i] = ((pos_estimate - zero_offsets_[i]) * 2 * M_PI) / gear_ratios_[i];  // Conversion rev -> rad, gear- and zero-corrected
       hw_velocities_[i] = (vel_estimate * 2 * M_PI) / gear_ratios_[i]; // Conversion rev/s -> rad/s, gear-corrected
     }
 
-    // MODE READ ONLY : Lecture du couple désactivée pour éviter saturation CAN
-    /* DÉSACTIVÉ TEMPORAIREMENT
+    // READ ONLY MODE: torque reading disabled to avoid CAN saturation
+    /* TEMPORARILY DISABLED
     float iq_setpoint;
     if (odrive_can_->get_iq_measured(node_id, iq_measured, iq_setpoint)) {
       hw_efforts_[i] = iq_measured * torque_constants_[i];

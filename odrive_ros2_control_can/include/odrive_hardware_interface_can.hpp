@@ -97,10 +97,10 @@ private:
   // Interface ODriveCAN
   ODriveCAN * odrive_can_;
 
-  // Node IDs uniques (set pour éviter les doublons)
+  // Unique Node IDs (set to avoid duplicates)
   std::set<int> unique_node_ids_;
   
-  // Node IDs par joint/sensor (vecteurs pour accès indexé)
+  // Node IDs per joint/sensor (vectors for indexed access)
   std::vector<int> joint_node_ids_;
   std::vector<int> sensor_node_ids_;
 
@@ -111,7 +111,7 @@ private:
   std::vector<double> zero_offsets_;    
   std::vector<bool> enable_watchdogs_;
 
-  // État des sensors (vbus voltage)
+  // Sensor state (vbus voltage)
   std::vector<double> hw_vbus_voltages_;
 
   // Commandes des joints
@@ -119,7 +119,7 @@ private:
   std::vector<double> hw_commands_velocities_;
   std::vector<double> hw_commands_efforts_;
 
-  // États des joints
+  // Joint states
   std::vector<double> hw_positions_;
   std::vector<double> hw_velocities_;
   std::vector<double> hw_efforts_;
@@ -132,7 +132,7 @@ private:
   std::vector<double> hw_fet_temperatures_;
   std::vector<double> hw_motor_temperatures_;
 
-  // Niveaux d'intégration (modes de contrôle)
+  // Integration levels (control modes)
   enum class integration_level_t : int32_t
   {
     UNDEFINED = 0,

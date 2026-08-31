@@ -54,7 +54,7 @@ public:
   
   int call(int64_t node_id, short endpoint_id);
 
-  // Fonctions CAN spécifiques pour meilleures performances
+  // CAN-specific functions for better performance
   bool send_heartbeat_command(int64_t node_id);
   bool send_encoder_estimates_request(int64_t node_id);
   bool send_set_input_pos(int64_t node_id, float position, float velocity_feedforward = 0.0f, float torque_feedforward = 0.0f);
@@ -65,7 +65,7 @@ public:
   bool send_clear_errors(int64_t node_id);
   bool send_set_limits(int64_t node_id, float velocity_limit, float current_limit);
 
-  // Lecture des données CAN
+  // Reading CAN data
   bool get_encoder_estimates(int64_t node_id, float& pos_estimate, float& vel_estimate);
   bool get_iq_measured(int64_t node_id, float& iq_measured, float& iq_setpoint);
   bool get_vbus_voltage(int64_t node_id, float& vbus_voltage);
@@ -85,7 +85,7 @@ private:
   std::map<int64_t, int64_t> node_id_map_;
   std::mutex can_mutex_;
 
-  // Cache pour les données fréquemment lues
+  // Cache for frequently read data
   std::unordered_map<int64_t, float> encoder_pos_cache_;
   std::unordered_map<int64_t, float> encoder_vel_cache_;
   std::unordered_map<int64_t, float> iq_measured_cache_;
@@ -95,7 +95,7 @@ private:
   std::unordered_map<int64_t, uint64_t> heartbeat_seq_cache_;
   std::mutex cache_mutex_;
 
-  // Thread de réception CAN
+  // CAN receive thread
   std::thread receive_thread_;
   std::atomic<bool> running_;
   void receive_loop();
@@ -103,16 +103,16 @@ private:
   int canSend(const struct can_frame& frame);
   int canReceive(struct can_frame& frame, int timeout_ms = 10);
   
-  // Conversion ODrive endpoint vers commande CAN
+  // Convert ODrive endpoint to CAN command
   uint32_t endpoint_to_can_id(int64_t node_id, short endpoint_id, bool is_request = false);
   
-  // Gestion des messages CAN ODrive spécifiques
+  // Handling ODrive-specific CAN messages
   bool process_can_message(const struct can_frame& frame);
   
-  // Envoi de message CAN brut
+  // Send raw CAN message
   bool send_can_message(int64_t node_id, uint32_t command_id, const uint8_t* data, uint8_t data_len);
   
-  // Attente de réponse CAN
+  // Wait for CAN response
   bool wait_for_can_response(int64_t node_id, uint32_t expected_command, int timeout_ms = 100);
 
   // Helper functions pour pack/unpack data
