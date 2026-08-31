@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Script de diagnostic pour vérifier la configuration CAN de tous les ODrives
+Diagnostic script to check the CAN configuration of all ODrives
 """
 
 import odrive
@@ -8,25 +8,25 @@ from odrive.enums import *
 import sys
 
 def check_odrive_can(odrv, index):
-    """Vérifie la configuration CAN d'un ODrive"""
+    """Check an ODrive's CAN configuration"""
     print(f"\n{'='*60}")
     print(f"ODrive #{index}")
     print(f"{'='*60}")
     
     try:
-        # Informations de base
+        # Basic information
         print(f"Serial Number: {odrv.serial_number}")
         print(f"Hardware Version: v{odrv.hw_version_major}.{odrv.hw_version_minor}")
         print(f"Firmware Version: v{odrv.fw_version_major}.{odrv.fw_version_minor}.{odrv.fw_version_revision}")
         
-        # Configuration CAN
-        print(f"\n--- Configuration CAN ---")
+        # CAN configuration
+        print(f"\n--- CAN Configuration ---")
         print(f"CAN Enabled: {odrv.config.enable_can_a}")
         print(f"CAN Node ID: {odrv.can.node_id}")
         print(f"CAN Baud Rate: {odrv.can.config.baud_rate}")
         
-        # État des axes
-        print(f"\n--- État des Axes ---")
+        # Axis states
+        print(f"\n--- Axis States ---")
         for axis_num in [0, 1]:
             axis = getattr(odrv, f"axis{axis_num}")
             print(f"\nAxis {axis_num}:")
@@ -38,120 +38,113 @@ def check_odrive_can(odrv, index):
             print(f"  Watchdog Enabled: {axis.config.enable_watchdog}")
             print(f"  Watchdog Timeout: {axis.config.watchdog_timeout}s")
         
-        # Recommandations
+        # Recommendations
         print(f"\n--- Diagnostic ---")
         issues = []
         
         if not odrv.config.enable_can_a:
-            issues.append("❌ CAN n'est PAS activé !")
+            issues.append("CAN is NOT enabled!")
         else:
-            print("✅ CAN est activé")
+            print("CAN is enabled")
         
         if odrv.can.config.baud_rate != 250000:
-            issues.append(f"⚠️  Baud rate incorrect: {odrv.can.config.baud_rate} (devrait être 250000)")
+            issues.append(f"Incorrect baud rate: {odrv.can.config.baud_rate} (should be 250000)")
         else:
-            print("✅ Baud rate correct (250000)")
+            print("Baud rate correct (250000)")
         
         if odrv.can.node_id < 0 or odrv.can.node_id > 5:
-            issues.append(f"⚠️  Node ID hors limites: {odrv.can.node_id} (devrait être 0-5)")
+            issues.append(f"Node ID out of range: {odrv.can.node_id} (should be 0-5)")
         else:
-            print(f"✅ Node ID valide: {odrv.can.node_id}")
+            print(f"Valid Node ID: {odrv.can.node_id}")
         
         if issues:
-            print("\n🔴 PROBLÈMES DÉTECTÉS:")
+            print("\nISSUES DETECTED:")
             for issue in issues:
                 print(f"  {issue}")
             return False
         else:
-            print("\n✅ Configuration CAN correcte !")
+            print("\nCAN configuration correct!")
             return True
             
     except Exception as e:
-        print(f"❌ ERREUR lors de la lecture: {e}")
+        print(f"ERROR while reading: {e}")
         return False
 
 def main():
     print("="*60)
-    print("DIAGNOSTIC DES ODRIVES - Configuration CAN")
+    print("ODRIVE DIAGNOSTIC - CAN Configuration")
     print("="*60)
     
-    print("\nRecherche de tous les ODrives connectés...")
-    print("(Cela peut prendre 10-30 secondes...)\n")
+    print("\nSearching for all connected ODrives...")
+    print("(This can take 10-30 seconds...)\n")
     
-    # Trouver tous les ODrives
+    # Find all ODrives
     odrives = []
     try:
-        # Méthode 1 : Recherche générale
-        print("Recherche en cours...")
+        # Method 1: general search
+        print("Searching...")
         odrv = odrive.find_any(timeout=10)
         if odrv:
             odrives.append(odrv)
-            print(f"✅ ODrive trouvé : SN {odrv.serial_number}")
+            print(f"ODrive found: SN {odrv.serial_number}")
             
-            # Essayer de trouver d'autres ODrives
-            for i in range(5):  # Chercher jusqu'à 5 autres
+            # Try to find other ODrives
+            for i in range(5):  # look for up to 5 more
                 try:
-                    print(f"Recherche d'un autre ODrive...")
+                    print(f"Searching for another ODrive...")
                     odrv = odrive.find_any(timeout=5)
                     if odrv and odrv not in odrives:
                         odrives.append(odrv)
-                        print(f"✅ ODrive trouvé : SN {odrv.serial_number}")
+                        print(f"ODrive found: SN {odrv.serial_number}")
                 except:
                     break
     except Exception as e:
-        print(f"❌ Erreur lors de la recherche: {e}")
+        print(f"Error during search: {e}")
     
     if not odrives:
-        print("\n❌ AUCUN ODrive trouvé !")
-        print("\nVérifiez :")
-        print("  1. Les ODrives sont allumés (LEDs allumées)")
-        print("  2. Les câbles USB sont bien connectés")
-        print("  3. Vous avez les permissions (ajoutez votre user au groupe dialout)")
+        print("\nNO ODrive found!")
+        print("\nCheck:")
+        print("  1. The ODrives are powered on (LEDs lit)")
+        print("  2. The USB cables are properly connected")
+        print("  3. You have the right permissions (add your user to the dialout group)")
         print("     sudo usermod -a -G dialout $USER")
         return
     
     print(f"\n{'='*60}")
-    print(f"NOMBRE D'ODRIVES TROUVÉS: {len(odrives)}")
+    print(f"NUMBER OF ODRIVES FOUND: {len(odrives)}")
     print(f"{'='*60}")
     
-    # Vérifier chaque ODrive
+    # Check each ODrive
     results = []
     for i, odrv in enumerate(odrives):
         result = check_odrive_can(odrv, i)
         results.append((i, odrv.serial_number, result))
     
-    # Résumé final
+    # Final summary
     print(f"\n{'='*60}")
-    print("RÉSUMÉ")
+    print("SUMMARY")
     print(f"{'='*60}")
     
     configured_count = sum(1 for _, _, ok in results if ok)
-    print(f"\nODrives correctement configurés: {configured_count}/{len(odrives)}")
+    print(f"\nCorrectly configured ODrives: {configured_count}/{len(odrives)}")
     
-    print("\nListe des ODrives:")
+    print("\nODrive list:")
     for i, sn, ok in results:
-        status = "✅ OK" if ok else "❌ À CONFIGURER"
+        status = "OK" if ok else "NEEDS CONFIGURATION"
         print(f"  ODrive #{i} (SN: {sn}): {status}")
     
     if configured_count < len(odrives):
-        print("\n⚠️  Certains ODrives nécessitent une configuration !")
-        print("Utilisez le script 'configure_odrive_can.py' pour les configurer.")
+        print("\nSome ODrives need configuration!")
+        print("Use the 'configure_odrive_can.py' script to configure them.")
 
 if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("\n\n⚠️  Interrompu par l'utilisateur")
+        print("\n\nInterrupted by user")
         sys.exit(0)
     except Exception as e:
-        print(f"\n❌ ERREUR FATALE: {e}")
+        print(f"\nFATAL ERROR: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)
-
-
-
-
-
-
-
