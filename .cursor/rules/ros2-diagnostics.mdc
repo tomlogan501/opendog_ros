@@ -1,0 +1,56 @@
+---
+alwaysApply: true
+---
+
+ROS 2 Diagnostics & Evidence Capture —
+
+Objectives
+- Early detection of degradations (sensors/actuators, latencies, losses, resources).
+- Automatically capture "evidence" at the right moment (logs, metrics, traces) without continuous recording.
+- Facilitate operations (dashboards, alerts, runbooks) and reproduction (rosbag replay).
+
+Tools & References
+- diagnostic_updater and diagnostic_aggregator.
+- References:
+  - ROS 2 diagnostics (Humble): https://github.com/ros/diagnostics/tree/ros2-humble?tab=readme-ov-file
+  - diagnostic_updater docs: https://docs.ros.org/en/ros2_packages/rolling/api/diagnostic_updater/index.html
+
+Diagnostic Policy
+- Each critical node exposes an Updater with tasks per subsystem (comms, sensors, actuation, compute, thermal, voltage, storage).
+- Standardized states: OK, WARN (degradation), ERROR (failure). Actionable messages and synchronized timestamps.
+- Update frequency should match system dynamics and requirements (configurable per subsystem).
+- Hierarchical aggregation by robot/subsystem for a synthetic view.
+- Design for easy reconfiguration of diagnostic parameters and thresholds.
+
+Quality & Operations
+- Rich and correlatable logs (mission IDs, tasks, components).
+- Dashboards/alerts connected to diagnostic topics; runbooks for support actions.
+- Use structured logging with consistent message formats and severity levels.
+- Implement health checks that can be monitored by external monitoring systems.
+- Capture performance metrics (latency, throughput, resource usage) for trend analysis.
+ROS 2 Diagnostics & Evidence Capture —
+
+Objectives
+- Early detection of degradations (sensors/actuators, latencies, losses, resources).
+- Automatically capture "evidence" at the right moment (logs, metrics, traces) without continuous recording.
+- Facilitate operations (dashboards, alerts, runbooks) and reproduction (rosbag replay).
+
+Tools & References
+- diagnostic_updater and diagnostic_aggregator.
+- References:
+  - ROS 2 diagnostics (Humble): https://github.com/ros/diagnostics/tree/ros2-humble?tab=readme-ov-file
+  - diagnostic_updater docs: https://docs.ros.org/en/ros2_packages/rolling/api/diagnostic_updater/index.html
+
+Diagnostic Policy
+- Each critical node exposes an Updater with tasks per subsystem (comms, sensors, actuation, compute, thermal, voltage, storage).
+- Standardized states: OK, WARN (degradation), ERROR (failure). Actionable messages and synchronized timestamps.
+- Update frequency should match system dynamics and requirements (configurable per subsystem).
+- Hierarchical aggregation by robot/subsystem for a synthetic view.
+- Design for easy reconfiguration of diagnostic parameters and thresholds.
+
+Quality & Operations
+- Rich and correlatable logs (mission IDs, tasks, components).
+- Dashboards/alerts connected to diagnostic topics; runbooks for support actions.
+- Use structured logging with consistent message formats and severity levels.
+- Implement health checks that can be monitored by external monitoring systems.
+- Capture performance metrics (latency, throughput, resource usage) for trend analysis.
