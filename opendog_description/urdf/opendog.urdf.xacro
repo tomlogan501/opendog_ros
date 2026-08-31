@@ -2,15 +2,14 @@
 <robot name="opendog_nostand" xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <!-- ========================================= -->
-  <!--     ARGUMENTS DE CONFIGURATION           -->
+  <!--     CONFIGURATION ARGUMENTS              -->
   <!-- ========================================= -->
-  
-  <!-- Choix du type d'interface hardware -->
-  <xacro:arg name="use_can" default="false"/>
+
+  <!-- Hardware interface type selection -->
   <xacro:arg name="use_gazebo" default="false"/>
 
   <!-- ========================================= -->
-  <!--     DESCRIPTION MÉCANIQUE (TOUJOURS)     -->
+  <!--     MECHANICAL DESCRIPTION (ALWAYS)      -->
   <!-- ========================================= -->
   
   <!-- Configuration of Robot Links-->  
@@ -26,23 +25,14 @@
   <xacro:include filename="$(find opendog_description)/urdf/opendog.trans"/>
 
   <!-- ========================================= -->
-  <!--     HARDWARE INTERFACE (CONDITIONNEL)    -->
+  <!--     HARDWARE INTERFACE (CONDITIONAL)     -->
   <!-- ========================================= -->
 
-  <!-- En mode gazebo, ne jamais charger l'interface hardware reelle (USB/CAN) -->
+  <!-- In gazebo mode, never load the real hardware interface (CAN) -->
 <xacro:unless value="$(arg use_gazebo)">
-  <!-- Choix entre USB et CAN -->
-  <xacro:if value="$(arg use_can)">
-    <!-- MODE CAN -->
-    <xacro:include filename="$(find opendog_hardware_layer_can)/urdf/opendog_ros2_control_can.xacro"/>
-    <xacro:opendog_ros2_control_can name="opendog_hw"/>
-  </xacro:if>
-
-  <xacro:unless value="$(arg use_can)">
-    <!-- MODE USB (par défaut) -->
-    <xacro:include filename="$(find opendog_description)/urdf/opendog_ros2_control.xacro"/>
-    <xacro:opendog_ros2_control name="opendog_hw"/>
-  </xacro:unless>
+  <!-- CAN MODE -->
+  <xacro:include filename="$(find opendog_hardware_layer_can)/urdf/opendog_ros2_control_can.xacro"/>
+  <xacro:opendog_ros2_control_can name="opendog_hw"/>
 </xacro:unless>
 
   <!-- ========================================= -->

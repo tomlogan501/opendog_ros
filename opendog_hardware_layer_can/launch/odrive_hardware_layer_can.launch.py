@@ -21,7 +21,7 @@ def generate_launch_description():
 
     can_interface = LaunchConfiguration("can_interface")
 
-    # Robot description with CAN URDF (use_can:=true argument added)
+    # Robot description with CAN URDF (CAN is now the only hardware path)
     robot_description_content = Command(
         [
             FindExecutable(name="xacro"),
@@ -33,7 +33,6 @@ def generate_launch_description():
                     "opendog.urdf.xacro",
                 ]
             ),
-            " use_can:=true",  # forces CAN mode
             " use_gazebo:=false",
         ]
     )
