@@ -24,19 +24,19 @@ from launch_ros.parameter_descriptions import ParameterValue
 def generate_launch_description():
     declared_arguments = []
 
-    # Arguments pour activer/désactiver les contrôleurs individuels
+    # Argument to enable/disable individual controllers
     declared_arguments.append(
         DeclareLaunchArgument(
             "enable_individual_controllers",
             default_value="true",
-            description="Activer les contrôleurs individuels pour chaque joint",
+            description="Enable individual controllers for each joint",
         )
     )
 
-    # Récupération des arguments
+    # Retrieve arguments
     enable_individual_controllers = LaunchConfiguration("enable_individual_controllers")
 
-    # Description du robot - utilisation de votre URDF OpenDog
+    # Robot description - uses the OpenDog URDF
     robot_description_content = Command(
         [
             PathJoinSubstitution([FindExecutable(name="xacro")]),
@@ -51,10 +51,10 @@ def generate_launch_description():
         ]
     )
     
-    # Convertir en string pour éviter les problèmes de parsing
+    # Convert to string to avoid parsing issues
     robot_description_str = ParameterValue(robot_description_content, value_type=str)
 
-    # Chemin vers le fichier de configuration des contrôleurs
+    # Path to the controller configuration file
     robot_controllers = PathJoinSubstitution(
         [
             FindPackageShare("odrive_demo_bringup"),
@@ -63,13 +63,13 @@ def generate_launch_description():
         ]
     )
 
-    # Paramètres combinés pour le nœud de contrôle
+    # Combined parameters for the control node
     controller_params = {
         "robot_description": robot_description_str,
         "robot_controller_config_file": robot_controllers,
     }
 
-    # Nœud de contrôle ROS 2
+    # ROS 2 control node
     control_node = Node(
         package="controller_manager",
         executable="ros2_control_node",
@@ -77,7 +77,7 @@ def generate_launch_description():
         parameters=[controller_params, robot_controllers],
     )
 
-    # Nœud de publication de l'état du robot
+    # Robot state publisher node
     robot_state_pub_node = Node(
         package="robot_state_publisher",
         executable="robot_state_publisher",
@@ -85,14 +85,14 @@ def generate_launch_description():
         parameters=[{"robot_description": robot_description_str}],
     )
 
-    # Broadcasteur d'état des joints (toujours activé)
+    # Joint state broadcaster (always enabled)
     joint_state_broadcaster_spawner = Node(
         package="controller_manager",
         executable="spawner",
         arguments=["joint_state_broadcaster", "-c", "/controller_manager"],
     )
 
-    # Contrôleurs individuels pour chaque joint (même casse que dans le YAML)
+    # Individual controllers for each joint (same casing as in the YAML)
     FR_hip_controller_spawner = Node(
         package="controller_manager",
         executable="spawner",
@@ -177,8 +177,8 @@ def generate_launch_description():
         condition=IfCondition(enable_individual_controllers),
     )
 
-    # NOTE: Le contrôleur global "all_joints_position_controller" a été retiré
-    # afin d'utiliser uniquement les contrôleurs individuels (claimed individuellement).
+    # NOTE: The global "all_joints_position_controller" controller was removed
+    # so that only the individual controllers are used (claimed individually).
 
     nodes = [
         control_node,
